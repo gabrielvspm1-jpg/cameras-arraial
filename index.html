@@ -30,6 +30,13 @@ button{font:inherit;color:inherit;cursor:pointer}
 .top{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:14px 0}
 .brand{display:flex;align-items:center;gap:10px;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:18px;letter-spacing:.02em}
 .lg-ban{width:100%;max-width:340px;margin:0 auto 14px}.lg-ban svg{display:block;height:auto}
+
+.ed-bg{position:fixed;inset:0;z-index:2000;background:rgba(3,6,12,.72);backdrop-filter:blur(4px);display:grid;place-items:center;padding:16px}
+.ed{width:100%;max-width:460px;max-height:92vh;overflow:auto;background:var(--panel);border:1px solid var(--cy);border-radius:18px;padding:20px;box-shadow:0 0 60px rgba(34,211,238,.18)}
+.ed h3{margin:0 0 14px;font-size:18px}.ed .lg-f,.ed .ef{display:flex;flex-direction:column;gap:5px;margin-bottom:12px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--fg2)}
+.ed input,.ed select{width:100%;flex:none;height:42px;box-sizing:border-box;background:var(--bg);border:1px solid var(--line);color:var(--fg);border-radius:10px;padding:0 12px;font:inherit;font-size:15px;text-transform:none;letter-spacing:0}
+.ed .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.ed .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}.ed .acts .btn{flex:1 1 auto}
+.ed .danger{color:var(--off);border-color:var(--off)}.ed .hint{font-size:12px;color:var(--fg2);margin:-4px 0 12px;text-transform:none;letter-spacing:0}.ed .err{color:var(--off);font-size:13px;min-height:18px;margin-bottom:6px}
 .logo{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:linear-gradient(135deg,var(--cy),var(--vio));color:#04101c}
 .brand small{display:block;font:500 10px Inter;letter-spacing:.18em;color:var(--fg2);text-transform:uppercase}
 .tabs{display:flex;gap:4px;margin-left:auto;background:var(--panel);border:1px solid var(--line);padding:4px;border-radius:12px}
@@ -178,9 +185,9 @@ input:focus{outline:2px solid var(--cy);outline-offset:1px}
 .sw2 .trk{width:42px;height:24px;border-radius:99px;background:rgba(52,211,153,.25);border:1px solid var(--on);position:relative;transition:.2s;box-shadow:0 0 12px rgba(52,211,153,.35)}
 .sw2 .knob{position:absolute;top:2px;left:20px;width:18px;height:18px;border-radius:50%;background:var(--on);transition:.2s}
 .sw2.off{color:var(--off)}.sw2.off .trk{background:rgba(251,113,133,.2);border-color:var(--off);box-shadow:0 0 12px rgba(251,113,133,.3)}.sw2.off .knob{left:2px;background:var(--off)}
-.lk{background:none;border:0;color:var(--cy);font-size:12.5px;text-align:right}
+.lk{background:none;border:0;color:var(--cy);font-size:12.5px;text-align:right}.lkw{display:flex;gap:10px;justify-content:flex-end}
 .lf{padding:12px 18px;font-size:12px;color:var(--fg2)}.emp{padding:34px 18px;text-align:center;color:var(--fg2)}
-@media(max-width:760px){.lh{display:none}.r{grid-template-columns:64px minmax(0,1fr) auto;grid-template-areas:"n name st" "n type act";gap:4px 10px;padding:10px 14px}.r-n{grid-area:n;align-self:center}.r-name{grid-area:name}.r-type{grid-area:type}.sw2{grid-area:st}.lk{grid-area:act}.sw2 .lab{display:none}.hd-r{margin-left:0;width:100%;justify-content:space-between}.hero2{padding:22px 20px}.ringbox{margin-left:0}}
+@media(max-width:760px){.lh{display:none}.r{grid-template-columns:64px minmax(0,1fr) auto;grid-template-areas:"n name st" "n type act";gap:4px 10px;padding:10px 14px}.r-n{grid-area:n;align-self:center}.r-name{grid-area:name}.r-type{grid-area:type}.sw2{grid-area:st}.lkw{grid-area:act}.sw2 .lab{display:none}.hd-r{margin-left:0;width:100%;justify-content:space-between}.hero2{padding:22px 20px}.ringbox{margin-left:0}}
 details#imp{margin:0 0 14px;padding:0}details#imp summary{cursor:pointer;padding:14px 18px;font:600 12px 'Space Grotesk',sans-serif;letter-spacing:.16em;text-transform:uppercase;color:var(--fg2)}details#imp>*:not(summary){margin:0 18px 16px}
 @media(max-width:560px){.kv{font-size:32px}.k{padding:14px}.hero2 h1{font-size:30px}}
 @media(prefers-reduced-motion:reduce){.sweep,.kick .dot{animation:none}}
@@ -249,6 +256,7 @@ details#imp{margin:0 0 14px;padding:0}details#imp summary{cursor:pointer;padding
     <select class="in" id="sty" aria-label="Tipo"><option value="all">Todos os tipos</option><option value="0">OCR</option><option value="1">Facial</option><option value="2">360°</option><option value="3">Comum</option><option value="4">Outros</option></select>
     <select class="in" id="sso" aria-label="Ordenar"><option value="n">Ordenar: nº</option><option value="name">Ordenar: nome</option><option value="off">Offline primeiro</option></select>
     <button class="btn pri" data-go="mapa">Abrir mapa</button>
+    <button class="btn" id="addc">＋ Adicionar câmera</button>
     <button class="btn" id="csv" hidden>Exportar CSV</button>
   </div>
   <div class="bar" id="f-status">
@@ -275,18 +283,30 @@ details#imp{margin:0 0 14px;padding:0}details#imp summary{cursor:pointer;padding
   </div>
 </section>
 
+<div class="ed-bg" id="edbg" hidden><form class="ed" id="edf" novalidate>
+  <h3 id="edt">Editar câmera</h3>
+  <div class="row2"><label class="ef">Número<input id="ed-n" type="number" min="1" step="1" inputmode="numeric"></label>
+  <label class="ef">Tipo<select id="ed-t"></select></label></div>
+  <label class="ef">Nome<input id="ed-name" type="text" autocomplete="off" placeholder="Ex.: Pontal do Atalaia 1"></label>
+  <label class="ef">Coordenadas (cole do Google Maps)<input id="ed-xy" type="text" autocomplete="off" inputmode="decimal" placeholder="-22.966000, -42.026000"></label>
+  <div class="hint">No Google Maps, clique com o botão direito no local e clique nos números para copiar. Pode colar aqui.</div>
+  <label class="ef">Status<select id="ed-on"><option value="1">Online</option><option value="0">Offline</option></select></label>
+  <div class="err" id="ed-err" role="alert"></div>
+  <div class="acts"><button type="submit" class="btn pri" id="ed-save">Salvar</button><button type="button" class="btn" id="ed-cancel">Cancelar</button><button type="button" class="btn danger" id="ed-del">Excluir</button></div>
+</form></div>
 <script>
 const TYPES=[["OCR","#22D3EE"],["Facial","#A78BFA"],["360°","#F5B84B"],["Comum","#34D399"],["Outros","#F472B6"]];
 const LATM=110900,LONM=102500,LAT0=-22.97,LON0=-42.026;
 const cams=[],STAT={};
 function loadList(arr){
-  cams.length=0;arr.forEach((r,i)=>cams.push({id:i+1,lat:+r.a,lon:+r.o,t:+r.t,name:String(r.n),on:STAT[i+1]!==false}));
+  cams.length=0;const used=new Set();arr.forEach((r,i)=>{let id=+r.i||i+1;while(used.has(id))id++;used.add(id);cams.push({id,lat:+r.a,lon:+r.o,t:+r.t,name:String(r.n),on:STAT[id]!==false})});cams.sort((a,b)=>a.id-b.id);
   if(typeof rebuildMarkers==='function')rebuildMarkers();
   if(map&&!mapReady&&cams.length&&!$('v-mapa').hidden){mapReady=true;fit(cams,true)}
   refresh();
 }
 const cn=c=>c.name.indexOf('Sem nome')===0?'Câmera '+String(c.id).padStart(3,'0'):c.name;
 const pad=n=>String(n).padStart(3,'0');
+const byId=id=>cams.find(c=>c.id===+id);
 const norm=s=>s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
 const $=id=>document.getElementById(id);
 const CAMP=new Path2D('M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z');
@@ -329,13 +349,14 @@ function renderPanel(){
   if(!list.length)g.innerHTML='<div class="emp">'+(cams.length?'Nenhuma câmera encontrada.':'Nenhuma câmera cadastrada ainda.')+'</div>';
   const fr=document.createDocumentFragment();
   list.forEach(c=>{const col=TYPES[c.t][1],d=document.createElement('div');d.className='r'+(c.on?'':' offr');d.style.setProperty('--tc',col);
-    d.innerHTML='<span class="r-n">'+pad(c.id)+'</span><span class="r-name"></span><span class="r-type"><i style="background:'+col+'"></i>'+TYPES[c.t][0]+'</span><button class="sw2'+(c.on?'':' off')+'" role="switch" aria-checked="'+c.on+'" data-tog="'+c.id+'"><span class="trk"><span class="knob"></span></span><span class="lab">'+(c.on?'Online':'Offline')+'</span></button><button class="lk" data-map="'+c.id+'">Ver no mapa →</button>';
+    d.innerHTML='<span class="r-n">'+pad(c.id)+'</span><span class="r-name"></span><span class="r-type"><i style="background:'+col+'"></i>'+TYPES[c.t][0]+'</span><button class="sw2'+(c.on?'':' off')+'" role="switch" aria-checked="'+c.on+'" data-tog="'+c.id+'"><span class="trk"><span class="knob"></span></span><span class="lab">'+(c.on?'Online':'Offline')+'</span></button><span class="lkw"><button class="lk" data-edit="'+c.id+'">✎ Editar</button><button class="lk" data-map="'+c.id+'">Mapa →</button></span>';
     const nm=d.querySelector('.r-name');nm.textContent=cn(c);if(c.name.indexOf('Sem nome')===0)nm.classList.add('sn');fr.appendChild(d)});
   g.appendChild(fr);$('lcount').textContent='Mostrando '+list.length+' de '+cams.length+' câmeras';
 }
 document.addEventListener('click',e=>{
-  const t=e.target.closest('[data-tog]');if(t){const c=cams[t.dataset.tog-1];if(c){c.on=!c.on;setStatus(c);renderPanel();if(sel===c)sheet();draw()}return}
-  const m=e.target.closest('[data-map]');if(m){go('mapa');select(cams[m.dataset.map-1],true)}
+  const t=e.target.closest('[data-tog]');if(t){const c=byId(t.dataset.tog);if(c){c.on=!c.on;setStatus(c);renderPanel();if(sel===c)sheet();draw()}return}
+  const ed=e.target.closest('[data-edit]');if(ed){openEd(byId(ed.dataset.edit));return}
+  const m=e.target.closest('[data-map]');if(m){go('mapa');select(byId(m.dataset.map),true)}
 });
 $('q').addEventListener('input',renderPanel);
 $('sty').addEventListener('change',e=>{tyF=e.target.value;renderPanel()});
@@ -400,15 +421,16 @@ function sheet(){
   const s=$('sheet');if(!sel){s.hidden=true;return}
   const c=sel;s.hidden=false;s.textContent='';
   const lat=c.lat.toFixed(6),lon=c.lon.toFixed(6);
-  s.innerHTML='<button class="x" aria-label="Fechar">×</button><div class="n tag sg">Nº '+pad(c.id)+' · '+TYPES[c.t][0]+'</div><h3></h3><div class="coord">'+lat+', '+lon+'</div><div class="acts"><button class="sw'+(c.on?'':' off')+'"><b></b>'+(c.on?'Online':'Offline')+'</button><button class="btn" id="cp">Copiar coordenadas</button><a class="btn" target="_blank" rel="noopener" style="color:inherit;text-decoration:none" href="https://www.google.com/maps?q='+lat+','+lon+'">Google Maps ↗</a></div>';
+  s.innerHTML='<button class="x" aria-label="Fechar">×</button><div class="n tag sg">Nº '+pad(c.id)+' · '+TYPES[c.t][0]+'</div><h3></h3><div class="coord">'+lat+', '+lon+'</div><div class="acts"><button class="sw'+(c.on?'':' off')+'"><b></b>'+(c.on?'Online':'Offline')+'</button><button class="btn" id="cp">Copiar coordenadas</button><button class="btn" id="ed">✎ Editar</button><a class="btn" target="_blank" rel="noopener" style="color:inherit;text-decoration:none" href="https://www.google.com/maps?q='+lat+','+lon+'">Google Maps ↗</a></div>';
   s.querySelector('h3').textContent=cn(c);
   s.querySelector('.x').onclick=()=>{sel=null;sheet();draw()};
   s.querySelector('.sw').onclick=()=>{c.on=!c.on;setStatus(c);sheet();draw()};
+  s.querySelector('#ed').onclick=()=>openEd(c);
   s.querySelector('#cp').onclick=e=>{const b=e.currentTarget,txt=lat+', '+lon;const ok=()=>{b.textContent='Copiado ✓';setTimeout(()=>b.textContent='Copiar coordenadas',1500)};
     (navigator.clipboard?navigator.clipboard.writeText(txt):Promise.reject()).then(ok).catch(()=>{const r=document.createRange();r.selectNodeContents(s.querySelector('.coord'));const sl=getSelection();sl.removeAllRanges();sl.addRange(r);b.textContent='Selecionado'})};
 }
 (function(){const w=$('tchips');TYPES.forEach((t,i)=>{const b=document.createElement('button');b.className='chip';b.setAttribute('aria-pressed','true');b.innerHTML='<i style="background:'+t[1]+'"></i>'+t[0];b.onclick=()=>{hidden.has(i)?hidden.delete(i):hidden.add(i);b.setAttribute('aria-pressed',!hidden.has(i));draw()};w.appendChild(b)});
-  const o=document.createElement('button');o.className='chip';o.setAttribute('aria-pressed','false');o.innerHTML='<i style="background:#FB7185"></i>Só offline';o.onclick=()=>{offOnly=!offOnly;o.setAttribute('aria-pressed',offOnly);draw()};w.appendChild(o)})();
+  const o=document.createElement('button');o.className='chip';o.setAttribute('aria-pressed','false');o.innerHTML='<i style="background:#FB7185"></i>Só offline';o.onclick=()=>{offOnly=!offOnly;o.setAttribute('aria-pressed',offOnly);draw()};w.appendChild(o);const ad=document.createElement('button');ad.className='chip';ad.innerHTML='＋ Adicionar câmera';ad.onclick=()=>openEd(null,map?map.getCenter():null);w.appendChild(ad)})();
 $('ms').addEventListener('input',e=>{const q=norm(e.target.value.trim()),r=$('res');r.textContent='';if(!q){r.hidden=true;return}
   const m=cams.filter(c=>c.name.indexOf('Sem nome')!==0&&norm(c.name).indexOf(q)>=0||pad(c.id)===q.padStart(3,'0')&&/^\d+$/.test(q)).slice(0,8);
   r.hidden=!m.length;m.forEach(c=>{const b=document.createElement('button');b.textContent=pad(c.id)+' · '+cn(c);b.onclick=()=>{r.hidden=true;$('ms').value='';select(c,false)};r.appendChild(b)})});
@@ -431,7 +453,7 @@ function refresh(){kpis();if(!$('v-painel').hidden)renderPanel();if(sel)sheet();
     if(unsub){unsub();unsub=null}
     if(unsub2){unsub2();unsub2=null}
     if(u)unsub2=db.collection('config').doc('cameras').onSnapshot(d=>{loadList(d.exists&&Array.isArray(d.data().list)?d.data().list:[]);if(!cams.length)$('imp').open=true},e=>{$('fbwarn').hidden=false;$('fbwarn').textContent='Erro ao ler a lista de câmeras: '+e.message});
-    if(u)unsub=db.collection('cameras').onSnapshot(s=>{s.forEach(d=>{STAT[+d.id]=d.data().on!==false;const c=cams[+d.id-1];if(c)c.on=STAT[+d.id]});refresh()},e=>{$('fbwarn').hidden=false;$('fbwarn').textContent='Erro ao ler o status: '+e.message});
+    if(u)unsub=db.collection('cameras').onSnapshot(s=>{s.forEach(d=>{STAT[+d.id]=d.data().on!==false;const c=byId(d.id);if(c)c.on=STAT[+d.id]});refresh()},e=>{$('fbwarn').hidden=false;$('fbwarn').textContent='Erro ao ler o status: '+e.message});
   });
   $('lt').onclick=()=>{const p=$('lp'),h=p.type==='password';p.type=h?'text':'password';$('lt').textContent=h?'ocultar':'mostrar'};
   $('lf').addEventListener('submit',e=>{e.preventDefault();const m=$('lmsg'),em=$('le').value.trim(),pw=$('lp').value;m.textContent='';
@@ -445,6 +467,54 @@ function refresh(){kpis();if(!$('v-painel').hidden)renderPanel();if(sel)sheet();
       catch(x){$('impmsg').textContent='Arquivo inválido: '+x.message}};r.readAsText(f);e.target.value=''});
   $('login').hidden=true;
 })();
+
+/* ---------- edição de câmeras ---------- */
+let edCam=null;
+function saveList(){
+  if(!db)return Promise.reject(new Error('sem conexão com o banco'));
+  const list=cams.map(c=>({i:c.id,a:c.lat,o:c.lon,t:c.t,n:c.name}));
+  return db.collection('config').doc('cameras').set({list,updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
+}
+function openEd(c,pos){
+  edCam=c;$('ed-err').textContent='';
+  const sl=$('ed-t');if(!sl.options.length)TYPES.forEach((t,i)=>sl.add(new Option(t[0],i)));
+  if(c){$('edt').textContent='Editar câmera';$('ed-n').value=c.id;sl.value=c.t;$('ed-name').value=c.name.indexOf('Sem nome')===0?'':c.name;$('ed-xy').value=c.lat.toFixed(6)+', '+c.lon.toFixed(6);$('ed-on').value=c.on?'1':'0';$('ed-del').hidden=false}
+  else{const mx=cams.reduce((m,x)=>Math.max(m,x.id),0)+1;$('edt').textContent='Nova câmera';$('ed-n').value=mx;sl.value=3;$('ed-name').value='';
+    const p=pos||{lat:-22.9667,lng:-42.0278};$('ed-xy').value=p.lat.toFixed(6)+', '+p.lng.toFixed(6);$('ed-on').value='1';$('ed-del').hidden=true}
+  $('edbg').hidden=false;setTimeout(()=>$('ed-name').focus(),50);
+}
+function closeEd(){$('edbg').hidden=true;edCam=null}
+$('ed-cancel').onclick=closeEd;
+$('edbg').addEventListener('mousedown',e=>{if(e.target===$('edbg'))closeEd()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('edbg').hidden)closeEd()});
+$('addc').onclick=()=>openEd(null);
+$('edf').addEventListener('submit',e=>{
+  e.preventDefault();const er=$('ed-err');er.textContent='';
+  const id=Math.round(+$('ed-n').value),nm=$('ed-name').value.trim(),t=+$('ed-t').value,on=$('ed-on').value==='1';
+  const m=$('ed-xy').value.replace(/[;°]/g,' ').match(/-?\d+(?:[.,]\d+)?/g);
+  if(!(id>=1)){er.textContent='Digite um número válido.';return}
+  if(cams.some(x=>x.id===id&&x!==edCam)){er.textContent='Já existe a câmera nº '+pad(id)+'. Escolha outro número.';return}
+  if(!m||m.length<2){er.textContent='Coordenadas inválidas. Use o formato: -22.966000, -42.026000';return}
+  const lat=parseFloat(m[0].replace(',','.')),lon=parseFloat(m[1].replace(',','.'));
+  if(!(lat>=-90&&lat<=90&&lon>=-180&&lon<=180)){er.textContent='Coordenadas fora do intervalo.';return}
+  const b=$('ed-save');b.disabled=true;b.textContent='Salvando…';
+  const oldId=edCam&&edCam.id;let c=edCam;
+  if(c){c.id=id;c.name=nm||('Sem nome '+pad(id));c.t=t;c.lat=lat;c.lon=lon;c.on=on}
+  else{c={id,name:nm||('Sem nome '+pad(id)),t,lat,lon,on};cams.push(c)}
+  cams.sort((x,y)=>x.id-y.id);STAT[id]=on;
+  const ops=[saveList()];
+  if(db){const col=db.collection('cameras');
+    ops.push(col.doc(String(id)).set({on,at:firebase.firestore.FieldValue.serverTimestamp(),by:(auth.currentUser&&auth.currentUser.email)||''},{merge:true}));
+    if(oldId&&oldId!==id){delete STAT[oldId];ops.push(col.doc(String(oldId)).delete())}}
+  Promise.all(ops).then(()=>{closeEd();rebuildMarkers();refresh();if(map&&!$('v-mapa').hidden)select(c,true)}).catch(x=>{er.textContent='Não foi possível salvar: '+x.message}).then(()=>{b.disabled=false;b.textContent='Salvar'});
+});
+$('ed-del').onclick=()=>{
+  const c=edCam;if(!c)return;const b=$('ed-del');
+  if(b.dataset.arm!=='1'){b.dataset.arm='1';b.textContent='Confirmar exclusão';setTimeout(()=>{b.dataset.arm='';b.textContent='Excluir'},4000);return}
+  b.dataset.arm='';b.textContent='Excluir';
+  cams.splice(cams.indexOf(c),1);if(sel===c)sel=null;delete STAT[c.id];
+  Promise.all([saveList(),db.collection('cameras').doc(String(c.id)).delete()]).then(()=>{closeEd();rebuildMarkers();refresh()}).catch(x=>{$('ed-err').textContent='Não foi possível excluir: '+x.message})
+};
 
 go(location.hash.slice(1));
 if('serviceWorker' in navigator)window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{})});
