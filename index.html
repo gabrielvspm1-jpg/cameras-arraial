@@ -18,6 +18,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="firebase-config.js"></script>
+<script src="relatorio.js"></script>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap">
 <style>
 :root{--bg:#070B14;--panel:#0B1220;--panel2:#0F1A2E;--line:#1B2A44;--fg:#E6EDF7;--fg2:#8FA0B8;--cy:#22D3EE;--on:#34D399;--off:#FB7185;--amber:#F5B84B;--vio:#A78BFA;--pink:#F472B6;color-scheme:dark}
@@ -266,7 +267,7 @@ details#imp{margin:0 0 14px;padding:0}details#imp summary{cursor:pointer;padding
     <select class="in" id="sso" aria-label="Ordenar"><option value="n">Ordenar: nº</option><option value="name">Ordenar: nome</option><option value="off">Offline primeiro</option></select>
     <button class="btn pri" data-go="mapa">Abrir mapa</button>
     <button class="btn" id="addc">＋ Adicionar câmera</button>
-    <button class="btn" id="csv" hidden>⬇ Exportar Excel</button>
+    <button class="btn" id="csv" hidden>Gerar relatório</button>
   </div>
   <div class="bar" id="f-status">
     <button class="chip" data-st="all" aria-pressed="true">Todas</button>
@@ -306,7 +307,7 @@ details#imp{margin:0 0 14px;padding:0}details#imp summary{cursor:pointer;padding
 <script>
 const TYPES=[["OCR","#22D3EE"],["Facial","#A78BFA"],["360°","#F5B84B"],["Comum","#34D399"],["Outros","#F472B6"]];
 const LATM=110900,LONM=102500,LAT0=-22.97,LON0=-42.026;
-const cams=[],STAT={};
+const cams=[],STAT={},ATS={};
 function loadList(arr){
   cams.length=0;const used=new Set();arr.forEach((r,i)=>{let id=+r.i||i+1;while(used.has(id))id++;used.add(id);cams.push({id,lat:+r.a,lon:+r.o,t:+r.t,name:String(r.n),on:STAT[id]!==false})});cams.sort((a,b)=>a.id-b.id);
   if(typeof rebuildMarkers==='function')rebuildMarkers();
@@ -373,9 +374,11 @@ $('sso').addEventListener('change',e=>{soF=e.target.value;renderPanel()});
 $('f-status').addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b)return;stF=b.dataset.st;[].forEach.call($('f-status').children,x=>x.setAttribute('aria-pressed',x===b));renderPanel()});
 (function(){const f=()=>{$('clk').textContent=new Date().toLocaleString('pt-BR',{weekday:'short',day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit',second:'2-digit',timeZone:'America/Sao_Paulo'}).replace(/\./g,'')};f();setInterval(f,1000);
   const im=new Image();im.onload=()=>$('hero').style.setProperty('--hero-img','url(banner.jpg)');im.src='banner.jpg'})();
-(function(){const b=$('csv');b.hidden=false;b.onclick=()=>{const q=v=>'"'+String(v).replace(/"/g,'""')+'"',f=n=>n.toFixed(6).replace('.',',');
-  const rows=['Nº;Nome;Tipo;Status;Latitude;Longitude;Google Maps'].concat(cams.map(c=>[pad(c.id),q(cn(c)),TYPES[c.t][0],c.on?'Online':'Offline',q(f(c.lat)),q(f(c.lon)),'https://www.google.com/maps?q='+c.lat.toFixed(6)+','+c.lon.toFixed(6)].join(';')));
-  const u=URL.createObjectURL(new Blob(['\ufeff'+rows.join('\r\n')],{type:'text/csv;charset=utf-8'}));const a=document.createElement('a');a.href=u;a.download='cameras-arraial-do-cabo-'+new Date().toISOString().slice(0,10)+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(u),1500)}})();
+(function(){const b=$('csv');b.hidden=false;b.onclick=()=>{
+  if(typeof gerarRelatorioPDF==='undefined'){alert('Não foi possível carregar o gerador de relatório. Atualize a página (Ctrl+Shift+R).');return}
+  if(!cams.length){alert('Não há câmeras cadastradas.');return}
+  const u8=gerarRelatorioPDF(cams,TYPES,ATS,(auth&&auth.currentUser&&auth.currentUser.email)||'',pad,cn);
+  const u=URL.createObjectURL(new Blob([u8],{type:'application/pdf'}));const a=document.createElement('a');a.href=u;a.download='relatorio-cameras-arraial-do-cabo-'+new Date().toLocaleDateString('en-CA',{timeZone:'America/Sao_Paulo'})+'.pdf';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000)}})();
 
 /* ---------- mapa (Leaflet) ---------- */
 let map=null,cluster=null,mk={},sel=null,hidden=new Set(),offOnly=false,layerI=0,baseLayers=[];
@@ -464,7 +467,7 @@ function refresh(){kpis();if(!$('v-painel').hidden)renderPanel();if(sel)sheet();
     if(unsub){unsub();unsub=null}
     if(unsub2){unsub2();unsub2=null}
     if(u)unsub2=db.collection('config').doc('cameras').onSnapshot(d=>{loadList(d.exists&&Array.isArray(d.data().list)?d.data().list:[]);if(!cams.length)$('imp').open=true},e=>{$('fbwarn').hidden=false;$('fbwarn').textContent='Erro ao ler a lista de câmeras: '+e.message});
-    if(u)unsub=db.collection('cameras').onSnapshot(s=>{s.forEach(d=>{STAT[+d.id]=d.data().on!==false;const c=byId(d.id);if(c)c.on=STAT[+d.id]});refresh()},e=>{$('fbwarn').hidden=false;$('fbwarn').textContent='Erro ao ler o status: '+e.message});
+    if(u)unsub=db.collection('cameras').onSnapshot(s=>{s.forEach(d=>{STAT[+d.id]=d.data().on!==false;{const t=d.data().at;ATS[+d.id]=t&&t.toDate?t.toDate():null}const c=byId(d.id);if(c)c.on=STAT[+d.id]});refresh()},e=>{$('fbwarn').hidden=false;$('fbwarn').textContent='Erro ao ler o status: '+e.message});
   });
   $('lt').onclick=()=>{const p=$('lp'),h=p.type==='password';p.type=h?'text':'password';$('lt').textContent=h?'ocultar':'mostrar'};
   $('lf').addEventListener('submit',e=>{e.preventDefault();const m=$('lmsg'),em=$('le').value.trim(),pw=$('lp').value;m.textContent='';
