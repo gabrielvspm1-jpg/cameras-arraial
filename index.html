@@ -54,6 +54,14 @@ button{font:inherit;color:inherit;cursor:pointer}
 #sheet .x{z-index:2;background:rgba(5,9,20,.72);border-radius:999px;width:32px;height:32px;line-height:30px}
 .fw img{width:100%;height:240px;object-fit:contain;background:#05080f;border-radius:12px;margin-bottom:10px;display:block;cursor:zoom-in}
 #lb{position:fixed;inset:0;z-index:4000;background:rgba(2,4,10,.94);display:grid;place-items:center;padding:12px;cursor:zoom-out}#lb img{max-width:100%;max-height:100%;object-fit:contain;border-radius:8px}#lb span{position:fixed;top:max(14px,env(safe-area-inset-top,0px));right:16px;color:#fff;font-size:30px;line-height:1}
+.zleg{left:10px;top:10px;width:min(330px,calc(100% - 70px));max-height:calc(100% - 20px);overflow:auto;background:rgba(11,18,32,.94);border:1px solid var(--line);border-radius:14px;backdrop-filter:blur(8px);padding:6px 10px 10px}
+.zlt{width:100%;display:flex;justify-content:space-between;align-items:center;background:none;border:0;color:var(--fg);font:600 13px Inter,sans-serif;padding:8px 2px}
+.zr{display:flex;align-items:center;gap:8px;padding:5px 2px;font-size:12.5px;cursor:pointer}.zr input{width:auto;height:auto;flex:none;margin:0}
+.zr i{width:13px;height:13px;border-radius:4px;flex:none;border:1px solid rgba(255,255,255,.35)}.zr b{font-weight:500;flex:1;min-width:0}.zr em{font-style:normal;color:var(--fg2);font-size:11px;white-space:nowrap}
+.zsep{border-top:1px solid var(--line);margin:6px 0}.zbt{display:flex;gap:6px;margin:4px 0 6px}.zbt button{flex:1;padding:6px;border-radius:8px;border:1px solid var(--line);background:var(--panel2);color:var(--fg);font-size:12px}
+.zinfo{font-size:12.5px;color:var(--fg2);margin:-2px 0 10px;line-height:1.5}.zinfo b{color:var(--fg);font-weight:600}
+#zmap{position:absolute;inset:0;z-index:0;background:#e8eaed}
+.leaflet-popup-content{font-size:13px;line-height:1.45;margin:10px 12px}
 .logo{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:linear-gradient(135deg,var(--cy),var(--vio));color:#04101c}
 .brand small{display:block;font:500 10px Inter;letter-spacing:.18em;color:var(--fg2);text-transform:uppercase}
 .tabs{display:flex;gap:4px;margin-left:auto;background:var(--panel);border:1px solid var(--line);padding:4px;border-radius:12px}
@@ -218,7 +226,7 @@ details#imp{margin:0 0 14px;padding:0}details#imp summary{cursor:pointer;padding
   <div class="brand"><div class="logo"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3.5"/></svg></div>
     <div>Central de câmeras<small>Mobilidade Urbana · Arraial do Cabo</small></div></div>
   <div class="hd-r"><div class="clock" id="clk"></div><div class="usr" id="usrw" hidden><i></i><span id="usr"></span></div><button class="btn sm" id="snd" title="Alerta sonoro quando uma câmera ficar offline">Som: ligado</button><button class="btn sm" id="out" hidden>Sair</button></div>
-  <div class="tabs" role="tablist"><button role="tab" id="t-painel" aria-selected="true" data-go="painel">Painel</button><button role="tab" id="t-mapa" aria-selected="false" data-go="mapa">Mapa</button></div>
+  <div class="tabs" role="tablist"><button role="tab" id="t-painel" aria-selected="true" data-go="painel">Painel</button><button role="tab" id="t-mapa" aria-selected="false" data-go="mapa">Mapa</button><button role="tab" id="t-zona" aria-selected="false" data-go="zona">Zoneamento</button></div>
 </div>
 
 <div id="login" hidden><div class="lg-bg"></div>
@@ -300,6 +308,14 @@ details#imp{margin:0 0 14px;padding:0}details#imp summary{cursor:pointer;padding
   </div>
 </section>
 
+<section class="view" id="v-zona" hidden>
+  <div class="mapwrap" id="zw">
+    <div id="zmap" aria-label="Mapa de zoneamento do município"></div>
+    <div class="ov zoom"><button id="zzi" aria-label="Aproximar">+</button><button id="zzo" aria-label="Afastar">−</button><button id="zzf" aria-label="Enquadrar o município" style="font-size:15px">⤢</button><button id="zzl" aria-label="Trocar camada do mapa" style="font-size:11px;font-weight:600">Mapa</button></div>
+    <div class="ov zleg" id="zleg"><button class="zlt" id="zlt" aria-expanded="true">Camadas do zoneamento <span id="zlc">▾</span></button><div id="zlb"></div></div>
+  </div>
+</section>
+
 <div id="lb" hidden><img alt="Foto da câmera"><span>×</span></div>
 <div id="net" hidden role="status"></div><div id="toast" hidden role="alert"></div>
 <div class="ed-bg" id="edbg" hidden><form class="ed" id="edf" novalidate>
@@ -336,11 +352,11 @@ const LENS=new Path2D();LENS.arc(12,13,3.5,0,Math.PI*2);
 /* ---------- navegação ---------- */
 let mapReady=false;
 function go(v){
-  if(v!=='mapa')v='painel';
-  $('v-painel').hidden=v!=='painel';$('v-mapa').hidden=v!=='mapa';
-  $('t-painel').setAttribute('aria-selected',v==='painel');$('t-mapa').setAttribute('aria-selected',v==='mapa');
+  if(v!=='mapa'&&v!=='zona')v='painel';
+  $('v-painel').hidden=v!=='painel';$('v-mapa').hidden=v!=='mapa';$('v-zona').hidden=v!=='zona';
+  ['painel','mapa','zona'].forEach(x=>$('t-'+x).setAttribute('aria-selected',x===v));
   if(location.hash!=='#'+v)history.replaceState(null,'','#'+v);
-  if(v==='mapa'){if(ensureMap()){map.invalidateSize();if(!mapReady&&cams.length){mapReady=true;fit(cams,true)}draw()}} else renderPanel();
+  if(v==='mapa'){if(ensureMap()){map.invalidateSize();if(!mapReady&&cams.length){mapReady=true;fit(cams,true)}draw()}} else if(v==='zona')ensureZMap(); else renderPanel();
 }
 document.addEventListener('click',e=>{const g=e.target.closest('[data-go]');if(g)go(g.dataset.go)});
 addEventListener('hashchange',()=>go(location.hash.slice(1)));
@@ -446,8 +462,9 @@ function sheet(){
   const s=$('sheet');if(!sel){s.hidden=true;return}
   const c=sel;s.hidden=false;s.textContent='';
   const lat=c.lat.toFixed(6),lon=c.lon.toFixed(6);
-  s.innerHTML='<button class="x" aria-label="Fechar">×</button><div class="fw" id="fw"></div><div class="n tag sg">Nº '+pad(c.id)+' · '+TYPES[c.t][0]+'</div><h3></h3><div class="coord">'+lat+', '+lon+'</div><div class="acts"><button class="sw'+(c.on?'':' off')+'"><b></b>'+(c.on?'Online':'Offline')+'</button><button class="btn" id="cp">Copiar coordenadas</button><button class="btn" id="ed">✎ Editar</button><a class="btn" target="_blank" rel="noopener" style="color:inherit;text-decoration:none" href="https://www.google.com/maps?q='+lat+','+lon+'">Google Maps ↗</a></div>';
+  s.innerHTML='<button class="x" aria-label="Fechar">×</button><div class="fw" id="fw"></div><div class="n tag sg">Nº '+pad(c.id)+' · '+TYPES[c.t][0]+'</div><h3></h3><div class="coord">'+lat+', '+lon+'</div><div class="zinfo" id="zinfo"></div><div class="acts"><button class="sw'+(c.on?'':' off')+'"><b></b>'+(c.on?'Online':'Offline')+'</button><button class="btn" id="cp">Copiar coordenadas</button><button class="btn" id="ed">✎ Editar</button><a class="btn" target="_blank" rel="noopener" style="color:inherit;text-decoration:none" href="https://www.google.com/maps?q='+lat+','+lon+'">Google Maps ↗</a></div>';
   s.querySelector('h3').textContent=cn(c);
+  loadZon().then(d=>{const z=s.querySelector('#zinfo');if(d&&z&&sel===c)z.innerHTML=zinfoHTML(c)});
   getPhoto(c.id).then(d=>{const w=s.querySelector('#fw');if(d&&w&&sel===c){const i=new Image();i.src=d;i.alt='Foto da câmera';i.title='Toque para ampliar';i.onclick=()=>{$('lb').querySelector('img').src=d;$('lb').hidden=false};w.textContent='';w.appendChild(i)}});
   s.querySelector('.x').onclick=()=>{sel=null;sheet();draw()};
   s.querySelector('.sw').onclick=()=>{c.on=!c.on;setStatus(c);sheet();draw()};
@@ -464,7 +481,7 @@ $('ms').addEventListener('input',e=>{const q=norm(e.target.value.trim()),r=$('re
 /* ---------- Firebase ---------- */
 let db=null,auth=null,statLoaded=false;
 function setStatus(c){if(!c.on)beep();if(!db)return;const p=track(db.collection('cameras').doc(String(c.id)).set({on:c.on,at:firebase.firestore.FieldValue.serverTimestamp(),by:(auth.currentUser&&auth.currentUser.email)||''},{merge:true}));p.catch(e=>toast('Não foi possível salvar: '+e.message))}
-function refresh(){kpis();if(!$('v-painel').hidden)renderPanel();if(sel)sheet();draw()}
+function refresh(){if(typeof zRefresh==='function')zRefresh();kpis();if(!$('v-painel').hidden)renderPanel();if(sel)sheet();draw()}
 (function(){
   const cfg=window.FIREBASE_CONFIG;
   if(typeof firebase==='undefined'||!cfg||!cfg.apiKey||cfg.apiKey.indexOf('COLE')===0){
@@ -581,6 +598,62 @@ $('ed-del').onclick=()=>{
   delete PH[c.id];track(Promise.all([saveList(),db.collection('cameras').doc(String(c.id)).delete(),fotoRef(c.id).delete()])).catch(x=>toast('Não foi possível excluir: '+x.message));
   closeEd();rebuildMarkers();refresh()
 };
+
+/* ---------- zoneamento ---------- */
+let zAll=null,zmap=null,ZD=null,zPromise=null,zGroups={},zBair=null,zCam=null,zBase=[],zbI=0,zCamMk={};
+function loadZon(){if(!zPromise)zPromise=fetch('zoneamento.json').then(r=>{if(!r.ok)throw new Error('http '+r.status);return r.json()}).then(d=>{
+  const bb=g=>{let a=1e9,b=1e9,c=-1e9,e=-1e9;g.forEach(p=>p[0].forEach((v,i)=>{if(i%2){b=Math.min(b,v);e=Math.max(e,v)}else{a=Math.min(a,v);c=Math.max(c,v)}}));return [a,b,c,e]};
+  d.zonas.forEach(z=>z.f.forEach(f=>{f.b=bb(f.g)}));d.bairros.forEach(f=>{f.b=bb(f.g)});ZD=d;return d}).catch(e=>{zPromise=null;return null});return zPromise}
+function inRing(r,x,y){let ins=false;for(let i=0,j=r.length-2;i<r.length;j=i,i+=2){const xi=r[i],yi=r[i+1],xj=r[j],yj=r[j+1];if((yi>y)!==(yj>y)&&x<(xj-xi)*(y-yi)/(yj-yi)+xi)ins=!ins}return ins}
+function inFeat(f,lat,lon){const b=f.b;if(lon<b[0]||lon>b[2]||lat<b[1]||lat>b[3])return false;
+  return f.g.some(p=>inRing(p[0],lon,lat)&&!p.slice(1).some(h=>inRing(h,lon,lat)))}
+const zcache={};
+function zonesOf(c){const k=c.id+'|'+c.lat+'|'+c.lon;if(zcache[k])return zcache[k];if(!ZD)return {zs:[],b:null};
+  const zs=[];ZD.zonas.forEach(z=>z.f.forEach(f=>{if(inFeat(f,c.lat,c.lon))zs.push({k:z.k,n:f.n,nome:z.nome,cor:z.cor})}));
+  const b=ZD.bairros.find(f=>inFeat(f,c.lat,c.lon));return zcache[k]={zs,b:b?b.n:null}}
+const esc2=t=>String(t).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+function zinfoHTML(c){const r=zonesOf(c),p=[];if(r.b)p.push('Bairro: <b>'+esc2(r.b)+'</b>');if(r.zs.length)p.push('Zona: '+r.zs.map(z=>'<b>'+esc2(z.n)+'</b>').join(', '));return p.join(' · ')}
+function zRefresh(){if(!zmap||!ZD)return;zDrawCams();zCounts()}
+function zDrawCams(){if(!zCam)return;zCam.clearLayers();zCamMk={};
+  cams.forEach(c=>{const m=L.circleMarker([c.lat,c.lon],{radius:5.5,color:'#fff',weight:1.5,fillColor:c.on?'#34D399':'#FB7185',fillOpacity:1});
+    m.bindTooltip(pad(c.id)+' · '+cn(c),{direction:'top'});
+    m.on('click',()=>{m.unbindPopup();m.bindPopup('<b>'+esc2(cn(c))+'</b><br>Nº '+pad(c.id)+' · '+TYPES[c.t][0]+' · '+(c.on?'Online':'Offline')+(zinfoHTML(c)?'<br>'+zinfoHTML(c):'')).openPopup()});zCam.addLayer(m)})}
+function zCounts(){ZD.zonas.forEach(z=>{const n=cams.filter(c=>zonesOf(c).zs.some(q=>q.k===z.k)).length;const e=document.querySelector('[data-zc="'+z.k+'"]');if(e)e.textContent=z.f.length+(z.f.length>1?' áreas':' área')+' · '+n+' câm.'})}
+function ensureZMap(){
+  if(zmap){setTimeout(()=>zmap.invalidateSize(),0);return}
+  if(typeof L==='undefined'){$('zmap').innerHTML='<p style="padding:24px;color:#333">Não foi possível carregar o mapa (biblioteca Leaflet). Verifique a conexão.</p>';return}
+  zmap=L.map('zmap',{zoomControl:false,minZoom:9,maxZoom:20,zoomSnap:.5}).setView([-22.96,-42.1],11);
+  const osm=L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxNativeZoom:19,maxZoom:20,attribution:'© OpenStreetMap contributors'});
+  const sat=L.layerGroup([L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxNativeZoom:19,maxZoom:20,attribution:'Imagens © Esri'}),L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',{maxNativeZoom:19,maxZoom:20})]);
+  zBase=[['Mapa',osm],['Satélite',sat]];osm.addTo(zmap);L.control.scale({imperial:false,position:'bottomleft'}).addTo(zmap);
+  $('zzi').onclick=()=>zmap.zoomIn();$('zzo').onclick=()=>zmap.zoomOut();
+  $('zzf').onclick=()=>{if(zAll)zmap.fitBounds(zAll.getBounds(),{padding:[20,20]})};
+  $('zzl').onclick=()=>{zmap.removeLayer(zBase[zbI][1]);zbI=(zbI+1)%zBase.length;zBase[zbI][1].addTo(zmap);zBase[zbI][1].bringToBack&&zBase[zbI][1].bringToBack();$('zzl').textContent=zBase[zbI][0]};
+  $('zlt').onclick=()=>{const o=$('zlb').hidden;$('zlb').hidden=!o;$('zlt').setAttribute('aria-expanded',o);$('zlc').textContent=o?'▾':'▸'};
+  if(innerWidth<700){$('zlb').hidden=true;$('zlc').textContent='▸';$('zlt').setAttribute('aria-expanded',false)}
+  $('zlb').innerHTML='<p style="color:var(--fg2);font-size:12px;margin:4px 0">Carregando zoneamento…</p>';
+  loadZon().then(d=>{
+    if(!d){$('zlb').innerHTML='<p style="color:var(--amber);font-size:12.5px">Não foi possível carregar os dados de zoneamento. Verifique a conexão e abra a aba de novo.</p>';return}
+    zmap.createPane('pB');zmap.getPane('pB').style.zIndex=410;zmap.createPane('pZ');zmap.getPane('pZ').style.zIndex=420;
+    zBair=L.featureGroup();
+    d.bairros.forEach(f=>f.g.forEach(g=>{const p=L.polygon(g.map(r=>{const o=[];for(let i=0;i<r.length;i+=2)o.push([r[i+1],r[i]]);return o}),{pane:'pB',color:'#fff',weight:1.4,dashArray:'5 4',fillColor:'#fff',fillOpacity:.02});p.bindTooltip(f.n,{sticky:true});zBair.addLayer(p)}));
+    zAll=L.featureGroup();
+    d.zonas.forEach(z=>{const grp=L.featureGroup();zGroups[z.k]=grp;
+      z.f.forEach(f=>f.g.forEach(g=>{const p=L.polygon(g.map(r=>{const o=[];for(let i=0;i<r.length;i+=2)o.push([r[i+1],r[i]]);return o}),{pane:'pZ',color:z.cor,weight:1.6,fillColor:z.cor,fillOpacity:.38});
+        p.bindTooltip(f.n,{sticky:true});
+        p.on('click',e=>{const inside=cams.filter(c=>inFeat(f,c.lat,c.lon));p.unbindPopup();p.bindPopup('<b>'+esc2(f.n)+'</b><br>'+esc2(z.nome)+(f.d?'<br><i>'+esc2(f.d)+'</i>':'')+'<br>'+(inside.length?inside.length+' câmera(s): '+inside.slice(0,8).map(c=>pad(c.id)).join(', ')+(inside.length>8?'…':''):'Nenhuma câmera nesta área')).openPopup(e.latlng)});
+        grp.addLayer(p);zAll.addLayer(p)}));grp.addTo(zmap)});
+    zCam=L.layerGroup().addTo(zmap);zDrawCams();
+    zmap.fitBounds(zAll.getBounds(),{padding:[20,20]});
+    let h='<div class="zbt"><button id="zon">Mostrar todas</button><button id="zoff">Ocultar todas</button></div>';
+    d.zonas.forEach(z=>{h+='<label class="zr"><input type="checkbox" checked data-zk="'+z.k+'"><i style="background:'+z.cor+'"></i><b title="'+esc2(z.nome)+'">'+esc2(z.k)+' · '+esc2(z.nome.replace(/^Zona (de |do |da |especial de )?/i,''))+'</b><em data-zc="'+z.k+'"></em></label>'});
+    h+='<div class="zsep"></div><label class="zr"><input type="checkbox" id="zbx"><i style="background:transparent;border:1.5px dashed #fff"></i><b>Bairros (contornos)</b></label><label class="zr"><input type="checkbox" id="zcx" checked><i style="background:#34D399"></i><b>Câmeras</b></label>';
+    $('zlb').innerHTML=h;zCounts();
+    $('zlb').onchange=e=>{const t=e.target;if(t.dataset.zk){t.checked?zGroups[t.dataset.zk].addTo(zmap):zmap.removeLayer(zGroups[t.dataset.zk])}
+      else if(t.id==='zbx'){t.checked?zBair.addTo(zmap):zmap.removeLayer(zBair)}else if(t.id==='zcx'){t.checked?zCam.addTo(zmap):zmap.removeLayer(zCam)}};
+    $('zlb').onclick=e=>{const id=e.target.id;if(id==='zon'||id==='zoff'){const on=id==='zon';$('zlb').querySelectorAll('[data-zk]').forEach(x=>{x.checked=on;on?zGroups[x.dataset.zk].addTo(zmap):zmap.removeLayer(zGroups[x.dataset.zk])})}};
+    if(!$('v-zona').hidden)setTimeout(()=>zmap.invalidateSize(),0)});
+}
 
 go(location.hash.slice(1));netUI();
 if('serviceWorker' in navigator)window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{})});
