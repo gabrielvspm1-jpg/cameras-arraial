@@ -477,7 +477,7 @@ function sigOf(img){const cv=document.createElement('canvas');cv.width=cv.height
 function nccS(a,b,S){let best=-1;for(let dy=-S;dy<=S;dy++)for(let dx=-S;dx<=S;dx++){let n=0,sa=0,sb=0,saa=0,sbb=0,sab=0;for(let y=Math.max(0,-dy);y<SG-Math.max(0,dy);y++)for(let x=Math.max(0,-dx);x<SG-Math.max(0,dx);x++){const u=a[y*SG+x],v=b[(y+dy)*SG+x+dx];n++;sa+=u;sb+=v;saa+=u*u;sbb+=v*v;sab+=u*v}const va=saa-sa*sa/n,vb=sbb-sb*sb/n;if(va>1e-6&&vb>1e-6){const r=(sab-sa*sb/n)/Math.sqrt(va*vb);if(r>best)best=r}}return best}
 async function refSigs(extra){const refs=[];const add=async(key,cam,url)=>{if(!SIGC.has(key)){const i=await loadImg(url);SIGC.set(key,i?sigOf(i):null)}const g=SIGC.get(key);if(g)refs.push({cam,g})};
   for(let i=0;i<cams.length;i+=12)await Promise.all(cams.slice(i,i+12).map(c=>getPhoto(c.id).catch(()=>null)));
-  const seen=new Set();for(const id of Object.keys(FIXAS)){seen.add(+id);await add('f'+id,+id,FIXAS[id])}
+  const seen=new Set();if(!MIG)for(const id of Object.keys(FIXAS)){seen.add(+id);await add('f'+id,+id,FIXAS[id])}
   for(const id of Object.keys(PH)){if(PH[id]&&!seen.has(+id)){seen.add(+id);await add('p'+id+':'+PH[id].length,+id,PH[id])}}
   (extra||[]).forEach(r=>{if(r.cam)refs.push({cam:r.cam,g:r.g})});return refs}
 async function visualCands(d,monthRows){try{const q=await loadImg(d);if(!q)return[];const qs=sigOf(q);
@@ -614,7 +614,18 @@ $('ms').addEventListener('input',e=>{const q=norm(e.target.value.trim()),r=$('re
 /* ---------- Firebase ---------- */
 let db=null,auth=null,statLoaded=false;
 function setStatus(c){if(!c.on)beep();if(!db)return;const p=track(db.collection('cameras').doc(String(c.id)).set({on:c.on,at:firebase.firestore.FieldValue.serverTimestamp(),by:(auth.currentUser&&auth.currentUser.email)||''},{merge:true}));p.catch(e=>toast('Não foi possível salvar: '+e.message))}
-function refresh(){kpis();if(typeof fmStatus==='function')fmStatus();if(!$('v-painel').hidden)renderPanel();if(sel)sheet();draw()}
+let migTry=false;
+async function fotosMig(){if(MIG||migTry||!db||!cams.length||!auth.currentUser)return;migTry=true;
+  try{const ids=Object.keys(FIXAS).map(Number),orf=[];
+    for(const id of ids){if(!byId(id)){orf.push(id);continue}
+      const d=await Promise.race([fotoRef(id).get(),new Promise((_,r)=>setTimeout(()=>r(new Error('t')),8000))]);
+      if(d.exists&&d.data().d)continue;
+      const blob=await (await fetch(FIXAS[id])).blob(),du=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(blob)});
+      await fotoRef(id).set({d:du,at:firebase.firestore.FieldValue.serverTimestamp()});PH[id]=du}
+    try{localStorage.setItem('migFotos1','1')}catch(e){}MIG=true;
+    if(orf.length)toast('Atenção: as fotos fixas das câmeras '+orf.map(pad).join(', ')+' ficaram sem câmera, porque esses números não existem mais. Reenvie pelo app se precisar.')
+  }catch(e){setTimeout(()=>{migTry=false},60000)}}
+function refresh(){kpis();if(typeof fotosMig==='function')setTimeout(fotosMig,1500);if(typeof fmStatus==='function')fmStatus();if(!$('v-painel').hidden)renderPanel();if(sel)sheet();draw()}
 (function(){
   const cfg=window.FIREBASE_CONFIG;
   if(typeof firebase==='undefined'||!cfg||!cfg.apiKey||cfg.apiKey.indexOf('COLE')===0){
@@ -667,14 +678,16 @@ function track(p){pend++;netUI();const f=()=>{pend--;netUI()};p.then(f,f);return
 addEventListener('online',netUI);addEventListener('offline',netUI);
 let tT=0;function toast(m){const t=$('toast');t.textContent=m;t.hidden=false;clearTimeout(tT);tT=setTimeout(()=>{t.hidden=true},6000)}
 /* ---------- fotos ---------- */
+let MIG=false;try{MIG=localStorage.getItem('migFotos1')==='1'}catch(e){}
 const PH={};let edPhoto;
 const FIXAS={2:'fotos/002.jpg',3:'fotos/003.jpg',4:'fotos/004.jpg',5:'fotos/005.jpg',7:'fotos/007.jpg',8:'fotos/008.jpg',9:'fotos/009.jpg',10:'fotos/010.jpg',11:'fotos/011.jpg',13:'fotos/013.jpg',14:'fotos/014.jpg',15:'fotos/015.jpg',17:'fotos/017.jpg',18:'fotos/018.jpg',30:'fotos/030.jpg',31:'fotos/031.jpg',35:'fotos/035.jpg',36:'fotos/036.jpg',37:'fotos/037.jpg',38:'fotos/038.jpg',39:'fotos/039.jpg',40:'fotos/040.jpg',41:'fotos/041.jpg',42:'fotos/042.jpg',43:'fotos/043.jpg',44:'fotos/044.jpg',45:'fotos/045.jpg'};
 const fotoRef=id=>db.collection('config').doc('foto-'+id);
 function getPhoto(id){
+  const fx=MIG?null:FIXAS[id]||null;
   if(PH[id]!==undefined)return Promise.resolve(PH[id]);
-  if(!db)return Promise.resolve(FIXAS[id]||null);
-  const ok=d=>{let v=d.exists?(d.data().d||null):null;if(!v&&FIXAS[id])v=FIXAS[id];PH[id]=v;return v};
-  return Promise.race([fotoRef(id).get(),new Promise((_,r)=>setTimeout(r,3500))]).then(ok).catch(()=>fotoRef(id).get({source:'cache'}).then(ok).catch(()=>FIXAS[id]||null));
+  if(!db)return Promise.resolve(fx);
+  const ok=d=>{let v=d.exists?(d.data().d||null):null;if(!v&&fx)v=fx;PH[id]=v;return v};
+  return Promise.race([fotoRef(id).get(),new Promise((_,r)=>setTimeout(r,3500))]).then(ok).catch(()=>fotoRef(id).get({source:'cache'}).then(ok).catch(()=>fx));
 }
 function compress(file){return new Promise((res,rej)=>{const img=new Image(),u=URL.createObjectURL(file);img.onload=()=>{const k=Math.min(1,1280/Math.max(img.width,img.height)),cv=document.createElement('canvas');cv.width=Math.round(img.width*k);cv.height=Math.round(img.height*k);cv.getContext('2d').drawImage(img,0,0,cv.width,cv.height);URL.revokeObjectURL(u);let q=.75,d=cv.toDataURL('image/jpeg',q);while(d.length>700000&&q>.35){q-=.1;d=cv.toDataURL('image/jpeg',q)}res(d)};img.onerror=()=>rej(new Error('imagem inválida'));img.src=u})}
 function showPh(d){const i=$('ph-img');if(d){i.src=d;i.hidden=false;$('ph-empty').hidden=true;$('ph-rm').hidden=false}else{i.hidden=true;i.removeAttribute('src');$('ph-empty').hidden=false;$('ph-rm').hidden=true}}
