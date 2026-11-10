@@ -216,7 +216,7 @@ details#imp{margin:0 0 14px;padding:0}details#imp summary{cursor:pointer;padding
 <div class="top">
   <div class="brand"><div class="logo"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3.5"/></svg></div>
     <div>Central de câmeras<small>Mobilidade Urbana · Arraial do Cabo</small></div></div>
-  <div class="hd-r"><div class="clock" id="clk"></div><div class="usr" id="usrw" hidden><i></i><span id="usr"></span></div><button class="btn sm" id="out" hidden>Sair</button></div>
+  <div class="hd-r"><div class="clock" id="clk"></div><div class="usr" id="usrw" hidden><i></i><span id="usr"></span></div><button class="btn sm" id="snd" title="Alerta sonoro quando uma câmera ficar offline">Som: ligado</button><button class="btn sm" id="out" hidden>Sair</button></div>
   <div class="tabs" role="tablist"><button role="tab" id="t-painel" aria-selected="true" data-go="painel">Painel</button><button role="tab" id="t-mapa" aria-selected="false" data-go="mapa">Mapa</button></div>
 </div>
 
@@ -460,8 +460,8 @@ $('ms').addEventListener('input',e=>{const q=norm(e.target.value.trim()),r=$('re
   r.hidden=!m.length;m.forEach(c=>{const b=document.createElement('button');b.textContent=pad(c.id)+' · '+cn(c);b.onclick=()=>{r.hidden=true;$('ms').value='';select(c,false)};r.appendChild(b)})});
 
 /* ---------- Firebase ---------- */
-let db=null,auth=null;
-function setStatus(c){if(!db)return;const p=track(db.collection('cameras').doc(String(c.id)).set({on:c.on,at:firebase.firestore.FieldValue.serverTimestamp(),by:(auth.currentUser&&auth.currentUser.email)||''},{merge:true}));p.catch(e=>toast('Não foi possível salvar: '+e.message))}
+let db=null,auth=null,statLoaded=false;
+function setStatus(c){if(!c.on)beep();if(!db)return;const p=track(db.collection('cameras').doc(String(c.id)).set({on:c.on,at:firebase.firestore.FieldValue.serverTimestamp(),by:(auth.currentUser&&auth.currentUser.email)||''},{merge:true}));p.catch(e=>toast('Não foi possível salvar: '+e.message))}
 function refresh(){kpis();if(!$('v-painel').hidden)renderPanel();if(sel)sheet();draw()}
 (function(){
   const cfg=window.FIREBASE_CONFIG;
@@ -477,7 +477,7 @@ function refresh(){kpis();if(!$('v-painel').hidden)renderPanel();if(sel)sheet();
     if(unsub){unsub();unsub=null}
     if(unsub2){unsub2();unsub2=null}
     if(u)unsub2=db.collection('config').doc('cameras').onSnapshot({includeMetadataChanges:true},d=>{pCfg=d.metadata.hasPendingWrites;netUI();if(d.metadata.fromCache&&!d.exists)return;loadList(d.exists&&Array.isArray(d.data().list)?d.data().list:[]);if(!cams.length)$('imp').open=true},e=>{$('fbwarn').hidden=false;$('fbwarn').textContent='Erro ao ler a lista de câmeras: '+e.message});
-    if(u)unsub=db.collection('cameras').onSnapshot({includeMetadataChanges:true},s=>{pCam=s.metadata.hasPendingWrites;netUI();s.forEach(d=>{STAT[+d.id]=d.data().on!==false;{const t=d.data().at;ATS[+d.id]=t&&t.toDate?t.toDate():null}const c=byId(d.id);if(c)c.on=STAT[+d.id]});refresh()},e=>{$('fbwarn').hidden=false;$('fbwarn').textContent='Erro ao ler o status: '+e.message});
+    if(u)unsub=db.collection('cameras').onSnapshot({includeMetadataChanges:true},s=>{pCam=s.metadata.hasPendingWrites;netUI();let wentOff=false;s.forEach(d=>{STAT[+d.id]=d.data().on!==false;{const t=d.data().at;ATS[+d.id]=t&&t.toDate?t.toDate():null}const c=byId(d.id);if(c){if(statLoaded&&c.on&&!STAT[+d.id])wentOff=true;c.on=STAT[+d.id]}});statLoaded=true;if(wentOff)beep();refresh()},e=>{$('fbwarn').hidden=false;$('fbwarn').textContent='Erro ao ler o status: '+e.message});
   });
   $('lt').onclick=()=>{const p=$('lp'),h=p.type==='password';p.type=h?'text':'password';$('lt').textContent=h?'ocultar':'mostrar'};
   $('lf').addEventListener('submit',e=>{e.preventDefault();const m=$('lmsg'),em=$('le').value.trim(),pw=$('lp').value;m.textContent='';
@@ -493,6 +493,18 @@ function refresh(){kpis();if(!$('v-painel').hidden)renderPanel();if(sel)sheet();
 })();
 
 
+
+/* ---------- alerta sonoro (câmera offline) ---------- */
+let AC=null,sndOn=true;try{sndOn=localStorage.getItem('snd')!=='0'}catch(e){}
+function unlock(){try{if(!AC){const C=window.AudioContext||window.webkitAudioContext;if(C)AC=new C()}if(AC&&AC.state==='suspended')AC.resume()}catch(e){}}
+['pointerdown','keydown','touchstart'].forEach(ev=>addEventListener(ev,unlock,{passive:true}));
+function beep(){if(!sndOn)return;unlock();if(!AC)return;
+  const t0=AC.currentTime+.02;
+  for(let i=0;i<3;i++){const o=AC.createOscillator(),g=AC.createGain();o.type='square';o.frequency.value=i%2?740:988;
+    const a=t0+i*.28;g.gain.setValueAtTime(0,a);g.gain.linearRampToValueAtTime(.22,a+.02);g.gain.setValueAtTime(.22,a+.18);g.gain.linearRampToValueAtTime(0,a+.22);
+    o.connect(g);g.connect(AC.destination);o.start(a);o.stop(a+.24)}}
+function sndUI(){$('snd').textContent='Som: '+(sndOn?'ligado':'desligado');$('snd').setAttribute('aria-pressed',sndOn)}
+$('snd').onclick=()=>{sndOn=!sndOn;try{localStorage.setItem('snd',sndOn?'1':'0')}catch(e){}sndUI();if(sndOn)beep()};sndUI();
 /* ---------- uso sem internet ---------- */
 let pend=0,pCfg=false,pCam=false;
 function netUI(){const n=$('net');if(!n)return;const off=!navigator.onLine,pd=pend>0||pCfg||pCam;
