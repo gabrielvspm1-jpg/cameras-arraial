@@ -99,7 +99,87 @@ input:focus{outline:2px solid var(--cy);outline-offset:1px}
 .lg-go{height:50px;border:0;border-radius:13px;background:linear-gradient(135deg,#22D3EE,#38BDF8 55%,#A78BFA);color:#04101c;font:700 15px 'Space Grotesk',sans-serif;letter-spacing:.06em;box-shadow:0 8px 30px rgba(34,211,238,.35);margin-top:4px}
 .lg-go:hover{filter:brightness(1.08)}.lg-go:disabled{opacity:.6;cursor:wait}
 #lmsg{min-height:18px;color:#F5B84B;font-size:13px}
-.lg-foot{text-align:center;font-size:11px;color:var(--fg2);letter-spacing:.06em}.empty{border-color:var(--amber)}#imp{margin:0 0 14px}#imp code{color:var(--cy)}.note{color:var(--fg2);font-size:12px;margin:0 0 20px}
+.lg-foot{text-align:center;font-size:11px;color:var(--fg2);letter-spacing:.06em}.empty{border-color:var(--amber)}#imp{margin:0 0 14px}#imp code{color:var(--cy)}
+/* ===== painel v2 ===== */
+#v-painel,.top{max-width:1320px;margin-left:auto;margin-right:auto}
+.top{gap:12px 14px}
+.hd-r{display:flex;align-items:center;gap:10px;margin-left:auto;flex-wrap:wrap}
+.tabs{margin-left:0}
+.clock{font:500 12px 'Space Grotesk',sans-serif;letter-spacing:.06em;color:var(--fg2);text-transform:uppercase;white-space:nowrap}
+.usr{display:flex;align-items:center;gap:8px;padding:6px 12px;border:1px solid var(--line);border-radius:999px;background:var(--panel);font-size:12px;color:var(--fg2);max-width:230px}
+.usr i{width:8px;height:8px;border-radius:50%;background:var(--on);box-shadow:0 0 8px var(--on);flex:none}
+.usr span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.btn.sm{padding:7px 12px;font-size:12.5px}
+.hero2{position:relative;overflow:hidden;border:1px solid var(--line);border-radius:22px;padding:30px 30px;margin:4px 0 14px;min-height:220px;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;background:linear-gradient(115deg,#0D1B33 0%,#08101F 55%,#070B14 100%);box-shadow:0 0 60px rgba(34,211,238,.07)}
+.hero2::before{content:"";position:absolute;inset:0;background:var(--hero-img,none) center/cover;opacity:.5}
+.hero2::after{content:"";position:absolute;inset:0;pointer-events:none;background-image:linear-gradient(rgba(34,211,238,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(34,211,238,.06) 1px,transparent 1px);background-size:36px 36px;-webkit-mask-image:linear-gradient(90deg,transparent,#000 70%);mask-image:linear-gradient(90deg,transparent,#000 70%)}
+.coast{position:absolute;right:0;top:0;height:100%;width:72%;pointer-events:none;z-index:0;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 42%);mask-image:linear-gradient(90deg,transparent 0,#000 42%)}
+.coast path{fill:none;stroke:#22D3EE;stroke-width:1.5;stroke-linejoin:round;stroke-linecap:round;filter:drop-shadow(0 0 5px rgba(34,211,238,.75));opacity:.85}
+.sweep{position:absolute;right:-110px;top:-150px;width:540px;height:540px;border-radius:50%;pointer-events:none;background:conic-gradient(from 0deg,rgba(34,211,238,0) 0deg,rgba(34,211,238,.24) 70deg,rgba(34,211,238,0) 72deg);-webkit-mask-image:radial-gradient(circle,#000 35%,transparent 72%);mask-image:radial-gradient(circle,#000 35%,transparent 72%);animation:sw 8s linear infinite}
+@keyframes sw{to{transform:rotate(360deg)}}
+.hero2-in{position:relative;z-index:1;max-width:560px}
+.kick{display:inline-flex;align-items:center;gap:8px;font:600 11px 'Space Grotesk',sans-serif;letter-spacing:.24em;color:var(--cy)}
+.kick .dot{width:8px;height:8px;border-radius:50%;background:var(--on);box-shadow:0 0 10px var(--on);animation:pl 2s infinite}
+@keyframes pl{50%{opacity:.35}}
+.hero2 h1{margin:10px 0 6px;font-size:clamp(28px,5vw,46px);line-height:1.05}
+.hero2 p{margin:0;color:var(--fg2)}
+.hstat{display:flex;gap:20px;flex-wrap:wrap;margin-top:16px;font-size:13px;color:var(--fg2)}
+.hstat b{color:var(--fg);font:700 20px 'Space Grotesk';margin-right:5px}
+.ringbox{position:relative;z-index:1;width:136px;height:136px;flex:none;margin-left:auto}
+.ringbox svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ringbox circle{fill:none;stroke-width:9}
+.ringbox .bg{stroke:rgba(143,160,184,.2)}
+.ringbox .fg{stroke:url(#rgg);stroke-linecap:round;stroke-dasharray:326.7;stroke-dashoffset:326.7;transition:stroke-dashoffset .9s ease;filter:drop-shadow(0 0 6px rgba(52,211,153,.6))}
+.ringbox .rv{position:absolute;inset:0;display:grid;place-content:center;text-align:center;font:700 30px 'Space Grotesk'}
+.ringbox .rv small{display:block;font:500 9.5px Inter;letter-spacing:.16em;color:var(--fg2);text-transform:uppercase}
+.kpis2{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:12px}
+.k{--ac:var(--cy);position:relative;overflow:hidden;border:1px solid var(--line);border-radius:18px;padding:16px 18px;background:linear-gradient(180deg,var(--panel2),var(--panel))}
+.k.on{--ac:var(--on)}.k.off{--ac:var(--off)}.k.pct{--ac:var(--vio)}
+.k::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--ac);box-shadow:0 0 14px var(--ac)}
+.k::after{content:"";position:absolute;right:-30px;top:-30px;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle,var(--ac),transparent 70%);opacity:.14;pointer-events:none}
+.kt{display:flex;align-items:center;justify-content:space-between;color:var(--fg2);font:600 11px 'Space Grotesk',sans-serif;letter-spacing:.16em;text-transform:uppercase}
+.kt svg{color:var(--ac)}
+.kv{font:700 42px/1.1 'Space Grotesk',sans-serif;margin-top:8px}
+.k.on .kv{color:var(--on)}.k.off .kv{color:var(--off)}
+.ks{font-size:12px;color:var(--fg2);margin-top:2px}
+.pbar{height:6px;border-radius:99px;background:rgba(143,160,184,.18);margin-top:10px;overflow:hidden}
+.pbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--vio),var(--cy));transition:width .8s}
+.row2{display:grid;grid-template-columns:1.2fr 1fr;gap:12px;margin-bottom:14px}
+@media(max-width:860px){.row2{grid-template-columns:1fr}}
+.ch{margin:0 0 12px;font:600 12px 'Space Grotesk',sans-serif;letter-spacing:.16em;text-transform:uppercase;color:var(--fg2);display:flex;align-items:center;gap:8px}
+.badge{padding:2px 8px;border-radius:99px;background:rgba(251,113,133,.15);color:var(--off);font:600 11px Inter,sans-serif;letter-spacing:0;text-transform:none}
+.badge.ok{background:rgba(52,211,153,.15);color:var(--on)}
+.tbar{display:flex;height:12px;border-radius:99px;overflow:hidden;gap:2px;background:var(--line)}
+.tbar i{display:block;height:100%}
+.tleg{display:grid;grid-template-columns:1fr;gap:10px;margin-top:16px}
+.tl{display:flex;align-items:center;gap:8px;font-size:13px}.tl i{width:10px;height:10px;border-radius:3px;flex:none}
+.tl b{margin-left:auto;font:700 15px 'Space Grotesk',sans-serif}.tl em{font-style:normal;color:var(--fg2);font-size:11.5px}
+.al{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}.al:last-child{border:0}
+.al .an{font:600 11px 'Space Grotesk',sans-serif;color:var(--off);letter-spacing:.08em}
+.al .at{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13.5px}
+.okmsg{color:var(--on);font-size:14px;padding:8px 0}
+.mini{border:1px solid var(--line);background:var(--panel);border-radius:9px;padding:5px 10px;font-size:12px;color:var(--fg)}
+.tools{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 10px}
+.tools .in{flex:1 1 220px}.tools select.in{flex:0 1 180px}
+.listcard{border:1px solid var(--line);border-radius:18px;overflow:hidden;background:linear-gradient(180deg,var(--panel2),var(--panel));margin-bottom:14px}
+.lh,.r{display:grid;grid-template-columns:78px minmax(0,1fr) 110px 150px 120px;gap:12px;align-items:center;padding:0 18px}
+.lh{height:42px;background:rgba(7,11,20,.7);font:600 10.5px 'Space Grotesk',sans-serif;letter-spacing:.18em;text-transform:uppercase;color:var(--fg2);border-bottom:1px solid var(--line)}
+.r{min-height:56px;border-bottom:1px solid rgba(27,42,68,.7);transition:background .12s}
+.r:hover{background:rgba(34,211,238,.05)}.r.offr{background:rgba(251,113,133,.05)}
+.r-n{font:700 13px 'Space Grotesk',sans-serif;letter-spacing:.08em;color:var(--tc);padding-left:10px;border-left:3px solid var(--tc)}
+.r-name{overflow-wrap:anywhere;font-weight:500}.r-name.sn{color:var(--fg2);font-weight:400}
+.r-type{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:var(--fg2)}.r-type i{width:8px;height:8px;border-radius:50%}
+.sw2{display:inline-flex;align-items:center;gap:10px;border:0;background:none;padding:0;font-size:12.5px;font-weight:600;color:var(--on)}
+.sw2 .trk{width:42px;height:24px;border-radius:99px;background:rgba(52,211,153,.25);border:1px solid var(--on);position:relative;transition:.2s;box-shadow:0 0 12px rgba(52,211,153,.35)}
+.sw2 .knob{position:absolute;top:2px;left:20px;width:18px;height:18px;border-radius:50%;background:var(--on);transition:.2s}
+.sw2.off{color:var(--off)}.sw2.off .trk{background:rgba(251,113,133,.2);border-color:var(--off);box-shadow:0 0 12px rgba(251,113,133,.3)}.sw2.off .knob{left:2px;background:var(--off)}
+.lk{background:none;border:0;color:var(--cy);font-size:12.5px;text-align:right}
+.lf{padding:12px 18px;font-size:12px;color:var(--fg2)}.emp{padding:34px 18px;text-align:center;color:var(--fg2)}
+@media(max-width:760px){.lh{display:none}.r{grid-template-columns:64px minmax(0,1fr) auto;grid-template-areas:"n name st" "n type act";gap:4px 10px;padding:10px 14px}.r-n{grid-area:n;align-self:center}.r-name{grid-area:name}.r-type{grid-area:type}.sw2{grid-area:st}.lk{grid-area:act}.sw2 .lab{display:none}.hd-r{margin-left:0;width:100%;justify-content:space-between}.hero2{padding:22px 20px}.ringbox{margin-left:0}}
+details#imp{margin:0 0 14px;padding:0}details#imp summary{cursor:pointer;padding:14px 18px;font:600 12px 'Space Grotesk',sans-serif;letter-spacing:.16em;text-transform:uppercase;color:var(--fg2)}details#imp>*:not(summary){margin:0 18px 16px}
+@media(max-width:560px){.kv{font-size:32px}.k{padding:14px}.hero2 h1{font-size:30px}}
+@media(prefers-reduced-motion:reduce){.sweep,.kick .dot{animation:none}}
+.note{color:var(--fg2);font-size:12px;margin:0 0 20px}
 @media(max-width:560px){.tabs{margin-left:0;width:100%}.tabs button{flex:1}.chips{right:10px}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
@@ -108,7 +188,7 @@ input:focus{outline:2px solid var(--cy);outline-offset:1px}
 <div class="top">
   <div class="brand"><div class="logo"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3.5"/></svg></div>
     <div>Central de câmeras<small>Mobilidade Urbana · Arraial do Cabo</small></div></div>
-  <button class="btn" id="out" hidden>Sair</button>
+  <div class="hd-r"><div class="clock" id="clk"></div><div class="usr" id="usrw" hidden><i></i><span id="usr"></span></div><button class="btn sm" id="out" hidden>Sair</button></div>
   <div class="tabs" role="tablist"><button role="tab" id="t-painel" aria-selected="true" data-go="painel">Painel</button><button role="tab" id="t-mapa" aria-selected="false" data-go="mapa">Mapa</button></div>
 </div>
 
@@ -127,24 +207,45 @@ input:focus{outline:2px solid var(--cy);outline-offset:1px}
 </form></div>
 <div id="fbwarn" hidden>Firebase ainda não configurado (veja o README): o status não está sendo salvo nem sincronizado.</div>
 <section class="view" id="v-painel">
-  <div class="kpis">
-    <div class="card kpi"><div class="l">Câmeras</div><div class="v" id="k-tot">0</div></div>
-    <div class="card kpi"><div class="l">Online</div><div class="v" style="color:var(--on)" id="k-on">0</div></div>
-    <div class="card kpi"><div class="l">Offline</div><div class="v" style="color:var(--off)" id="k-off">0</div></div>
-    <div class="card kpi"><div class="l">Disponibilidade</div><div class="v" id="k-pct">0%</div></div>
+  <div class="hero2" id="hero">
+    <svg class="coast" viewBox="0 0 900 757" preserveAspectRatio="xMaxYMid slice" aria-hidden="true"><path d="M26 316 60 328 98 339 143 357 218 398 233 410 249 426 267 449 275 466 277 474 278 498 276 501 266 507 260 505 260 503 258 502 256 504 252 505 250 503 248 506 255 509 252 511 255 513 252 518 249 520 248 526 249 531 257 532 260 530 264 530 271 532 276 543 279 546 286 545 284 549 284 551 296 560 298 567 297 569 300 571 319 571 340 562 348 561 357 564 359 567 377 570 384 575 398 579 397 583 407 588 411 595 408 596 407 606 409 609 413 610 416 607 426 609 425 612 427 613 425 615 428 622 426 625 426 629 429 633 427 635 426 645 420 656 426 661 431 660 440 665 449 662 446 667 446 672 444 674 445 681 441 687 442 691 439 697 441 704 443 705 447 713 452 714 451 721 454 725 469 731 473 730 477 716 468 701 465 686 470 678 473 668 476 664 471 656 472 628 476 620 480 618 497 609 500 611 504 610 505 612 513 604 518 590 521 576 517 570 512 557 503 558 497 553 495 547 497 542 499 538 504 536 503 534 497 530 496 526 494 525 490 528 483 529 481 525 476 525 473 520 469 521 468 518 450 530 437 533 430 533 426 527 419 531 405 533 396 515 391 499 391 487 400 451 406 439 416 430 423 437 422 438 426 444 432 442 439 443 439 445 463 447 463 471 466 473 468 472 466 440 480 441 480 432 472 432 463 422 451 419 440 413 440 411 441 403 453 382 468 368 473 368 483 376 503 386 509 386 518 384 525 386 533 393 534 396 537 397 538 402 550 414 552 424 563 426 572 421 573 417 572 404 575 395 573 385 574 380 584 374 594 374 601 379 605 378 606 374 620 376 637 365 644 355 647 354 647 350 653 343 653 340 646 337 644 331 641 330 638 320 635 320 635 318 632 317 628 321 627 315 614 311 611 304 593 311 583 311 580 314 576 312 568 315 568 311 562 313 562 315 558 317 558 321 560 324 560 327 559 333 554 337 544 338 534 346 524 339 524 336 521 337 515 329 513 329 511 325 509 324 507 319 509 312 513 305 524 294 520 287 520 263 522 260 527 256 531 257 532 255 537 252 552 251 557 242 563 239 565 230 567 228 582 227 585 225 587 220 586 214 582 208 580 211 577 210 571 214 564 214 564 211 561 211 558 217 551 224 538 231 538 233 517 234 513 236 505 237 495 236 488 243 476 246 471 255 468 255 467 258 454 265 448 271 443 278 436 284 437 287 426 308 426 317 423 323 417 320 411 322 394 342 378 335 359 321 346 307 331 284 349 266 361 265 358 260 354 259 351 243 357 236 357 231 370 221 365 217 357 215 351 212 352 207 358 203 363 192 369 187 367 184 369 182 369 179 374 177 374 173 349 174 344 175 344 177 331 180 326 176 319 174 319 168 323 161 322 158 317 163 293 171 277 181 266 169 262 157 260 141 258 129 241 101 234 82 227 34M225 592 225 592M310 122 310 122M681 425 681 425M220 570 220 570M784 757 788 751 795 755 800 747 799 744 801 741 815 733 816 728 821 724 819 718 821 712 816 704 816 697 832 686 841 685 852 677 854 677 858 670 859 663 862 658 863 651 862 641 858 640 857 635 852 631 852 629 847 622 848 609 846 606 839 606 836 601 838 593 835 591 838 587 838 584 828 583 822 578 821 572 823 572 829 565 829 562 834 553 837 543 833 536 828 536 828 534 825 534 826 527 829 523 826 521 826 520 818 516 812 518 808 523 804 524 802 522 792 529 782 530 779 527 775 527 771 532 772 537 767 543 762 551 754 545 749 547 747 546 742 550 741 554 735 556 730 559 729 563 716 578 711 581 698 583 698 588 695 593 689 596 685 595 679 596 677 602 678 614 673 617 667 618 664 617 660 621 656 622 651 629 648 628 640 635 637 636 636 640 640 646 638 649 638 653 636 657 640 659 640 662 626 665 625 669 621 674 615 675 609 663 598 656 593 656 582 660 569 673 565 686 568 698 566 724 570 729 571 735 568 750M489 755 485 752 479 742 473 740 468 743 468 747 464 751 466 755 464 756"/></svg>
+    <div class="sweep"></div>
+    <div class="hero2-in">
+      <div class="kick"><span class="dot"></span>CENTRO DE MONITORAMENTO · ARRAIAL DO CABO</div>
+      <h1>Central de câmeras</h1>
+      <p>Mobilidade Urbana · Prefeitura Municipal de Arraial do Cabo</p>
+      <div class="hstat"><span><b id="h-on">0</b>online</span><span><b id="h-off">0</b>offline</span></div>
+    </div>
+    <div class="ringbox"><svg viewBox="0 0 120 120" aria-hidden="true"><defs><linearGradient id="rgg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#34D399"/><stop offset="1" stop-color="#22D3EE"/></linearGradient></defs><circle class="bg" cx="60" cy="60" r="52"/><circle class="fg" id="rg" cx="60" cy="60" r="52"/></svg><div class="rv"><span id="rv">0%</span><small>operacional</small></div></div>
   </div>
-    <div class="bar">
+  <div class="kpis2">
+    <div class="k"><div class="kt">Câmeras cadastradas <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3.5"/></svg></div><div class="kv" id="k-tot">0</div><div class="ks">em todo o município</div></div>
+    <div class="k on"><div class="kt">Online <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div><div class="kv" id="k-on">0</div><div class="ks">em operação</div></div>
+    <div class="k off"><div class="kt">Offline <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v9"/><path d="M6.3 6.8a8 8 0 1 0 11.4 0"/></svg></div><div class="kv" id="k-off">0</div><div class="ks">fora do ar</div></div>
+    <div class="k pct"><div class="kt">Disponibilidade <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg></div><div class="kv" id="k-pct">0%</div><div class="pbar"><i id="k-bar"></i></div></div>
+  </div>
+  <div class="row2">
+    <div class="card"><h3 class="ch">Por tipo de câmera</h3><div class="tbar" id="tbar"></div><div class="tleg" id="tleg"></div></div>
+    <div class="card"><h3 class="ch">Atenção agora <span class="badge" id="al-n"></span></h3><div id="alerts"></div></div>
+  </div>
+  <div class="tools">
     <input type="search" id="q" placeholder="Buscar câmera por nome ou número…" aria-label="Buscar câmera">
+    <select class="in" id="sty" aria-label="Tipo"><option value="all">Todos os tipos</option><option value="0">OCR</option><option value="1">Facial</option><option value="2">360°</option><option value="3">Comum</option><option value="4">Outros</option></select>
+    <select class="in" id="sso" aria-label="Ordenar"><option value="n">Ordenar: nº</option><option value="name">Ordenar: nome</option><option value="off">Offline primeiro</option></select>
     <button class="btn pri" data-go="mapa">Abrir mapa</button>
-    <button class="btn" id="csv" hidden>Exportar lista (CSV)</button>
+    <button class="btn" id="csv" hidden>Exportar CSV</button>
   </div>
   <div class="bar" id="f-status">
     <button class="chip" data-st="all" aria-pressed="true">Todas</button>
     <button class="chip" data-st="on" aria-pressed="false"><i style="background:var(--on)"></i>Online</button>
     <button class="chip" data-st="off" aria-pressed="false"><i style="background:var(--off)"></i>Offline</button>
   </div>
-  <div class="grid" id="grid"></div>
-  <div class="card" id="imp"><b>Lista de câmeras</b><p class="tag" style="margin:4px 0 10px" id="impmsg">Para cadastrar ou atualizar a lista, escolha o arquivo <code>cameras.json</code>. A lista fica guardada no Firebase e só aparece para quem estiver logado.</p><input type="file" id="impf" accept=".json,application/json"></div>
+  <div class="listcard">
+    <div class="lh"><span>Nº</span><span>Câmera</span><span>Tipo</span><span>Status</span><span></span></div>
+    <div id="grid"></div>
+    <div class="lf" id="lcount"></div>
+  </div>
+  <details class="card" id="imp"><summary>Administração · lista de câmeras</summary><p class="tag" style="margin:4px 0 10px" id="impmsg">Para cadastrar ou atualizar a lista, escolha o arquivo <code>cameras.json</code>. A lista fica guardada no Firebase e só aparece para quem estiver logado.</p><input type="file" id="impf" accept=".json,application/json"></details>
   <p class="note">Status marcado manualmente e sincronizado entre todos os aparelhos. Fotos e fichas em PDF entram na próxima etapa.</p>
 </section>
 
@@ -188,26 +289,44 @@ document.addEventListener('click',e=>{const g=e.target.closest('[data-go]');if(g
 addEventListener('hashchange',()=>go(location.hash.slice(1)));
 
 /* ---------- painel ---------- */
-let stF='all';
-function kpis(){const on=cams.filter(c=>c.on).length;$('k-tot').textContent=cams.length;$('k-on').textContent=on;$('k-off').textContent=cams.length-on;$('k-pct').textContent=(cams.length?Math.round(on/cams.length*100):0)+'%'}
-function renderPanel(){
-  kpis();const q=norm($('q').value.trim());const g=$('grid');g.textContent='';
-  const fr=document.createDocumentFragment();
-  cams.forEach(c=>{
-    if(stF==='on'&&!c.on||stF==='off'&&c.on)return;
-    if(q&&norm(cn(c)).indexOf(q)<0&&pad(c.id).indexOf(q)<0)return;
-    const d=document.createElement('div');d.className='card cam';
-    d.innerHTML='<div><div class="n">Nº '+pad(c.id)+'</div><div class="t"></div><div class="tag">'+TYPES[c.t][0]+'</div></div><div class="row"><button class="sw'+(c.on?'':' off')+'" data-id="'+c.id+'" aria-pressed="'+c.on+'"><b></b>'+(c.on?'Online':'Offline')+'</button><button class="lk" data-map="'+c.id+'">Ver no mapa →</button></div>';
-    d.querySelector('.t').textContent=cn(c);fr.appendChild(d);
-  });
-  g.appendChild(fr);
+let stF='all',tyF='all',soF='n';
+function setNum(el,n){const from=+el.dataset.v||0;el.dataset.v=n;if(from===n||matchMedia('(prefers-reduced-motion:reduce)').matches){el.textContent=n;return}const t0=performance.now();(function st(t){const k=Math.min(1,(t-t0)/450);el.textContent=Math.round(from+(n-from)*k);if(k<1)requestAnimationFrame(st)})(t0)}
+function kpis(){
+  const tot=cams.length,on=cams.filter(c=>c.on).length,off=tot-on,pct=tot?Math.round(on/tot*100):0;
+  setNum($('k-tot'),tot);setNum($('k-on'),on);setNum($('k-off'),off);$('k-pct').textContent=pct+'%';$('k-bar').style.width=pct+'%';
+  $('h-on').textContent=on;$('h-off').textContent=off;$('rv').textContent=pct+'%';$('rg').style.strokeDashoffset=326.7*(1-pct/100);
+  const cnt=TYPES.map(()=>({n:0,on:0}));cams.forEach(c=>{if(cnt[c.t]){cnt[c.t].n++;if(c.on)cnt[c.t].on++}});
+  $('tbar').innerHTML=cnt.map((x,i)=>x.n?'<i style="width:'+(x.n/tot*100)+'%;background:'+TYPES[i][1]+'" title="'+TYPES[i][0]+'"></i>':'').join('');
+  $('tleg').innerHTML=cnt.map((x,i)=>'<div class="tl"><i style="background:'+TYPES[i][1]+'"></i>'+TYPES[i][0]+'<b>'+x.n+'</b><em>'+x.on+' on</em></div>').join('');
+  const offl=cams.filter(c=>!c.on),A=$('alerts');A.textContent='';
+  $('al-n').textContent=offl.length?offl.length+' offline':'tudo ok';$('al-n').className='badge'+(offl.length?'':' ok');
+  if(!offl.length){A.innerHTML='<div class="okmsg">✓ Todas as câmeras estão operando.</div>'}
+  else{offl.slice(0,6).forEach(c=>{const d=document.createElement('div');d.className='al';d.innerHTML='<span class="an"></span><span class="at"></span><button class="mini" data-map="'+c.id+'">Mapa</button><button class="mini" data-tog="'+c.id+'">Reativar</button>';d.querySelector('.an').textContent=pad(c.id);d.querySelector('.at').textContent=cn(c);A.appendChild(d)});
+    if(offl.length>6){const m=document.createElement('div');m.className='tag';m.style.paddingTop='8px';m.textContent='+ '+(offl.length-6)+' offline. Use o filtro Offline na lista.';A.appendChild(m)}}
 }
-$('grid').addEventListener('click',e=>{
-  const s=e.target.closest('.sw');if(s){const c=cams[s.dataset.id-1];c.on=!c.on;setStatus(c);s.classList.toggle('off',!c.on);s.setAttribute('aria-pressed',c.on);s.lastChild.textContent=c.on?'Online':'Offline';kpis();if(stF!=='all')renderPanel();return}
+function renderPanel(){
+  kpis();const q=norm($('q').value.trim());
+  const list=cams.filter(c=>!(stF==='on'&&!c.on||stF==='off'&&c.on)&&(tyF==='all'||c.t===+tyF)&&(!q||norm(cn(c)).indexOf(q)>=0||pad(c.id).indexOf(q)>=0));
+  if(soF==='name')list.sort((a,b)=>cn(a).localeCompare(cn(b),'pt-BR',{numeric:true}));
+  else if(soF==='off')list.sort((a,b)=>(a.on-b.on)||(a.id-b.id));
+  const g=$('grid');g.textContent='';
+  if(!list.length)g.innerHTML='<div class="emp">'+(cams.length?'Nenhuma câmera encontrada.':'Nenhuma câmera cadastrada ainda.')+'</div>';
+  const fr=document.createDocumentFragment();
+  list.forEach(c=>{const col=TYPES[c.t][1],d=document.createElement('div');d.className='r'+(c.on?'':' offr');d.style.setProperty('--tc',col);
+    d.innerHTML='<span class="r-n">'+pad(c.id)+'</span><span class="r-name"></span><span class="r-type"><i style="background:'+col+'"></i>'+TYPES[c.t][0]+'</span><button class="sw2'+(c.on?'':' off')+'" role="switch" aria-checked="'+c.on+'" data-tog="'+c.id+'"><span class="trk"><span class="knob"></span></span><span class="lab">'+(c.on?'Online':'Offline')+'</span></button><button class="lk" data-map="'+c.id+'">Ver no mapa →</button>';
+    const nm=d.querySelector('.r-name');nm.textContent=cn(c);if(c.name.indexOf('Sem nome')===0)nm.classList.add('sn');fr.appendChild(d)});
+  g.appendChild(fr);$('lcount').textContent='Mostrando '+list.length+' de '+cams.length+' câmeras';
+}
+document.addEventListener('click',e=>{
+  const t=e.target.closest('[data-tog]');if(t){const c=cams[t.dataset.tog-1];if(c){c.on=!c.on;setStatus(c);renderPanel();if(sel===c)sheet();draw()}return}
   const m=e.target.closest('[data-map]');if(m){go('mapa');select(cams[m.dataset.map-1],true)}
 });
 $('q').addEventListener('input',renderPanel);
+$('sty').addEventListener('change',e=>{tyF=e.target.value;renderPanel()});
+$('sso').addEventListener('change',e=>{soF=e.target.value;renderPanel()});
 $('f-status').addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b)return;stF=b.dataset.st;[].forEach.call($('f-status').children,x=>x.setAttribute('aria-pressed',x===b));renderPanel()});
+(function(){const f=()=>{$('clk').textContent=new Date().toLocaleString('pt-BR',{weekday:'short',day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit',second:'2-digit',timeZone:'America/Sao_Paulo'}).replace(/\./g,'')};f();setInterval(f,1000);
+  const im=new Image();im.onload=()=>$('hero').style.setProperty('--hero-img','url(banner.jpg)');im.src='banner.jpg'})();
 (function(){const b=$('csv');b.hidden=false;b.onclick=()=>{const rows=['numero;nome;tipo;status;latitude;longitude'].concat(cams.map(c=>[pad(c.id),'"'+cn(c).replace(/"/g,'""')+'"',TYPES[c.t][0],c.on?'online':'offline',c.lat,c.lon].join(';')));const u=URL.createObjectURL(new Blob(['\ufeff'+rows.join('\n')],{type:'text/csv'}));const a=document.createElement('a');a.href=u;a.download='cameras-arraial-do-cabo.csv';a.click();setTimeout(()=>URL.revokeObjectURL(u),1500)}})();
 
 /* ---------- mapa (Leaflet) ---------- */
@@ -293,10 +412,10 @@ function refresh(){kpis();if(!$('v-painel').hidden)renderPanel();if(sel)sheet();
   firebase.initializeApp(cfg);auth=firebase.auth();db=firebase.firestore();
   let unsub=null,unsub2=null;
   auth.onAuthStateChanged(u=>{
-    $('login').hidden=!!u;$('out').hidden=!u;
+    $('login').hidden=!!u;$('out').hidden=!u;$('usrw').hidden=!u;$('usr').textContent=u?u.email:'';
     if(unsub){unsub();unsub=null}
     if(unsub2){unsub2();unsub2=null}
-    if(u)unsub2=db.collection('config').doc('cameras').onSnapshot(d=>{loadList(d.exists&&Array.isArray(d.data().list)?d.data().list:[]);$('imp').classList.toggle('empty',!cams.length)},e=>{$('fbwarn').hidden=false;$('fbwarn').textContent='Erro ao ler a lista de câmeras: '+e.message});
+    if(u)unsub2=db.collection('config').doc('cameras').onSnapshot(d=>{loadList(d.exists&&Array.isArray(d.data().list)?d.data().list:[]);if(!cams.length)$('imp').open=true},e=>{$('fbwarn').hidden=false;$('fbwarn').textContent='Erro ao ler a lista de câmeras: '+e.message});
     if(u)unsub=db.collection('cameras').onSnapshot(s=>{s.forEach(d=>{STAT[+d.id]=d.data().on!==false;const c=cams[+d.id-1];if(c)c.on=STAT[+d.id]});refresh()},e=>{$('fbwarn').hidden=false;$('fbwarn').textContent='Erro ao ler o status: '+e.message});
   });
   $('lt').onclick=()=>{const p=$('lp'),h=p.type==='password';p.type=h?'text':'password';$('lt').textContent=h?'ocultar':'mostrar'};
