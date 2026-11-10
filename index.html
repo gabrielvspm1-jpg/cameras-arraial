@@ -54,11 +54,23 @@ button{font:inherit;color:inherit;cursor:pointer}
 #sheet .x{z-index:2;background:rgba(5,9,20,.72);border-radius:999px;width:32px;height:32px;line-height:30px}
 .fw img{width:100%;height:240px;object-fit:contain;background:#05080f;border-radius:12px;margin-bottom:10px;display:block;cursor:zoom-in}
 #lb{position:fixed;inset:0;z-index:4000;background:rgba(2,4,10,.94);display:grid;place-items:center;padding:12px;cursor:zoom-out}#lb img{max-width:100%;max-height:100%;object-fit:contain;border-radius:8px}#lb span{position:fixed;top:max(14px,env(safe-area-inset-top,0px));right:16px;color:#fff;font-size:30px;line-height:1}
-.zleg{left:10px;top:10px;width:min(330px,calc(100% - 70px));max-height:calc(100% - 20px);overflow:auto;background:rgba(11,18,32,.94);border:1px solid var(--line);border-radius:14px;backdrop-filter:blur(8px);padding:6px 10px 10px}
-.zlt{width:100%;display:flex;justify-content:space-between;align-items:center;background:none;border:0;color:var(--fg);font:600 13px Inter,sans-serif;padding:8px 2px}
-.zr{display:flex;align-items:center;gap:8px;padding:5px 2px;font-size:12.5px;cursor:pointer}.zr input{width:auto;height:auto;flex:none;margin:0}
-.zr i{width:13px;height:13px;border-radius:4px;flex:none;border:1px solid rgba(255,255,255,.35)}.zr b{font-weight:500;flex:1;min-width:0}.zr em{font-style:normal;color:var(--fg2);font-size:11px;white-space:nowrap}
-.zsep{border-top:1px solid var(--line);margin:6px 0}.zbt{display:flex;gap:6px;margin:4px 0 6px}.zbt button{flex:1;padding:6px;border-radius:8px;border:1px solid var(--line);background:var(--panel2);color:var(--fg);font-size:12px}
+.zleg{left:10px;top:10px;width:min(340px,calc(100% - 70px));max-height:calc(100% - 20px);display:flex;flex-direction:column;background:linear-gradient(180deg,rgba(10,19,36,.93),rgba(6,11,22,.93));border:1px solid rgba(34,211,238,.38);border-radius:18px;backdrop-filter:blur(14px);box-shadow:0 0 0 1px rgba(34,211,238,.07),0 14px 44px rgba(0,0,0,.5),0 0 34px rgba(34,211,238,.09);overflow:hidden}
+.zh{display:flex;align-items:center;justify-content:space-between;padding:12px 14px 8px}.zh small{display:block;font:600 10px Inter,sans-serif;letter-spacing:.22em;color:var(--cy)}.zh strong{font:600 16px 'Space Grotesk',Inter,sans-serif}
+.zlt{width:32px;height:32px;border-radius:10px;border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--fg);font-size:14px}
+#zlb{display:flex;flex-direction:column;min-height:0;padding:0 12px 12px}
+.zst{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:2px 0 10px}.zst div{background:rgba(34,211,238,.06);border:1px solid rgba(34,211,238,.18);border-radius:10px;padding:6px 4px;text-align:center}.zst b{display:block;font:700 17px 'Space Grotesk',Inter,sans-serif;color:#E6FBFF}.zst span{font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--fg2)}
+input.zq{width:100%;height:36px;min-height:0;max-height:36px;flex:0 0 36px;box-sizing:border-box;margin-bottom:8px;padding:0 12px;background:rgba(0,0,0,.28);border:1px solid var(--line);border-radius:10px;color:var(--fg);font-size:13px}.zq:focus{outline:none;border-color:var(--cy);box-shadow:0 0 0 3px rgba(34,211,238,.15)}
+.zbt{display:flex;gap:6px;margin-bottom:6px}.zbt button{flex:1;padding:7px;border-radius:9px;border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--fg);font-size:11.5px;letter-spacing:.03em}.zbt button:hover{border-color:var(--cy);color:var(--cy)}
+#zlist{overflow:auto;min-height:0;flex:1;margin:0 -4px;padding:0 4px;scrollbar-width:thin;scrollbar-color:rgba(34,211,238,.35) transparent}
+.zg{font:600 10px Inter,sans-serif;letter-spacing:.2em;color:var(--cy);text-transform:uppercase;margin:10px 2px 4px;opacity:.9}
+.zr{display:flex;align-items:center;gap:10px;padding:7px 8px;border-radius:11px;cursor:pointer;border:1px solid transparent;transition:background .15s,opacity .15s}.zr:hover{background:rgba(34,211,238,.08);border-color:rgba(34,211,238,.22)}
+.zr:not(.on){opacity:.42}.zdot{width:13px;height:13px;border-radius:50%;flex:none;background:var(--c);box-shadow:0 0 10px var(--c)}.zr:not(.on) .zdot{background:transparent;box-shadow:none;border:2px solid var(--c)}
+.zt{flex:1;min-width:0;line-height:1.25}.zt b{display:block;font:600 12.5px 'Space Grotesk',Inter,sans-serif}.zt small{display:block;font-size:11px;color:var(--fg2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.zr em{font-style:normal;font-size:10.5px;color:var(--fg2);text-align:right;white-space:nowrap;line-height:1.3}
+.zso{width:28px;height:28px;border-radius:8px;border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--cy);font-size:14px;flex:none}.zso:hover{border-color:var(--cy);background:rgba(34,211,238,.12)}
+.zsw{display:flex;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}.zsw label{flex:1;display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;padding:6px 8px;border-radius:10px;border:1px solid var(--line);background:rgba(255,255,255,.03)}
+.zsw input{display:none}.zsw i{width:26px;height:14px;border-radius:99px;background:#26324a;position:relative;flex:none;transition:background .15s}.zsw i::after{content:"";position:absolute;left:2px;top:2px;width:10px;height:10px;border-radius:50%;background:#9fb0c8;transition:left .15s,background .15s}
+.zsw input:checked+i{background:rgba(34,211,238,.35)}.zsw input:checked+i::after{left:14px;background:var(--cy);box-shadow:0 0 8px var(--cy)}
 .zinfo{font-size:12.5px;color:var(--fg2);margin:-2px 0 10px;line-height:1.5}.zinfo b{color:var(--fg);font-weight:600}
 #zmap{position:absolute;inset:0;z-index:0;background:#e8eaed}
 .leaflet-popup-content{font-size:13px;line-height:1.45;margin:10px 12px}
@@ -312,7 +324,7 @@ details#imp{margin:0 0 14px;padding:0}details#imp summary{cursor:pointer;padding
   <div class="mapwrap" id="zw">
     <div id="zmap" aria-label="Mapa de zoneamento do município"></div>
     <div class="ov zoom"><button id="zzi" aria-label="Aproximar">+</button><button id="zzo" aria-label="Afastar">−</button><button id="zzf" aria-label="Enquadrar o município" style="font-size:15px">⤢</button><button id="zzl" aria-label="Trocar camada do mapa" style="font-size:11px;font-weight:600">Mapa</button></div>
-    <div class="ov zleg" id="zleg"><button class="zlt" id="zlt" aria-expanded="true">Camadas do zoneamento <span id="zlc">▾</span></button><div id="zlb"></div></div>
+    <div class="ov zleg" id="zleg"><div class="zh"><div><small>ZONEAMENTO</small><strong>Camadas do mapa</strong></div><button class="zlt" id="zlt" aria-expanded="true" aria-label="Recolher ou abrir o painel"><span id="zlc">▾</span></button></div><div id="zlb"></div></div></div>
   </div>
 </section>
 
@@ -618,7 +630,7 @@ function zDrawCams(){if(!zCam)return;zCam.clearLayers();zCamMk={};
   cams.forEach(c=>{const m=L.circleMarker([c.lat,c.lon],{radius:5.5,color:'#fff',weight:1.5,fillColor:c.on?'#34D399':'#FB7185',fillOpacity:1});
     m.bindTooltip(pad(c.id)+' · '+cn(c),{direction:'top'});
     m.on('click',()=>{m.unbindPopup();m.bindPopup('<b>'+esc2(cn(c))+'</b><br>Nº '+pad(c.id)+' · '+TYPES[c.t][0]+' · '+(c.on?'Online':'Offline')+(zinfoHTML(c)?'<br>'+zinfoHTML(c):'')).openPopup()});zCam.addLayer(m)})}
-function zCounts(){ZD.zonas.forEach(z=>{const n=cams.filter(c=>zonesOf(c).zs.some(q=>q.k===z.k)).length;const e=document.querySelector('[data-zc="'+z.k+'"]');if(e)e.textContent=z.f.length+(z.f.length>1?' áreas':' área')+' · '+n+' câm.'})}
+function zCounts(){const sc=$('zscm');if(sc)sc.textContent=cams.length;ZD.zonas.forEach(z=>{const n=cams.filter(c=>zonesOf(c).zs.some(q=>q.k===z.k)).length;const e=document.querySelector('[data-zc="'+z.k+'"]');if(e)e.innerHTML=z.f.length+(z.f.length>1?' áreas':' área')+'<br>'+n+' câm.'})}
 function ensureZMap(){
   if(zmap){setTimeout(()=>zmap.invalidateSize(),0);return}
   if(typeof L==='undefined'){$('zmap').innerHTML='<p style="padding:24px;color:#333">Não foi possível carregar o mapa (biblioteca Leaflet). Verifique a conexão.</p>';return}
@@ -645,13 +657,27 @@ function ensureZMap(){
         grp.addLayer(p);zAll.addLayer(p)}));grp.addTo(zmap)});
     zCam=L.layerGroup().addTo(zmap);zDrawCams();
     zmap.fitBounds(zAll.getBounds(),{padding:[20,20]});
-    let h='<div class="zbt"><button id="zon">Mostrar todas</button><button id="zoff">Ocultar todas</button></div>';
-    d.zonas.forEach(z=>{h+='<label class="zr"><input type="checkbox" checked data-zk="'+z.k+'"><i style="background:'+z.cor+'"></i><b title="'+esc2(z.nome)+'">'+esc2(z.k)+' · '+esc2(z.nome.replace(/^Zona (de |do |da |especial de )?/i,''))+'</b><em data-zc="'+z.k+'"></em></label>'});
-    h+='<div class="zsep"></div><label class="zr"><input type="checkbox" id="zbx"><i style="background:transparent;border:1.5px dashed #fff"></i><b>Bairros (contornos)</b></label><label class="zr"><input type="checkbox" id="zcx" checked><i style="background:#34D399"></i><b>Câmeras</b></label>';
+    const GR=[['Áreas urbanas',['ZR','EC','ZEN','ZEIS','ZH','ZOC','ZUESP','ZPORT','ZUR']],['Conservação',['ZPVS','ZCVS','ZUC','ZIE','ZEDS']],['Orla e mar',['ZO','ZP','ZIC','ZEP']]];
+    const byK={};d.zonas.forEach(z=>byK[z.k]=z);
+    const nAreas=d.zonas.reduce((a,z)=>a+z.f.length,0);
+    let h='<div class="zst"><div><b>'+d.zonas.length+'</b><span>zonas</span></div><div><b>'+nAreas+'</b><span>áreas</span></div><div><b>'+d.bairros.length+'</b><span>bairros</span></div><div><b id="zscm">'+cams.length+'</b><span>câmeras</span></div></div>';
+    h+='<input class="zq" id="zq" type="search" placeholder="Filtrar zona…" autocomplete="off" aria-label="Filtrar zona"><div class="zbt"><button id="zon">Mostrar todas</button><button id="zoff">Ocultar todas</button></div><div id="zlist">';
+    const rest=d.zonas.map(z=>z.k).filter(k=>!GR.some(g=>g[1].includes(k)));if(rest.length)GR.push(['Outras',rest]);
+    GR.forEach(g=>{const ks=g[1].filter(k=>byK[k]);if(!ks.length)return;h+='<div class="zgw"><div class="zg">'+g[0]+'</div>';
+      ks.forEach(k=>{const z=byK[k];h+='<div class="zr on" data-zk="'+k+'" data-s="'+esc2((k+' '+z.nome).toLowerCase())+'" title="'+esc2(z.nome)+'"><span class="zdot" style="--c:'+z.cor+'"></span><div class="zt"><b>'+k+'</b><small>'+esc2(z.nome)+'</small></div><em data-zc="'+k+'"></em><button class="zso" data-solo="'+k+'" title="Isolar e aproximar" aria-label="Isolar '+k+'">◎</button></div>'});h+='</div>'});
+    h+='</div><div class="zsw"><label><input type="checkbox" id="zbx"><i></i>Bairros</label><label><input type="checkbox" id="zcx" checked><i></i>Câmeras</label></div>';
     $('zlb').innerHTML=h;zCounts();
-    $('zlb').onchange=e=>{const t=e.target;if(t.dataset.zk){t.checked?zGroups[t.dataset.zk].addTo(zmap):zmap.removeLayer(zGroups[t.dataset.zk])}
-      else if(t.id==='zbx'){t.checked?zBair.addTo(zmap):zmap.removeLayer(zBair)}else if(t.id==='zcx'){t.checked?zCam.addTo(zmap):zmap.removeLayer(zCam)}};
-    $('zlb').onclick=e=>{const id=e.target.id;if(id==='zon'||id==='zoff'){const on=id==='zon';$('zlb').querySelectorAll('[data-zk]').forEach(x=>{x.checked=on;on?zGroups[x.dataset.zk].addTo(zmap):zmap.removeLayer(zGroups[x.dataset.zk])})}};
+    const setZ=(k,on)=>{const r=$('zlb').querySelector('[data-zk="'+k+'"]');if(r)r.classList.toggle('on',on);on?zGroups[k].addTo(zmap):zmap.removeLayer(zGroups[k])};
+    const base={weight:1.6,fillOpacity:.38},hi={weight:3.2,fillOpacity:.68};
+    $('zlb').onclick=e=>{
+      const so=e.target.closest('[data-solo]');
+      if(so){const k=so.dataset.solo;Object.keys(zGroups).forEach(x=>setZ(x,x===k));try{zmap.fitBounds(zGroups[k].getBounds(),{padding:[40,40],maxZoom:16})}catch(_){}return}
+      const r=e.target.closest('[data-zk]');if(r){setZ(r.dataset.zk,!r.classList.contains('on'));return}
+      const id=e.target.id;if(id==='zon'||id==='zoff'){Object.keys(zGroups).forEach(x=>setZ(x,id==='zon'))}};
+    $('zlb').onmouseover=e=>{const r=e.target.closest('[data-zk]');if(r&&r.classList.contains('on')&&zGroups[r.dataset.zk]){zGroups[r.dataset.zk].setStyle(hi);zGroups[r.dataset.zk].bringToFront()}};
+    $('zlb').onmouseout=e=>{const r=e.target.closest('[data-zk]');if(r&&zGroups[r.dataset.zk])zGroups[r.dataset.zk].setStyle(base)};
+    $('zq').oninput=e=>{const q=e.target.value.trim().toLowerCase();$('zlb').querySelectorAll('[data-zk]').forEach(r=>{r.hidden=!!q&&r.dataset.s.indexOf(q)<0});$('zlb').querySelectorAll('.zgw').forEach(g=>{g.hidden=!g.querySelector('[data-zk]:not([hidden])')})};
+    $('zlb').onchange=e=>{const t=e.target;if(t.id==='zbx'){t.checked?zBair.addTo(zmap):zmap.removeLayer(zBair)}else if(t.id==='zcx'){t.checked?zCam.addTo(zmap):zmap.removeLayer(zCam)}};
     if(!$('v-zona').hidden)setTimeout(()=>zmap.invalidateSize(),0)});
 }
 
