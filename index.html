@@ -1,3 +1,7 @@
+<!doctype html>
+<html lang="pt-BR"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Central de câmeras</title>
 <!-- v3 -->
 <meta name="claude:viewport-fit-sides" content="cover">
@@ -100,6 +104,7 @@ input:focus{outline:2px solid var(--cy);outline-offset:1px}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 
+</head><body>
 <div class="top">
   <div class="brand"><div class="logo"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3.5"/></svg></div>
     <div>Central de câmeras<small>Mobilidade Urbana · Arraial do Cabo</small></div></div>
@@ -118,6 +123,7 @@ input:focus{outline:2px solid var(--cy);outline-offset:1px}
   <button class="lg-go" type="submit" id="lgo">ENTRAR</button>
   <div id="lmsg" role="alert"></div>
   <div class="lg-foot">Sistema monitorado · uso exclusivo da prefeitura</div>
+  <div class="lg-foot" id="lgv" style="opacity:.6"></div>
 </form></div>
 <div id="fbwarn" hidden>Firebase ainda não configurado (veja o README): o status não está sendo salvo nem sincronizado.</div>
 <section class="view" id="v-painel">
@@ -281,7 +287,12 @@ function setStatus(c){if(!db)return;db.collection('cameras').doc(String(c.id)).s
 function refresh(){kpis();if(!$('v-painel').hidden)renderPanel();if(sel)sheet();draw()}
 (function(){
   const cfg=window.FIREBASE_CONFIG;
-  if(typeof firebase==='undefined'||!cfg||!cfg.apiKey||cfg.apiKey.indexOf('COLE')===0){$('fbwarn').hidden=false;return}
+  $('lgv').textContent='v4';
+  if(typeof firebase==='undefined'||!cfg||!cfg.apiKey||cfg.apiKey.indexOf('COLE')===0){
+    const why=typeof firebase==='undefined'?'Não foi possível carregar o Firebase (www.gstatic.com). Se você usa bloqueador de anúncios ou o escudo do Opera, desative para este site e recarregue (Ctrl+Shift+R).':'A configuração do Firebase não foi encontrada (firebase-config.js).';
+    $('login').hidden=false;$('lmsg').textContent=why;$('lgv').textContent='v4 · Firebase: NÃO carregou';
+    $('lf').addEventListener('submit',e=>{e.preventDefault();$('lmsg').textContent=why});return}
+  $('lgv').textContent='v4 · Firebase: ok';
   firebase.initializeApp(cfg);auth=firebase.auth();db=firebase.firestore();
   let unsub=null,unsub2=null;
   auth.onAuthStateChanged(u=>{
@@ -306,3 +317,5 @@ function refresh(){kpis();if(!$('v-painel').hidden)renderPanel();if(sel)sheet();
 
 go(location.hash.slice(1));
 </script>
+
+</body></html>
