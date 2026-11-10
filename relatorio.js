@@ -12,13 +12,14 @@ function fit(s,w,size,bold){if(tw(s,size,bold)<=w)return s;let t=String(s);while
 function wrap(s,w,size,bold){const out=[];let line='';String(s).split(/\s+/).forEach(word=>{const t=line?line+' '+word:word;if(tw(t,size,bold)<=w||!line)line=t;else{out.push(line);line=word}});if(line)out.push(line);return out}
 const hex=h=>[1,3,5].map(i=>(parseInt(h.slice(i,i+2),16)/255).toFixed(3)).join(' ');
 
-function Doc(){this.pages=[];this.cur=null;this.newPage()}
+function Doc(){this.pages=[];this.imgs=[];this.cur=null;this.newPage()}
 Doc.prototype.newPage=function(){this.cur=[];this.pages.push(this.cur);this.y=TOP};
 Doc.prototype.text=function(x,y,s,o){o=o||{};const size=o.size||10,bold=!!o.bold;let xx=x;const w=tw(s,size,bold);if(o.align==='right')xx=x-w;else if(o.align==='center')xx=x-w/2;
   let tws='';if(o.just){const n=(String(s).match(/ /g)||[]).length;if(n)tws=((o.just-w)/n).toFixed(3)+' Tw '}
   this.cur.push('BT /'+(bold?'F2':'F1')+' '+size+' Tf '+tws+hex(o.color||'#111111')+' rg '+xx.toFixed(2)+' '+(H-y).toFixed(2)+' Td ('+esc(s)+') Tj'+(tws?' 0 Tw':'')+' ET')};
 Doc.prototype.rect=function(x,y,w,h,fill,stroke){const op=[];if(fill)op.push(hex(fill)+' rg');if(stroke)op.push(hex(stroke)+' RG 0.6 w');op.push(x.toFixed(2)+' '+(H-y-h).toFixed(2)+' '+w.toFixed(2)+' '+h.toFixed(2)+' re '+(fill&&stroke?'B':fill?'f':'S'));this.cur.push(op.join(' '))};
 Doc.prototype.line=function(x1,y1,x2,y2,color,wd){this.cur.push(hex(color||'#999999')+' RG '+(wd||.6)+' w '+x1.toFixed(2)+' '+(H-y1).toFixed(2)+' m '+x2.toFixed(2)+' '+(H-y2).toFixed(2)+' l S')};
+Doc.prototype.pic=function(x,y,w,h,k){this.cur.push('q '+w.toFixed(2)+' 0 0 '+h.toFixed(2)+' '+x.toFixed(2)+' '+(H-y-h).toFixed(2)+' cm /I'+k+' Do Q')};
 Doc.prototype.need=function(h){if(this.y+h>H-BOT)this.newPage()};
 Doc.prototype.para=function(s,o){o=o||{};const size=o.size||10.5,lh=size*1.5;const ww=W-2*MX-(o.indent||0),ls=wrap(s,ww,size,o.bold);ls.forEach((l,i)=>{this.need(lh);this.text(MX+(o.indent||0),this.y+size,l,Object.assign({},o,{just:(i<ls.length-1&&o.just!==false)?ww:0}));this.y+=lh});this.y+=o.after===undefined?6:o.after};
 Doc.prototype.h=function(s){this.need(80);this.y+=8;this.text(MX,this.y+12,s,{size:12,bold:true,color:'#0B3D5C'});this.line(MX,this.y+18,W-MX,this.y+18,'#22A6C8',1);this.y+=28};
@@ -37,6 +38,7 @@ Doc.prototype.build=function(meta,bg){
   add('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>');
   add('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>');
   if(bg)add('<< /Type /XObject /Subtype /Image /Width '+bg.w+' /Height '+bg.h+' /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length '+bg.data.length+' >>\nstream\n'+bg.data+'\nendstream');
+  const imgIds=this.imgs.map(m=>add('<< /Type /XObject /Subtype /Image /Width '+m.w+' /Height '+m.h+' /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length '+m.data.length+' >>\nstream\n'+m.data+'\nendstream'));
   const kids=[];
   this.pages.forEach((c,i)=>{
     const pre=[];
@@ -45,7 +47,7 @@ Doc.prototype.build=function(meta,bg){
     pre.push(tx(W-MX,H-52,'Página '+(i+1)+' de '+N,8,true,'#444444','r'));
     const stream=pre.join('\n')+'\n'+c.join('\n');
     const cid=add('<< /Length '+stream.length+' >>\nstream\n'+stream+'\nendstream');
-    const pid=add('<< /Type /Page /Parent 2 0 R /MediaBox [0 0 '+W.toFixed(2)+' '+H.toFixed(2)+'] /Resources << /Font << /F1 3 0 R /F2 4 0 R >>'+(bg?' /XObject << /Im1 5 0 R >>':'')+' >> /Contents '+cid+' 0 R >>');
+    const pid=add('<< /Type /Page /Parent 2 0 R /MediaBox [0 0 '+W.toFixed(2)+' '+H.toFixed(2)+'] /Resources << /Font << /F1 3 0 R /F2 4 0 R >>'+((bg||imgIds.length)?' /XObject << '+(bg?'/Im1 5 0 R ':'')+imgIds.map((id,k)=>c.some(s=>s.indexOf('/I'+k+' Do')>=0)?'/I'+k+' '+id+' 0 R ':'').join('')+'>>':'')+' >> /Contents '+cid+' 0 R >>');
     kids.push(pid+' 0 R');
   });
   objs[1]='<< /Type /Pages /Kids ['+kids.join(' ')+'] /Count '+N+' >>';
@@ -56,7 +58,7 @@ Doc.prototype.build=function(meta,bg){
   const u=new Uint8Array(out.length);for(let i=0;i<out.length;i++)u[i]=out.charCodeAt(i)&255;return u;
 };
 
-window.gerarRelatorioPDF=async function(cams,TYPES,ATS,usuario,pad,cn){
+window.gerarRelatorioPDF=async function(cams,TYPES,ATS,usuario,pad,cn,fotos){
   let bg=null;try{const r=await fetch('papel-timbrado.jpg');if(r.ok){const u=new Uint8Array(await r.arrayBuffer());let b='';for(let i=0;i<u.length;i+=8192)b+=String.fromCharCode.apply(null,u.subarray(i,i+8192));
     let w=0,h=0;for(let i=2;i<u.length;){if(u[i]!==255){i++;continue}const m=u[i+1];if(m>=192&&m<=207&&m!==196&&m!==200&&m!==204){h=u[i+5]*256+u[i+6];w=u[i+7]*256+u[i+8];break}i+=2+u[i+2]*256+u[i+3]}
     if(w&&h)bg={w,h,data:b}}}catch(e){}
@@ -102,6 +104,23 @@ window.gerarRelatorioPDF=async function(cams,TYPES,ATS,usuario,pad,cn){
   d.text(MX,d.y,'Responsável pelas informações',{size:9.5,bold:true});d.y+=13;
   d.text(MX,d.y,'Secretaria de Mobilidade Urbana · Prefeitura de Arraial do Cabo',{size:9,color:'#555555'});
 
+  if(fotos&&fotos.length){
+    const mes=now.toLocaleDateString('pt-BR',Object.assign({month:'long',year:'numeric'},tz));
+    d.newPage();d.h('5. Registro fotográfico — '+mes);
+    const gap=12,cw=(W-2*MX-gap)/2;let i=0;
+    while(i<fotos.length){
+      if(i>0)d.newPage();
+      const y0=d.y+6,ch=(H-BOT-y0-gap)/2,capH=26,bh=ch-capH;
+      for(let s=0;s<4&&i<fotos.length;s++,i++){
+        const f=fotos[i],x=MX+(s%2)*(cw+gap),y=y0+(s>>1)*(ch+gap),k=d.imgs.push(f)-1;
+        const sc=Math.min((cw-4)/f.w,(bh-4)/f.h),pw=f.w*sc,ph=f.h*sc;
+        d.rect(x,y,cw,bh,'#F3F6F8','#C9D3DA');
+        d.pic(x+(cw-pw)/2,y+(bh-ph)/2,pw,ph,k);
+        d.text(x,y+bh+11,fit(f.t,cw,9,true),{size:9,bold:true,color:'#0B3D5C'});
+        d.text(x,y+bh+22,fit(f.s,cw,8,false),{size:8,color:'#555555'});
+      }
+    }
+  }
   return d.build({titulo:'Relatorio de funcionamento das cameras - '+dCurta,dataCurta:dCurta,hora:hora,rodape:''},bg);
 };
 })();
