@@ -37,6 +37,15 @@ button{font:inherit;color:inherit;cursor:pointer}
 .ed input,.ed select{width:100%;flex:none;height:42px;box-sizing:border-box;background:var(--bg);border:1px solid var(--line);color:var(--fg);border-radius:10px;padding:0 12px;font:inherit;font-size:15px;text-transform:none;letter-spacing:0}
 .ed .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.ed .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}.ed .acts .btn{flex:1 1 auto}
 .ed .danger{color:var(--off);border-color:var(--off)}.ed .hint{font-size:12px;color:var(--fg2);margin:-4px 0 12px;text-transform:none;letter-spacing:0}.ed .err{color:var(--off);font-size:13px;min-height:18px;margin-bottom:6px}
+
+@keyframes offp{0%,100%{filter:drop-shadow(0 0 2px rgba(251,113,133,.5));opacity:1}50%{filter:drop-shadow(0 0 12px #FB7185) drop-shadow(0 0 22px rgba(251,113,133,.8));opacity:.55}}
+@keyframes offr{0%{transform:translateX(-50%) scale(.3);opacity:.9}100%{transform:translateX(-50%) scale(2.6);opacity:0}}
+@keyframes offb{0%,100%{opacity:1}50%{opacity:.25}}
+.cpo{overflow:visible}.cpo svg{animation:offp 1s ease-in-out infinite}
+.cpo .pr{position:absolute;left:50%;top:6px;width:30px;height:30px;margin-top:0;border-radius:50%;border:2px solid #FB7185;pointer-events:none;animation:offr 1.4s ease-out infinite}
+.sw2.off .knob,.sw2.off .lab,.sw.off b,.al .an,.offr .r-n{animation:offb 1s ease-in-out infinite}
+.sw2.off .trk{animation:offp 1s ease-in-out infinite}
+@media(prefers-reduced-motion:reduce){.cpo svg,.cpo .pr,.sw2.off .knob,.sw2.off .lab,.sw.off b,.al .an,.offr .r-n,.sw2.off .trk{animation:none}}
 .logo{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:linear-gradient(135deg,var(--cy),var(--vio));color:#04101c}
 .brand small{display:block;font:500 10px Inter;letter-spacing:.18em;color:var(--fg2);text-transform:uppercase}
 .tabs{display:flex;gap:4px;margin-left:auto;background:var(--panel);border:1px solid var(--line);padding:4px;border-radius:12px}
@@ -371,7 +380,7 @@ let map=null,cluster=null,mk={},sel=null,hidden=new Set(),offOnly=false,layerI=0
 const vis=()=>cams.filter(c=>!hidden.has(c.t)&&(!offOnly||!c.on));
 function pinIcon(c,big){
   const col=c.on?TYPES[c.t][1]:'#FB7185',w=big?44:34,h=big?56:44;
-  return L.divIcon({className:'cp',iconSize:[w,h],iconAnchor:[w/2,h-1],html:
+  return L.divIcon({className:c.on?'cp':'cp cpo',iconSize:[w,h],iconAnchor:[w/2,h-1],html:(c.on?'':'<i class="pr"></i>')+
    '<svg width="'+w+'" height="'+h+'" viewBox="0 0 34 44"><path d="M17 43C17 43 3 27 3 16a14 14 0 0 1 28 0c0 11-14 27-14 27z" fill="#0B1220" stroke="'+(big?'#fff':col)+'" stroke-width="'+(big?3:2.2)+'"/><g transform="translate(8.5 7.5) scale(.7)" fill="none" stroke="'+col+'" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3.5"/></g><circle cx="27" cy="8" r="4.5" fill="'+(c.on?'#34D399':'#FB7185')+'" stroke="#0B1220" stroke-width="1.5"/></svg>'});
 }
 function ensureMap(){
