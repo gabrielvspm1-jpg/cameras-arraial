@@ -1,0 +1,15 @@
+{
+  "name": "Central de câmeras",
+  "short_name": "Câmeras",
+  "description": "Monitoramento das câmeras de Arraial do Cabo",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#070B14",
+  "theme_color": "#070B14",
+  "lang": "pt-BR",
+  "icons": [
+    {"src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable"},
+    {"src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable"}
+  ]
+}
