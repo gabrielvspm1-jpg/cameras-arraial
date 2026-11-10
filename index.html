@@ -36,6 +36,9 @@ button{font:inherit;color:inherit;cursor:pointer}
 .fmi{display:grid;grid-template-columns:56px 1fr auto;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}.fmi img{width:56px;height:56px;object-fit:cover;border-radius:10px;border:1px solid var(--line)}
 .fmi .fmn{display:flex;gap:8px;align-items:center}.fmi input{width:84px;height:38px;min-height:0;padding:0 10px}.fmi .fmc{font-size:12.5px;color:var(--fg2);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.fmi .fmc.ok{color:#34D399}.fmi .fmc.bad{color:#F5B84B}
 .fmi .fmx{width:34px;height:34px;border-radius:9px;border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--fg)}.fmch{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:4px;font-size:11.5px;color:var(--fg2)}.fmb{height:28px;min-width:44px;border-radius:8px;border:1px solid var(--cy);background:rgba(34,211,238,.1);color:var(--fg);font-weight:600}
+#fotosmes{font-size:15px;padding:12px 20px;box-shadow:0 0 0 0 rgba(34,211,238,.55),0 6px 24px rgba(34,211,238,.28);animation:fmp 2.4s ease-out infinite}
+@keyframes fmp{0%{box-shadow:0 0 0 0 rgba(34,211,238,.5),0 6px 24px rgba(34,211,238,.28)}70%,100%{box-shadow:0 0 0 12px rgba(34,211,238,0),0 6px 24px rgba(34,211,238,.28)}}
+@media(prefers-reduced-motion:reduce){#fotosmes{animation:none}}
 .fmi small{display:block;font-size:10.5px;color:var(--cy)}
 .ed-bg{position:fixed;inset:0;z-index:2000;background:rgba(3,6,12,.72);backdrop-filter:blur(4px);display:grid;place-items:center;padding:16px}
 .ed{width:100%;max-width:460px;max-height:92vh;overflow:auto;background:var(--panel);border:1px solid var(--cy);border-radius:18px;padding:20px;box-shadow:0 0 60px rgba(34,211,238,.18)}
@@ -306,7 +309,7 @@ details#imp{margin:0 0 14px;padding:0}details#imp summary{cursor:pointer;padding
     <select class="in" id="sso" aria-label="Ordenar"><option value="n">Ordenar: nº</option><option value="name">Ordenar: nome</option><option value="off">Offline primeiro</option></select>
     <button class="btn pri" data-go="mapa">Abrir mapa</button>
     <button class="btn" id="addc">＋ Adicionar câmera</button>
-    <button class="btn" id="fotosmes" hidden>📷 Fotos do mês</button>
+    <button class="btn pri" id="fotosmes" hidden>📷 Enviar fotos do mês</button>
     <button class="btn" id="csv" hidden>Gerar relatório</button>
   </div>
   <div class="bar" id="f-status">
@@ -467,15 +470,15 @@ async function visualCands(d,monthRows){try{const q=await loadImg(d);if(!q)retur
   const ex=[];for(const r of monthRows||[]){if(!r.cam)continue;const k='m'+r.id;if(!SIGC.has(k)){const i=await loadImg(r.d);SIGC.set(k,i?sigOf(i):null)}if(SIGC.get(k))ex.push({cam:r.cam,g:SIGC.get(k)})}
   const refs=await refSigs(ex),best={};refs.forEach(r=>{const v=nccS(qs,r.g,3);if(!(best[r.cam]>=v))best[r.cam]=v});
   const l=Object.entries(best).map(([c,v])=>({id:+c,v})).sort((a,b)=>b.v-a.v);
-  return l.filter((x,i)=>x.v>=.6).slice(0,2).map(x=>x.id)}catch(e){return[]}}
+  return l.filter(x=>x.v>=.6).slice(0,2)}catch(e){return[]}}
 function imgDims(d){return new Promise(res=>{const i=new Image();i.onload=()=>res([i.naturalWidth,i.naturalHeight]);i.onerror=()=>res([0,0]);i.src=d})}
-const chips=r=>{let l=(r.cand||[]).filter(id=>id!==r.cam&&byId(id));if(!r.cam&&r.seq&&byId(r.seq)&&!l.includes(r.seq))l.push(r.seq);if(r.cam&&!r.gps)l=[];return l.length?'<div class="fmch">'+(r.cam?'Ou: ':'Parece: ')+l.slice(0,4).map(id=>'<button type="button" class="fmb" data-cam="'+id+'">'+pad(id)+'</button>').join('')+'</div>':''};
+const chips=r=>{let l=(r.cand||[]).filter(id=>id!==r.cam&&byId(id));if(!r.cam&&r.seq&&byId(r.seq)&&!l.includes(r.seq))l.push(r.seq);if(r.cam&&!r.gps&&!r.auto)l=[];return l.length?'<div class="fmch">'+(r.cam?'Ou: ':'Parece: ')+l.slice(0,4).map(id=>'<button type="button" class="fmb" data-cam="'+id+'">'+pad(id)+'</button>').join('')+'</div>':''};
 async function fmRender(){const L=$('fml'),rows=await FM.all();rows.sort((a,b)=>a.at-b.at);let last=0;rows.forEach(r=>{r.seq=(!r.cam&&last)?last+1:0;if(r.cam)last=r.cam});rows.sort((a,b)=>(a.cam||1e9)-(b.cam||1e9)||a.at-b.at);
   const seen={};const cc=new Set(rows.filter(r=>r.cam).map(r=>r.cam));
   L.innerHTML=rows.map(r=>{const c=r.cam&&byId(r.cam);const n=r.cam?(seen[r.cam]=(seen[r.cam]||0)+1):0;
-    return '<div class="fmi" data-id="'+r.id+'"><img alt="" src="'+r.d+'"><div><div class="fmn"><input type="number" inputmode="numeric" min="1" placeholder="Nº" value="'+(r.cam||'')+'" aria-label="Número da câmera"></div><div class="fmc '+(c?'ok':'bad')+'">'+(c?esc2(cn(c))+(n>1?' · foto '+n:''):(r.cam?'Câmera não encontrada':'Informe o número'))+'</div>'+(r.gps?'<small>número sugerido pelo GPS</small>':'')+chips(r)+'</div><button type="button" class="fmx" aria-label="Remover foto">×</button></div>'}).join('')||'<p class="fmh">Nenhuma foto ainda. Toque em "Tirar foto" ou "Da galeria".</p>';
+    return '<div class="fmi" data-id="'+r.id+'"><img alt="" src="'+r.d+'"><div><div class="fmn"><input type="number" inputmode="numeric" min="1" placeholder="Nº" value="'+(r.cam||'')+'" aria-label="Número da câmera"></div><div class="fmc '+(c?'ok':'bad')+'">'+(c?esc2(cn(c))+(n>1?' · foto '+n:''):(r.cam?'Câmera não encontrada':'Informe o número'))+'</div>'+(r.gps?'<small>número sugerido pelo GPS</small>':'')+(r.auto?'<small style="color:#F5B84B">preenchido pela semelhança com a foto da câmera · confira</small>':'')+chips(r)+'</div><button type="button" class="fmx" aria-label="Remover foto">×</button></div>'}).join('')||'<p class="fmh">Nenhuma foto ainda. Toque em "Tirar foto" ou "Da galeria".</p>';
   $('fmcnt').textContent=rows.length?rows.length+(rows.length>1?' fotos · ':' foto · ')+cc.size+(cc.size===1?' câmera':' câmeras'):'';
-  const b=$('fotosmes');b.textContent='📷 Fotos do mês'+(rows.length?' ('+rows.length+')':'');return rows}
+  const b=$('fotosmes');b.textContent='📷 Enviar fotos do mês'+(rows.length?' ('+rows.length+')':'');return rows}
 function fmOpen(){$('fmbg').hidden=false;fmRender().catch(()=>{})}
 (function(){const b=$('csv'),fb=$('fotosmes');b.hidden=false;fb.hidden=false;
   if(!window.indexedDB){fb.hidden=true}else{FM.all().then(()=>fmRender()).catch(()=>{})}
@@ -486,15 +489,16 @@ function fmOpen(){$('fmbg').hidden=false;fmRender().catch(()=>{})}
     for(let i=0;i<fs.length;i++){P.textContent=(live?'Pegando sua localização e preparando a foto…':'Preparando foto '+(i+1)+' de '+fs.length+'…');
       try{const gp=live?livePos():exifGPS(fs[i]),d=await compress(fs[i]),[w,h]=await imgDims(d),g=await gp,near=camsNear(g,100);
         const month=await FM.all(),vis=await visualCands(d,month);
-        let cam=null,gps=false;if(near.length&&near[0].d<=60){cam=near[0].c.id;gps=true}
-        const cand=[];near.slice(0,3).forEach(x=>cand.push(x.c.id));vis.forEach(id=>{if(!cand.includes(id))cand.push(id)});
+        let cam=null,gps=false,auto=false;if(near.length&&near[0].d<=60){cam=near[0].c.id;gps=true}
+        else if(vis.length&&vis[0].v>=.8&&(!vis[1]||vis[0].v-vis[1].v>=.1)){cam=vis[0].id;auto=true}
+        const cand=[];near.slice(0,3).forEach(x=>cand.push(x.c.id));vis.forEach(x=>{if(!cand.includes(x.id))cand.push(x.id)});
         if(!cam&&live&&!g)sem++;
-        await FM.add({cam,d,w,h,at:live?Date.now():(fs[i].lastModified||Date.now()),gps,cand:cand.filter(id=>id!==cam).slice(0,4)});ok++}catch(err){toast('Não consegui ler a foto '+(i+1)+'.')}}
+        await FM.add({cam,d,w,h,at:live?Date.now():(fs[i].lastModified||Date.now()),gps,auto,cand:cand.filter(id=>id!==cam).slice(0,4)});ok++}catch(err){toast('Não consegui ler a foto '+(i+1)+'.')}}
     P.hidden=true;await fmRender();if(ok)toast(ok+(ok>1?' fotos adicionadas.':' foto adicionada.')+(sem?' Sem localização: informe o número.':''))};
   $('fmfile').onchange=async e=>{const fs=[...e.target.files];e.target.value='';ingest(fs,false)};
   $('fmcam').onchange=async e=>{const fs=[...e.target.files];e.target.value='';ingest(fs,true)};
-  $('fml').addEventListener('change',async e=>{const row=e.target.closest('.fmi');if(!row||e.target.tagName!=='INPUT')return;const id=+row.dataset.id,rec=(await FM.all()).find(r=>r.id===id);if(!rec)return;const v=parseInt(e.target.value,10);rec.cam=v>0?v:null;rec.gps=false;await FM.put(rec);fmRender()});
-  $('fml').addEventListener('click',async e=>{const bt=e.target.closest('.fmb');if(bt){const id=+bt.closest('.fmi').dataset.id,rec=(await FM.all()).find(r=>r.id===id);if(rec){rec.cam=+bt.dataset.cam;rec.gps=false;await FM.put(rec);fmRender()}return}const x=e.target.closest('.fmx');if(!x)return;await FM.del(+x.closest('.fmi').dataset.id);fmRender()});
+  $('fml').addEventListener('change',async e=>{const row=e.target.closest('.fmi');if(!row||e.target.tagName!=='INPUT')return;const id=+row.dataset.id,rec=(await FM.all()).find(r=>r.id===id);if(!rec)return;const v=parseInt(e.target.value,10);rec.cam=v>0?v:null;rec.gps=false;rec.auto=false;await FM.put(rec);fmRender()});
+  $('fml').addEventListener('click',async e=>{const bt=e.target.closest('.fmb');if(bt){const id=+bt.closest('.fmi').dataset.id,rec=(await FM.all()).find(r=>r.id===id);if(rec){rec.cam=+bt.dataset.cam;rec.gps=false;rec.auto=false;await FM.put(rec);fmRender()}return}const x=e.target.closest('.fmx');if(!x)return;await FM.del(+x.closest('.fmi').dataset.id);fmRender()});
   b.onclick=async()=>{
     if(typeof gerarRelatorioPDF==='undefined'){alert('Não foi possível carregar o gerador de relatório. Atualize a página (Ctrl+Shift+R).');return}
     if(!cams.length){alert('Não há câmeras cadastradas.');return}
@@ -658,7 +662,8 @@ function openEd(c,pos){
   const sl=$('ed-t');if(!sl.options.length)TYPES.forEach((t,i)=>sl.add(new Option(t[0],i)));
   if(c){$('edt').textContent='Editar câmera';$('ed-n').value=c.id;sl.value=c.t;$('ed-name').value=c.name.indexOf('Sem nome')===0?'':c.name;$('ed-xy').value=c.lat.toFixed(6)+', '+c.lon.toFixed(6);$('ed-on').value=c.on?'1':'0';$('ed-del').hidden=false}
   else{const mx=cams.reduce((m,x)=>Math.max(m,x.id),0)+1;$('edt').textContent='Nova câmera';$('ed-n').value=mx;sl.value=3;$('ed-name').value='';
-    const p=pos||{lat:-22.9667,lng:-42.0278};$('ed-xy').value=p.lat.toFixed(6)+', '+p.lng.toFixed(6);$('ed-on').value='1';$('ed-del').hidden=true}
+    const p=pos||{lat:-22.9667,lng:-42.0278};$('ed-xy').value=p.lat.toFixed(6)+', '+p.lng.toFixed(6);$('ed-on').value='1';$('ed-del').hidden=true;
+    if(!pos){const def=$('ed-xy').value;livePos().then(g=>{if(g&&!$('edbg').hidden&&$('ed-xy').value===def&&!edCam){$('ed-xy').value=g.lat.toFixed(6)+', '+g.lon.toFixed(6);const er=$('ed-err');er.textContent='Localização preenchida com o GPS do celular.';setTimeout(()=>{if(er.textContent.indexOf('GPS do celular')>0)er.textContent=''},4000)}})}}
   $('edbg').hidden=false;setTimeout(()=>$('ed-name').focus(),50);
 }
 function closeEd(){$('edbg').hidden=true;edCam=null}
