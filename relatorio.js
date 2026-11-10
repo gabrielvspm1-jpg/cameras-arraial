@@ -1,6 +1,6 @@
 /* Gerador de relatório em PDF (sem bibliotecas externas). Fontes padrão do PDF: Helvetica. */
 (function(){
-const W=595.28,H=841.89,MX=42,TOP=96,BOT=58;
+const W=595.28,H=841.89,MX=72,TOP=138,BOT=72;
 const HW={' ':278,'!':278,'"':355,'#':556,'$':556,'%':889,'&':667,"'":191,'(':333,')':333,'*':389,'+':584,',':278,'-':333,'.':278,'/':278,':':278,';':278,'<':584,'=':584,'>':584,'?':556,'@':1015,'A':667,'B':667,'C':722,'D':722,'E':667,'F':611,'G':778,'H':722,'I':278,'J':500,'K':667,'L':556,'M':833,'N':722,'O':778,'P':667,'Q':778,'R':722,'S':667,'T':611,'U':722,'V':667,'W':944,'X':667,'Y':667,'Z':611,'[':278,'\\':278,']':278,'^':469,'_':556,'`':333,'a':556,'b':556,'c':500,'d':556,'e':556,'f':278,'g':556,'h':556,'i':222,'j':222,'k':500,'l':222,'m':833,'n':556,'o':556,'p':556,'q':556,'r':333,'s':500,'t':278,'u':556,'v':500,'w':722,'x':500,'y':500,'z':500,'{':334,'|':260,'}':334,'~':584};
 const BW={' ':278,'A':722,'B':722,'C':722,'D':722,'E':667,'F':611,'G':778,'H':722,'I':278,'J':556,'K':722,'L':611,'M':833,'N':722,'O':778,'P':667,'Q':778,'R':722,'S':667,'T':611,'U':722,'V':667,'W':944,'X':667,'Y':667,'Z':611,'a':556,'b':611,'c':556,'d':611,'e':556,'f':333,'g':611,'h':611,'i':278,'j':278,'k':556,'l':278,'m':889,'n':611,'o':611,'p':611,'q':611,'r':389,'s':556,'t':333,'u':611,'v':556,'w':778,'x':556,'y':556,'z':500,'-':333,'.':278,',':278,':':278,'/':278,'(':333,')':333};
 const CP={'–':'\x96','—':'\x97','’':'\x92','‘':'\x91','“':'\x93','”':'\x94','…':'\x85','•':'\x95','°':'\xB0','→':'->','✓':'v'};
@@ -21,7 +21,7 @@ Doc.prototype.line=function(x1,y1,x2,y2,color,wd){this.cur.push(hex(color||'#999
 Doc.prototype.need=function(h){if(this.y+h>H-BOT)this.newPage()};
 Doc.prototype.para=function(s,o){o=o||{};const size=o.size||10.5,lh=size*1.5;wrap(s,W-2*MX-(o.indent||0),size,o.bold).forEach(l=>{this.need(lh);this.text(MX+(o.indent||0),this.y+size,l,o);this.y+=lh});this.y+=o.after===undefined?6:o.after};
 Doc.prototype.h=function(s){this.need(80);this.y+=8;this.text(MX,this.y+12,s,{size:12,bold:true,color:'#0B3D5C'});this.line(MX,this.y+18,W-MX,this.y+18,'#22A6C8',1);this.y+=28};
-Doc.prototype.table=function(cols,rows,o){o=o||{};const size=o.size||8.5,rh=o.rh||17,tot=cols.reduce((a,c)=>a+c.w,0);
+Doc.prototype.table=function(cols,rows,o){o=o||{};const size=o.size||8.5,rh=o.rh||17;const k0=(W-2*MX)/cols.reduce((a,c)=>a+c.w,0);cols=cols.map(c=>Object.assign({},c,{w:c.w*k0}));const tot=cols.reduce((a,c)=>a+c.w,0);
   const head=()=>{this.need(rh*2);this.rect(MX,this.y,tot,rh,'#0B3D5C');let x=MX;cols.forEach(c=>{this.text(c.al==='r'?x+c.w-6:x+6,this.y+rh-5.5,c.t,{size,bold:true,color:'#FFFFFF',align:c.al==='r'?'right':'left'});x+=c.w});this.y+=rh};
   head();rows.forEach((r,i)=>{if(this.y+rh>H-BOT){this.newPage();head()}
     if(i%2)this.rect(MX,this.y,tot,rh,'#F1F6F9');let x=MX;
@@ -29,29 +29,22 @@ Doc.prototype.table=function(cols,rows,o){o=o||{};const size=o.size||8.5,rh=o.rh
     this.y+=rh});
   this.line(MX,this.y,MX+tot,this.y,'#B7C4CC');this.y+=10};
 
-Doc.prototype.build=function(meta){
+Doc.prototype.build=function(meta,bg){
   const N=this.pages.length,objs=[];
   const add=s=>{objs.push(s);return objs.length};
   add('<< /Type /Catalog /Pages 2 0 R >>');add('');
   add('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>');
   add('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>');
+  if(bg)add('<< /Type /XObject /Subtype /Image /Width '+bg.w+' /Height '+bg.h+' /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length '+bg.data.length+' >>\nstream\n'+bg.data+'\nendstream');
   const kids=[];
   this.pages.forEach((c,i)=>{
     const pre=[];
-    // cabeçalho
-    pre.push(hex('#0B3D5C')+' rg 0 '+(H-6)+' '+W+' 6 re f '+hex('#22D3EE')+' rg 0 '+(H-9)+' '+W+' 3 re f');
     const tx=(x,y,s,sz,b,col,al)=>{const w=tw(s,sz,b);const xx=al==='r'?x-w:x;return 'BT /'+(b?'F2':'F1')+' '+sz+' Tf '+hex(col)+' rg '+xx.toFixed(2)+' '+(H-y).toFixed(2)+' Td ('+esc(s)+') Tj ET'};
-    pre.push(tx(MX,40,'PREFEITURA MUNICIPAL DE ARRAIAL DO CABO',13,true,'#0B3D5C'));
-    pre.push(tx(MX,55,'Mobilidade Urbana · Monitoramento por câmeras',9.5,false,'#555555'));
-    pre.push(tx(W-MX,40,meta.dataCurta,9.5,true,'#0B3D5C','r'));
-    pre.push(tx(W-MX,55,meta.hora,9.5,false,'#555555','r'));
-    pre.push(hex('#22A6C8')+' RG 1 w '+MX+' '+(H-68)+' m '+(W-MX)+' '+(H-68)+' l S');
-    pre.push(hex('#999999')+' RG .5 w '+MX+' '+(H-H+42)+' m '+(W-MX)+' '+(H-H+42)+' l S');
-    pre.push(tx(MX,H-28,meta.rodape,8,false,'#666666'));
-    pre.push(tx(W-MX,H-28,'Página '+(i+1)+' de '+N,8,true,'#444444','r'));
+    if(bg)pre.push('q '+W.toFixed(2)+' 0 0 '+H.toFixed(2)+' 0 0 cm /Im1 Do Q');
+    pre.push(tx(W-MX,H-52,'Página '+(i+1)+' de '+N,8,true,'#444444','r'));
     const stream=pre.join('\n')+'\n'+c.join('\n');
     const cid=add('<< /Length '+stream.length+' >>\nstream\n'+stream+'\nendstream');
-    const pid=add('<< /Type /Page /Parent 2 0 R /MediaBox [0 0 '+W.toFixed(2)+' '+H.toFixed(2)+'] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents '+cid+' 0 R >>');
+    const pid=add('<< /Type /Page /Parent 2 0 R /MediaBox [0 0 '+W.toFixed(2)+' '+H.toFixed(2)+'] /Resources << /Font << /F1 3 0 R /F2 4 0 R >>'+(bg?' /XObject << /Im1 5 0 R >>':'')+' >> /Contents '+cid+' 0 R >>');
     kids.push(pid+' 0 R');
   });
   objs[1]='<< /Type /Pages /Kids ['+kids.join(' ')+'] /Count '+N+' >>';
@@ -62,7 +55,10 @@ Doc.prototype.build=function(meta){
   const u=new Uint8Array(out.length);for(let i=0;i<out.length;i++)u[i]=out.charCodeAt(i)&255;return u;
 };
 
-window.gerarRelatorioPDF=function(cams,TYPES,ATS,usuario,pad,cn){
+window.gerarRelatorioPDF=async function(cams,TYPES,ATS,usuario,pad,cn){
+  let bg=null;try{const r=await fetch('papel-timbrado.jpg');if(r.ok){const u=new Uint8Array(await r.arrayBuffer());let b='';for(let i=0;i<u.length;i+=8192)b+=String.fromCharCode.apply(null,u.subarray(i,i+8192));
+    let w=0,h=0;for(let i=2;i<u.length;){if(u[i]!==255){i++;continue}const m=u[i+1];if(m>=192&&m<=207&&m!==196&&m!==200&&m!==204){h=u[i+5]*256+u[i+6];w=u[i+7]*256+u[i+8];break}i+=2+u[i+2]*256+u[i+3]}
+    if(w&&h)bg={w,h,data:b}}}catch(e){}
   const now=new Date(),tz={timeZone:'America/Sao_Paulo'};
   const dCurta=now.toLocaleDateString('pt-BR',Object.assign({day:'2-digit',month:'2-digit',year:'numeric'},tz));
   const hora=now.toLocaleTimeString('pt-BR',Object.assign({hour:'2-digit',minute:'2-digit'},tz));
@@ -71,12 +67,12 @@ window.gerarRelatorioPDF=function(cams,TYPES,ATS,usuario,pad,cn){
   const tot=cams.length,on=cams.filter(c=>c.on).length,off=tot-on,pct=tot?Math.round(on/tot*1000)/10:0,pcto=tot?Math.round(off/tot*1000)/10:0;
   const pc=n=>String(n).replace('.',',');
   const d=new Doc();
-  d.text(MX,d.y+14,'RELATÓRIO DE FUNCIONAMENTO DAS CÂMERAS',{size:17,bold:true,color:'#0B3D5C'});d.y+=22;
-  d.text(MX,d.y+14,'DE MONITORAMENTO',{size:17,bold:true,color:'#0B3D5C'});d.y+=26;
+  d.text(MX,d.y+14,'RELATÓRIO DE FUNCIONAMENTO DAS CÂMERAS',{size:15.5,bold:true,color:'#0B3D5C'});d.y+=22;
+  d.text(MX,d.y+14,'DE MONITORAMENTO',{size:15.5,bold:true,color:'#0B3D5C'});d.y+=26;
   d.text(MX,d.y+10,'Data e hora de referência: '+dLonga+', às '+hora+' (horário de Brasília).',{size:10,color:'#444444'});d.y+=22;
 
   d.h('1. Situação geral');
-  d.para('O presente relatório informa a situação de funcionamento das câmeras de monitoramento do Município de Arraial do Cabo, geridas pela Mobilidade Urbana da Prefeitura Municipal, de acordo com o registro mantido no sistema Central de Câmeras na data e hora de referência acima.');
+  d.para('O presente relatório informa a situação de funcionamento das câmeras de monitoramento do Município de Arraial do Cabo, geridas pela Secretaria de Mobilidade Urbana da Prefeitura de Arraial do Cabo, de acordo com o registro mantido no sistema Central de Câmeras na data e hora de referência acima.');
   d.para('Na data de referência constam '+tot+' câmeras cadastradas, das quais '+on+' ('+pc(pct)+'%) encontram-se em funcionamento (online) e '+off+' ('+pc(pcto)+'%) encontram-se fora de operação (offline).'+(off?' As câmeras fora de operação estão relacionadas na seção 3.':' Não há câmeras registradas como fora de operação.'));
   // caixas
   d.need(70);const bw=(W-2*MX-3*10)/4,by=d.y;
@@ -103,8 +99,8 @@ window.gerarRelatorioPDF=function(cams,TYPES,ATS,usuario,pad,cn){
   d.para('Arraial do Cabo, '+dLonga.replace(/^[^,]+, /,'')+'.',{size:10.5});
   d.y+=34;d.line(MX,d.y,MX+230,d.y,'#444444',.8);d.y+=13;
   d.text(MX,d.y,'Responsável pelas informações',{size:9.5,bold:true});d.y+=13;
-  d.text(MX,d.y,'Mobilidade Urbana · Prefeitura Municipal de Arraial do Cabo',{size:9,color:'#555555'});
+  d.text(MX,d.y,'Secretaria de Mobilidade Urbana · Prefeitura de Arraial do Cabo',{size:9,color:'#555555'});
 
-  return d.build({titulo:'Relatorio de funcionamento das cameras - '+dCurta,dataCurta:dCurta,hora:hora,rodape:''});
+  return d.build({titulo:'Relatorio de funcionamento das cameras - '+dCurta,dataCurta:dCurta,hora:hora,rodape:''},bg);
 };
 })();

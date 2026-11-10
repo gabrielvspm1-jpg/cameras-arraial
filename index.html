@@ -386,8 +386,8 @@ $('f-status').addEventListener('click',e=>{const b=e.target.closest('.chip');if(
 (function(){const b=$('csv');b.hidden=false;b.onclick=()=>{
   if(typeof gerarRelatorioPDF==='undefined'){alert('Não foi possível carregar o gerador de relatório. Atualize a página (Ctrl+Shift+R).');return}
   if(!cams.length){alert('Não há câmeras cadastradas.');return}
-  const u8=gerarRelatorioPDF(cams,TYPES,ATS,(auth&&auth.currentUser&&auth.currentUser.email)||'',pad,cn);
-  const u=URL.createObjectURL(new Blob([u8],{type:'application/pdf'}));const a=document.createElement('a');a.href=u;a.download='relatorio-cameras-arraial-do-cabo-'+new Date().toLocaleDateString('en-CA',{timeZone:'America/Sao_Paulo'})+'.pdf';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000)}})();
+  gerarRelatorioPDF(cams,TYPES,ATS,'',pad,cn).then(u8=>{
+  const u=URL.createObjectURL(new Blob([u8],{type:'application/pdf'}));const a=document.createElement('a');a.href=u;a.download='relatorio-cameras-arraial-do-cabo-'+new Date().toLocaleDateString('en-CA',{timeZone:'America/Sao_Paulo'})+'.pdf';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000)}).catch(e=>alert('Erro ao gerar o relatório: '+e.message))}})();
 
 /* ---------- mapa (Leaflet) ---------- */
 let map=null,cluster=null,mk={},sel=null,hidden=new Set(),offOnly=false,layerI=0,baseLayers=[];
