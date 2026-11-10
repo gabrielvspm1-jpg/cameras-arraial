@@ -105,6 +105,6 @@ window.gerarRelatorioPDF=function(cams,TYPES,ATS,usuario,pad,cn){
   d.text(MX,d.y,'Responsável pelas informações',{size:9.5,bold:true});d.y+=13;
   d.text(MX,d.y,'Mobilidade Urbana · Prefeitura Municipal de Arraial do Cabo',{size:9,color:'#555555'});
 
-  return d.build({titulo:'Relatorio de funcionamento das cameras - '+dCurta,dataCurta:dCurta,hora:hora,rodape:'Gerado pelo sistema Central de Câmeras em '+dCurta+' às '+hora});
+  return d.build({titulo:'Relatorio de funcionamento das cameras - '+dCurta,dataCurta:dCurta,hora:hora,rodape:''});
 };
 })();
