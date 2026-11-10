@@ -2,6 +2,7 @@
   "name": "Central de câmeras",
   "short_name": "Câmeras",
   "description": "Monitoramento das câmeras de Arraial do Cabo",
+  "id": "./?app=3",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
@@ -9,7 +10,7 @@
   "theme_color": "#050914",
   "lang": "pt-BR",
   "icons": [
-    {"src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable"},
-    {"src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable"}
+    {"src": "icon-192.png?v=3", "sizes": "192x192", "type": "image/png", "purpose": "any maskable"},
+    {"src": "icon-512.png?v=3", "sizes": "512x512", "type": "image/png", "purpose": "any maskable"}
   ]
 }
