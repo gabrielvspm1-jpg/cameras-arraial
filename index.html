@@ -515,7 +515,7 @@ addEventListener('online',netUI);addEventListener('offline',netUI);
 let tT=0;function toast(m){const t=$('toast');t.textContent=m;t.hidden=false;clearTimeout(tT);tT=setTimeout(()=>{t.hidden=true},6000)}
 /* ---------- fotos ---------- */
 const PH={};let edPhoto;
-const FIXAS={2:'fotos/002.jpg',3:'fotos/003.jpg',4:'fotos/004.jpg',5:'fotos/005.jpg',7:'fotos/007.jpg',8:'fotos/008.jpg',9:'fotos/009.jpg'};
+const FIXAS={2:'fotos/002.jpg',3:'fotos/003.jpg',4:'fotos/004.jpg',5:'fotos/005.jpg',7:'fotos/007.jpg',8:'fotos/008.jpg',9:'fotos/009.jpg',10:'fotos/010.jpg'};
 const fotoRef=id=>db.collection('config').doc('foto-'+id);
 function getPhoto(id){
   if(PH[id]!==undefined)return Promise.resolve(PH[id]);
