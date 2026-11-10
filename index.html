@@ -71,6 +71,12 @@ input.zq{width:100%;height:36px;min-height:0;max-height:36px;flex:0 0 36px;box-s
 .zsw{display:flex;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}.zsw label{flex:1;display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;padding:6px 8px;border-radius:10px;border:1px solid var(--line);background:rgba(255,255,255,.03)}
 .zsw input{display:none}.zsw i{width:26px;height:14px;border-radius:99px;background:#26324a;position:relative;flex:none;transition:background .15s}.zsw i::after{content:"";position:absolute;left:2px;top:2px;width:10px;height:10px;border-radius:50%;background:#9fb0c8;transition:left .15s,background .15s}
 .zsw input:checked+i{background:rgba(34,211,238,.35)}.zsw input:checked+i::after{left:14px;background:var(--cy);box-shadow:0 0 8px var(--cy)}
+.zcard{left:auto;right:64px;bottom:12px;top:auto;width:min(340px,calc(100% - 24px));max-height:46%;overflow:auto;background:linear-gradient(180deg,rgba(10,19,36,.95),rgba(6,11,22,.95));border:1px solid rgba(34,211,238,.4);border-radius:16px;backdrop-filter:blur(14px);box-shadow:0 12px 40px rgba(0,0,0,.5),0 0 28px rgba(34,211,238,.1);padding:12px 14px}
+.zcard .ch{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}.zcard small{display:block;font:600 10px Inter,sans-serif;letter-spacing:.2em;color:var(--cy)}.zcard .cc2{font:12px ui-monospace,Menlo,monospace;color:var(--fg2)}
+.zcard .cx{width:28px;height:28px;border-radius:8px;border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--fg);flex:none}
+.zcard .bk{margin:8px 0 4px;font-size:13px}.zcard .bk b{color:#E6FBFF}.zcard .zi{display:flex;gap:10px;padding:8px 0;border-top:1px solid var(--line)}.zcard .zi .zdot{margin-top:3px}.zcard .zi b{font:600 13px 'Space Grotesk',Inter,sans-serif;display:block}.zcard .zi span{display:block;font-size:12px;color:var(--fg2);line-height:1.4}.zcard .none{font-size:12.5px;color:var(--fg2);padding:8px 0;border-top:1px solid var(--line)}
+.zb{cursor:pointer}.zb .zdot{width:9px;height:9px;background:transparent;border:1.5px dashed #cfe8ff;box-shadow:none}
+@media(max-width:700px){.zcard{right:10px;left:10px;width:auto}}
 .zinfo{font-size:12.5px;color:var(--fg2);margin:-2px 0 10px;line-height:1.5}.zinfo b{color:var(--fg);font-weight:600}
 #zmap{position:absolute;inset:0;z-index:0;background:#e8eaed}
 .leaflet-popup-content{font-size:13px;line-height:1.45;margin:10px 12px}
@@ -238,7 +244,7 @@ details#imp{margin:0 0 14px;padding:0}details#imp summary{cursor:pointer;padding
   <div class="brand"><div class="logo"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3.5"/></svg></div>
     <div>Central de câmeras<small>Mobilidade Urbana · Arraial do Cabo</small></div></div>
   <div class="hd-r"><div class="clock" id="clk"></div><div class="usr" id="usrw" hidden><i></i><span id="usr"></span></div><button class="btn sm" id="snd" title="Alerta sonoro quando uma câmera ficar offline">Som: ligado</button><button class="btn sm" id="out" hidden>Sair</button></div>
-  <div class="tabs" role="tablist"><button role="tab" id="t-painel" aria-selected="true" data-go="painel">Painel</button><button role="tab" id="t-mapa" aria-selected="false" data-go="mapa">Mapa</button><button role="tab" id="t-zona" aria-selected="false" data-go="zona">Zoneamento</button></div>
+  <div class="tabs" role="tablist"><button role="tab" id="t-painel" aria-selected="true" data-go="painel">Painel</button><button role="tab" id="t-mapa" aria-selected="false" data-go="mapa">Mapa</button><button role="tab" id="t-zona" aria-selected="false" data-go="zona">Zoneamento</button><button role="tab" id="t-bair" aria-selected="false" data-go="bair">Bairros</button></div>
 </div>
 
 <div id="login" hidden><div class="lg-bg"></div>
@@ -323,6 +329,7 @@ details#imp{margin:0 0 14px;padding:0}details#imp summary{cursor:pointer;padding
 <section class="view" id="v-zona" hidden>
   <div class="mapwrap" id="zw">
     <div id="zmap" aria-label="Mapa de zoneamento do município"></div>
+    <div class="ov zcard" id="zcard" hidden></div>
     <div class="ov zoom"><button id="zzi" aria-label="Aproximar">+</button><button id="zzo" aria-label="Afastar">−</button><button id="zzf" aria-label="Enquadrar o município" style="font-size:15px">⤢</button><button id="zzl" aria-label="Trocar camada do mapa" style="font-size:11px;font-weight:600">Mapa</button></div>
     <div class="ov zleg" id="zleg"><div class="zh"><div><small>ZONEAMENTO</small><strong>Camadas do mapa</strong></div><button class="zlt" id="zlt" aria-expanded="true" aria-label="Recolher ou abrir o painel"><span id="zlc">▾</span></button></div><div id="zlb"></div></div></div>
   </div>
@@ -364,11 +371,11 @@ const LENS=new Path2D();LENS.arc(12,13,3.5,0,Math.PI*2);
 /* ---------- navegação ---------- */
 let mapReady=false;
 function go(v){
-  if(v!=='mapa'&&v!=='zona')v='painel';
-  $('v-painel').hidden=v!=='painel';$('v-mapa').hidden=v!=='mapa';$('v-zona').hidden=v!=='zona';
-  ['painel','mapa','zona'].forEach(x=>$('t-'+x).setAttribute('aria-selected',x===v));
+  if(v!=='mapa'&&v!=='zona'&&v!=='bair')v='painel';zMode=v==='bair'?'b':'z';
+  $('v-painel').hidden=v!=='painel';$('v-mapa').hidden=v!=='mapa';$('v-zona').hidden=v!=='zona'&&v!=='bair';
+  ['painel','mapa','zona','bair'].forEach(x=>$('t-'+x).setAttribute('aria-selected',x===v));
   if(location.hash!=='#'+v)history.replaceState(null,'','#'+v);
-  if(v==='mapa'){if(ensureMap()){map.invalidateSize();if(!mapReady&&cams.length){mapReady=true;fit(cams,true)}draw()}} else if(v==='zona')ensureZMap(); else renderPanel();
+  if(v==='mapa'){if(ensureMap()){map.invalidateSize();if(!mapReady&&cams.length){mapReady=true;fit(cams,true)}draw()}} else if(v==='zona'||v==='bair')ensureZMap(); else renderPanel();
 }
 document.addEventListener('click',e=>{const g=e.target.closest('[data-go]');if(g)go(g.dataset.go)});
 addEventListener('hashchange',()=>go(location.hash.slice(1)));
@@ -474,9 +481,8 @@ function sheet(){
   const s=$('sheet');if(!sel){s.hidden=true;return}
   const c=sel;s.hidden=false;s.textContent='';
   const lat=c.lat.toFixed(6),lon=c.lon.toFixed(6);
-  s.innerHTML='<button class="x" aria-label="Fechar">×</button><div class="fw" id="fw"></div><div class="n tag sg">Nº '+pad(c.id)+' · '+TYPES[c.t][0]+'</div><h3></h3><div class="coord">'+lat+', '+lon+'</div><div class="zinfo" id="zinfo"></div><div class="acts"><button class="sw'+(c.on?'':' off')+'"><b></b>'+(c.on?'Online':'Offline')+'</button><button class="btn" id="cp">Copiar coordenadas</button><button class="btn" id="ed">✎ Editar</button><a class="btn" target="_blank" rel="noopener" style="color:inherit;text-decoration:none" href="https://www.google.com/maps?q='+lat+','+lon+'">Google Maps ↗</a></div>';
+  s.innerHTML='<button class="x" aria-label="Fechar">×</button><div class="fw" id="fw"></div><div class="n tag sg">Nº '+pad(c.id)+' · '+TYPES[c.t][0]+'</div><h3></h3><div class="coord">'+lat+', '+lon+'</div><div class="acts"><button class="sw'+(c.on?'':' off')+'"><b></b>'+(c.on?'Online':'Offline')+'</button><button class="btn" id="cp">Copiar coordenadas</button><button class="btn" id="ed">✎ Editar</button><a class="btn" target="_blank" rel="noopener" style="color:inherit;text-decoration:none" href="https://www.google.com/maps?q='+lat+','+lon+'">Google Maps ↗</a></div>';
   s.querySelector('h3').textContent=cn(c);
-  loadZon().then(d=>{const z=s.querySelector('#zinfo');if(d&&z&&sel===c)z.innerHTML=zinfoHTML(c)});
   getPhoto(c.id).then(d=>{const w=s.querySelector('#fw');if(d&&w&&sel===c){const i=new Image();i.src=d;i.alt='Foto da câmera';i.title='Toque para ampliar';i.onclick=()=>{$('lb').querySelector('img').src=d;$('lb').hidden=false};w.textContent='';w.appendChild(i)}});
   s.querySelector('.x').onclick=()=>{sel=null;sheet();draw()};
   s.querySelector('.sw').onclick=()=>{c.on=!c.on;setStatus(c);sheet();draw()};
@@ -493,7 +499,7 @@ $('ms').addEventListener('input',e=>{const q=norm(e.target.value.trim()),r=$('re
 /* ---------- Firebase ---------- */
 let db=null,auth=null,statLoaded=false;
 function setStatus(c){if(!c.on)beep();if(!db)return;const p=track(db.collection('cameras').doc(String(c.id)).set({on:c.on,at:firebase.firestore.FieldValue.serverTimestamp(),by:(auth.currentUser&&auth.currentUser.email)||''},{merge:true}));p.catch(e=>toast('Não foi possível salvar: '+e.message))}
-function refresh(){if(typeof zRefresh==='function')zRefresh();kpis();if(!$('v-painel').hidden)renderPanel();if(sel)sheet();draw()}
+function refresh(){kpis();if(!$('v-painel').hidden)renderPanel();if(sel)sheet();draw()}
 (function(){
   const cfg=window.FIREBASE_CONFIG;
   if(typeof firebase==='undefined'||!cfg||!cfg.apiKey||cfg.apiKey.indexOf('COLE')===0){
@@ -612,27 +618,38 @@ $('ed-del').onclick=()=>{
 };
 
 /* ---------- zoneamento ---------- */
-let zAll=null,zmap=null,ZD=null,zPromise=null,zGroups={},zBair=null,zCam=null,zBase=[],zbI=0,zCamMk={};
+let zMode='z',zBF=null,zAll=null,zmap=null,ZD=null,zPromise=null,zGroups={},zBair=null,zBase=[],zbI=0,zPin=null,zHi=null;
 function loadZon(){if(!zPromise)zPromise=fetch('zoneamento.json').then(r=>{if(!r.ok)throw new Error('http '+r.status);return r.json()}).then(d=>{
   const bb=g=>{let a=1e9,b=1e9,c=-1e9,e=-1e9;g.forEach(p=>p[0].forEach((v,i)=>{if(i%2){b=Math.min(b,v);e=Math.max(e,v)}else{a=Math.min(a,v);c=Math.max(c,v)}}));return [a,b,c,e]};
-  d.zonas.forEach(z=>z.f.forEach(f=>{f.b=bb(f.g)}));d.bairros.forEach(f=>{f.b=bb(f.g)});ZD=d;return d}).catch(e=>{zPromise=null;return null});return zPromise}
+  d.zonas.forEach(z=>z.f.forEach(f=>{f.b=bb(f.g);f.ha=areaHa(f.g)}));d.bairros.forEach(f=>{f.b=bb(f.g);f.ha=areaHa(f.g)});ZD=d;return d}).catch(e=>{zPromise=null;return null});return zPromise}
+function ringArea(r,lat0){const kx=111320*Math.cos(lat0*Math.PI/180),ky=110574;let a=0;for(let i=0,j=r.length-2;i<r.length;j=i,i+=2)a+=(r[j]*kx)*(r[i+1]*ky)-(r[i]*kx)*(r[j+1]*ky);return Math.abs(a/2)}
+function areaHa(g){let t=0;g.forEach(p=>{const lat0=p[0][1];t+=ringArea(p[0],lat0);for(let k=1;k<p.length;k++)t-=ringArea(p[k],lat0)});return t/10000}
 function inRing(r,x,y){let ins=false;for(let i=0,j=r.length-2;i<r.length;j=i,i+=2){const xi=r[i],yi=r[i+1],xj=r[j],yj=r[j+1];if((yi>y)!==(yj>y)&&x<(xj-xi)*(y-yi)/(yj-yi)+xi)ins=!ins}return ins}
-function inFeat(f,lat,lon){const b=f.b;if(lon<b[0]||lon>b[2]||lat<b[1]||lat>b[3])return false;
-  return f.g.some(p=>inRing(p[0],lon,lat)&&!p.slice(1).some(h=>inRing(h,lon,lat)))}
-const zcache={};
-function zonesOf(c){const k=c.id+'|'+c.lat+'|'+c.lon;if(zcache[k])return zcache[k];if(!ZD)return {zs:[],b:null};
-  const zs=[];ZD.zonas.forEach(z=>z.f.forEach(f=>{if(inFeat(f,c.lat,c.lon))zs.push({k:z.k,n:f.n,nome:z.nome,cor:z.cor})}));
-  const b=ZD.bairros.find(f=>inFeat(f,c.lat,c.lon));return zcache[k]={zs,b:b?b.n:null}}
+function inFeat(f,lat,lon){const b=f.b;if(lon<b[0]||lon>b[2]||lat<b[1]||lat>b[3])return false;return f.g.some(p=>inRing(p[0],lon,lat)&&!p.slice(1).some(h=>inRing(h,lon,lat)))}
 const esc2=t=>String(t).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
-function zinfoHTML(c){const r=zonesOf(c),p=[];if(r.b)p.push('Bairro: <b>'+esc2(r.b)+'</b>');if(r.zs.length)p.push('Zona: '+r.zs.map(z=>'<b>'+esc2(z.n)+'</b>').join(', '));return p.join(' · ')}
-function zRefresh(){if(!zmap||!ZD)return;zDrawCams();zCounts()}
-function zDrawCams(){if(!zCam)return;zCam.clearLayers();zCamMk={};
-  cams.forEach(c=>{const m=L.circleMarker([c.lat,c.lon],{radius:5.5,color:'#fff',weight:1.5,fillColor:c.on?'#34D399':'#FB7185',fillOpacity:1});
-    m.bindTooltip(pad(c.id)+' · '+cn(c),{direction:'top'});
-    m.on('click',()=>{m.unbindPopup();m.bindPopup('<b>'+esc2(cn(c))+'</b><br>Nº '+pad(c.id)+' · '+TYPES[c.t][0]+' · '+(c.on?'Online':'Offline')+(zinfoHTML(c)?'<br>'+zinfoHTML(c):'')).openPopup()});zCam.addLayer(m)})}
-function zCounts(){const sc=$('zscm');if(sc)sc.textContent=cams.length;ZD.zonas.forEach(z=>{const n=cams.filter(c=>zonesOf(c).zs.some(q=>q.k===z.k)).length;const e=document.querySelector('[data-zc="'+z.k+'"]');if(e)e.innerHTML=z.f.length+(z.f.length>1?' áreas':' área')+'<br>'+n+' câm.'})}
+const fmtHa=h=>h>=100?Math.round(h).toLocaleString('pt-BR')+' ha':h.toLocaleString('pt-BR',{maximumFractionDigits:1})+' ha';
+const hue=i=>'hsl('+Math.round((i*137.508)%360)+',65%,58%)';
+const toLL=g=>g.map(r=>{const o=[];for(let i=0;i<r.length;i+=2)o.push([r[i+1],r[i]]);return o});
+function zCard(ll){
+  const lat=ll.lat,lon=ll.lng;if(zPin)zmap.removeLayer(zPin);zPin=L.circleMarker([lat,lon],{radius:6,color:'#22D3EE',weight:2,fillColor:'#fff',fillOpacity:1}).addTo(zmap);
+  const zs=[];if(zMode!=='b')ZD.zonas.forEach(z=>{if(zGroups[z.k]&&!zmap.hasLayer(zGroups[z.k]))return;z.f.forEach(f=>{if(inFeat(f,lat,lon))zs.push({z,f})})});
+  const b=ZD.bairros.find(f=>inFeat(f,lat,lon));
+  let h='<div class="ch"><div><small>PONTO CONSULTADO</small><div class="cc2">'+lat.toFixed(6)+', '+lon.toFixed(6)+'</div></div><button class="cx" id="zcx2" aria-label="Fechar">×</button></div>';
+  h+='<div class="bk">Bairro: '+(b?'<b>'+esc2(b.n)+'</b>'+(b.d?' <span style="color:var(--fg2)">· distrito '+esc2(b.d)+'</span>':''):'<span style="color:var(--fg2)">fora dos bairros do arquivo</span>')+'</div>';
+  if(zMode!=='b'&&!zs.length)h+='<div class="none">Nenhuma zona visível neste ponto.</div>';
+  if(zMode==='b'&&b)h+='<div class="zi"><span class="zdot" style="--c:'+hue(ZD.bairros.indexOf(b))+'"></span><div><b>'+esc2(b.n)+'</b><span>'+fmtHa(b.ha)+(b.d?' · distrito '+esc2(b.d):'')+'</span></div></div>';
+  zs.forEach(q=>{h+='<div class="zi"><span class="zdot" style="--c:'+q.z.cor+'"></span><div><b>'+esc2(q.f.n)+'</b><span>'+esc2(q.z.nome)+' · '+fmtHa(q.f.ha)+'</span>'+(q.f.d?'<span><i>'+esc2(q.f.d)+'</i></span>':'')+'</div></div>'});
+  $('zcard').innerHTML=h;$('zcard').hidden=false;$('zcx2').onclick=()=>{$('zcard').hidden=true;if(zPin){zmap.removeLayer(zPin);zPin=null}}}
+function applyMode(fit){
+  if(!zmap||!ZD||!zBF)return;const b=zMode==='b';
+  const w=$('zlb');w.querySelectorAll('.zmz').forEach(e=>e.hidden=b);w.querySelectorAll('.zmb').forEach(e=>e.hidden=!b);
+  const tt=document.querySelector('#zleg .zh small'),t2=document.querySelector('#zleg .zh strong');if(tt)tt.textContent=b?'BAIRROS':'ZONEAMENTO';if(t2)t2.textContent=b?'Zoneamento de bairros':'Zoneamento total';
+  $('zcard').hidden=true;if(zPin){zmap.removeLayer(zPin);zPin=null}
+  Object.keys(zGroups).forEach(k=>{const on=w.querySelector('[data-zk="'+k+'"]').classList.contains('on');if(b||!on)zmap.removeLayer(zGroups[k]);else zGroups[k].addTo(zmap)});
+  if(b){zmap.removeLayer(zBair);zBF.addTo(zmap)}else{zmap.removeLayer(zBF);if($('zbx').checked)zBair.addTo(zmap)}
+  if(fit)try{zmap.fitBounds((b?zBF:zAll).getBounds(),{padding:[20,20]})}catch(_){}}
 function ensureZMap(){
-  if(zmap){setTimeout(()=>zmap.invalidateSize(),0);return}
+  if(zmap){setTimeout(()=>{zmap.invalidateSize();applyMode(true)},0);return}
   if(typeof L==='undefined'){$('zmap').innerHTML='<p style="padding:24px;color:#333">Não foi possível carregar o mapa (biblioteca Leaflet). Verifique a conexão.</p>';return}
   zmap=L.map('zmap',{zoomControl:false,minZoom:9,maxZoom:20,zoomSnap:.5}).setView([-22.96,-42.1],11);
   const osm=L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxNativeZoom:19,maxZoom:20,attribution:'© OpenStreetMap contributors'});
@@ -648,37 +665,40 @@ function ensureZMap(){
     if(!d){$('zlb').innerHTML='<p style="color:var(--amber);font-size:12.5px">Não foi possível carregar os dados de zoneamento. Verifique a conexão e abra a aba de novo.</p>';return}
     zmap.createPane('pB');zmap.getPane('pB').style.zIndex=410;zmap.createPane('pZ');zmap.getPane('pZ').style.zIndex=420;
     zBair=L.featureGroup();
-    d.bairros.forEach(f=>f.g.forEach(g=>{const p=L.polygon(g.map(r=>{const o=[];for(let i=0;i<r.length;i+=2)o.push([r[i+1],r[i]]);return o}),{pane:'pB',color:'#fff',weight:1.4,dashArray:'5 4',fillColor:'#fff',fillOpacity:.02});p.bindTooltip(f.n,{sticky:true});zBair.addLayer(p)}));
+    d.bairros.forEach(f=>f.g.forEach(g=>{const p=L.polygon(toLL(g),{pane:'pB',color:'#fff',weight:1.4,dashArray:'5 4',fillColor:'#fff',fillOpacity:.02,interactive:false});zBair.addLayer(p)}));
+    zBF=L.featureGroup();
+    d.bairros.forEach((f,i)=>f.g.forEach(g=>{const p=L.polygon(toLL(g),{pane:'pB',color:'#fff',weight:1.4,fillColor:hue(i),fillOpacity:.45});p.bindTooltip(f.n+(f.d?' · '+f.d:''),{sticky:true});zBF.addLayer(p)}));
     zAll=L.featureGroup();
     d.zonas.forEach(z=>{const grp=L.featureGroup();zGroups[z.k]=grp;
-      z.f.forEach(f=>f.g.forEach(g=>{const p=L.polygon(g.map(r=>{const o=[];for(let i=0;i<r.length;i+=2)o.push([r[i+1],r[i]]);return o}),{pane:'pZ',color:z.cor,weight:1.6,fillColor:z.cor,fillOpacity:.38});
-        p.bindTooltip(f.n,{sticky:true});
-        p.on('click',e=>{const inside=cams.filter(c=>inFeat(f,c.lat,c.lon));p.unbindPopup();p.bindPopup('<b>'+esc2(f.n)+'</b><br>'+esc2(z.nome)+(f.d?'<br><i>'+esc2(f.d)+'</i>':'')+'<br>'+(inside.length?inside.length+' câmera(s): '+inside.slice(0,8).map(c=>pad(c.id)).join(', ')+(inside.length>8?'…':''):'Nenhuma câmera nesta área')).openPopup(e.latlng)});
-        grp.addLayer(p);zAll.addLayer(p)}));grp.addTo(zmap)});
-    zCam=L.layerGroup().addTo(zmap);zDrawCams();
-    zmap.fitBounds(zAll.getBounds(),{padding:[20,20]});
+      z.f.forEach(f=>f.g.forEach(g=>{const p=L.polygon(toLL(g),{pane:'pZ',color:z.cor,weight:1.6,fillColor:z.cor,fillOpacity:.38});
+        p.bindTooltip(f.n+' · '+z.nome,{sticky:true});grp.addLayer(p);zAll.addLayer(p)}));grp.addTo(zmap)});
+    zmap.on('click',e=>zCard(e.latlng));
     const GR=[['Áreas urbanas',['ZR','EC','ZEN','ZEIS','ZH','ZOC','ZUESP','ZPORT','ZUR']],['Conservação',['ZPVS','ZCVS','ZUC','ZIE','ZEDS']],['Orla e mar',['ZO','ZP','ZIC','ZEP']]];
     const byK={};d.zonas.forEach(z=>byK[z.k]=z);
     const nAreas=d.zonas.reduce((a,z)=>a+z.f.length,0);
-    let h='<div class="zst"><div><b>'+d.zonas.length+'</b><span>zonas</span></div><div><b>'+nAreas+'</b><span>áreas</span></div><div><b>'+d.bairros.length+'</b><span>bairros</span></div><div><b id="zscm">'+cams.length+'</b><span>câmeras</span></div></div>';
-    h+='<input class="zq" id="zq" type="search" placeholder="Filtrar zona…" autocomplete="off" aria-label="Filtrar zona"><div class="zbt"><button id="zon">Mostrar todas</button><button id="zoff">Ocultar todas</button></div><div id="zlist">';
+    let h='<div class="zmz"><div class="zst" style="grid-template-columns:repeat(3,1fr)"><div><b>'+d.zonas.length+'</b><span>zonas</span></div><div><b>'+nAreas+'</b><span>áreas</span></div><div><b>'+d.bairros.length+'</b><span>bairros</span></div></div>';
+    h+='<input class="zq" id="zq" type="search" placeholder="Filtrar zona ou bairro…" autocomplete="off" aria-label="Filtrar zona ou bairro"><div class="zbt"><button id="zon">Mostrar todas</button><button id="zoff">Ocultar todas</button></div></div><div id="zlist"><div class="zmz">';
     const rest=d.zonas.map(z=>z.k).filter(k=>!GR.some(g=>g[1].includes(k)));if(rest.length)GR.push(['Outras',rest]);
     GR.forEach(g=>{const ks=g[1].filter(k=>byK[k]);if(!ks.length)return;h+='<div class="zgw"><div class="zg">'+g[0]+'</div>';
-      ks.forEach(k=>{const z=byK[k];h+='<div class="zr on" data-zk="'+k+'" data-s="'+esc2((k+' '+z.nome).toLowerCase())+'" title="'+esc2(z.nome)+'"><span class="zdot" style="--c:'+z.cor+'"></span><div class="zt"><b>'+k+'</b><small>'+esc2(z.nome)+'</small></div><em data-zc="'+k+'"></em><button class="zso" data-solo="'+k+'" title="Isolar e aproximar" aria-label="Isolar '+k+'">◎</button></div>'});h+='</div>'});
-    h+='</div><div class="zsw"><label><input type="checkbox" id="zbx"><i></i>Bairros</label><label><input type="checkbox" id="zcx" checked><i></i>Câmeras</label></div>';
-    $('zlb').innerHTML=h;zCounts();
+      ks.forEach(k=>{const z=byK[k];h+='<div class="zr on" data-zk="'+k+'" data-s="'+esc2((k+' '+z.nome).toLowerCase())+'" title="'+esc2(z.nome)+'"><span class="zdot" style="--c:'+z.cor+'"></span><div class="zt"><b>'+k+'</b><small>'+esc2(z.nome)+'</small></div><em>'+z.f.length+(z.f.length>1?' áreas':' área')+'</em><button class="zso" data-solo="'+k+'" title="Isolar e aproximar" aria-label="Isolar '+k+'">◎</button></div>'});h+='</div>'});
+    h+='</div><div class="zmb"><div class="zst" style="grid-template-columns:repeat(2,1fr)"><div><b>'+d.bairros.length+'</b><span>bairros</span></div><div><b>'+fmtHa(d.bairros.reduce((a,f)=>a+f.ha,0))+'</b><span>área total</span></div></div><div class="zgw"><div class="zg">Bairros ('+d.bairros.length+')</div>';
+    d.bairros.map((f,i)=>[f,i]).sort((a,b)=>a[0].n.localeCompare(b[0].n,'pt-BR')).forEach(([f,i])=>{h+='<div class="zr zb" data-b="'+i+'" data-s="'+esc2((f.n+' '+(f.d||'')).toLowerCase())+'"><span class="zdot" style="--c:'+hue(i)+';background:var(--c);border:0"></span><div class="zt"><b>'+esc2(f.n)+'</b><small>'+(f.d?'Distrito '+esc2(f.d)+' · ':'')+fmtHa(f.ha)+'</small></div></div>'});h+='</div>';
+    h+='</div></div><div class="zsw zmz"><label><input type="checkbox" id="zbx"><i></i>Contornos dos bairros</label></div>';
+    $('zlb').innerHTML=h;
     const setZ=(k,on)=>{const r=$('zlb').querySelector('[data-zk="'+k+'"]');if(r)r.classList.toggle('on',on);on?zGroups[k].addTo(zmap):zmap.removeLayer(zGroups[k])};
     const base={weight:1.6,fillOpacity:.38},hi={weight:3.2,fillOpacity:.68};
     $('zlb').onclick=e=>{
       const so=e.target.closest('[data-solo]');
       if(so){const k=so.dataset.solo;Object.keys(zGroups).forEach(x=>setZ(x,x===k));try{zmap.fitBounds(zGroups[k].getBounds(),{padding:[40,40],maxZoom:16})}catch(_){}return}
+      const br=e.target.closest('[data-b]');
+      if(br){const f=d.bairros[+br.dataset.b];if(zHi)zmap.removeLayer(zHi);zHi=L.featureGroup(f.g.map(g=>L.polygon(toLL(g),{color:'#22D3EE',weight:3,fillColor:'#22D3EE',fillOpacity:.1,interactive:false}))).addTo(zmap);zmap.fitBounds(zHi.getBounds(),{padding:[40,40],maxZoom:17});setTimeout(()=>{if(zHi){zmap.removeLayer(zHi);zHi=null}},6000);if(innerWidth<700){$('zlb').hidden=true;$('zlc').textContent='▸'}return}
       const r=e.target.closest('[data-zk]');if(r){setZ(r.dataset.zk,!r.classList.contains('on'));return}
       const id=e.target.id;if(id==='zon'||id==='zoff'){Object.keys(zGroups).forEach(x=>setZ(x,id==='zon'))}};
     $('zlb').onmouseover=e=>{const r=e.target.closest('[data-zk]');if(r&&r.classList.contains('on')&&zGroups[r.dataset.zk]){zGroups[r.dataset.zk].setStyle(hi);zGroups[r.dataset.zk].bringToFront()}};
     $('zlb').onmouseout=e=>{const r=e.target.closest('[data-zk]');if(r&&zGroups[r.dataset.zk])zGroups[r.dataset.zk].setStyle(base)};
-    $('zq').oninput=e=>{const q=e.target.value.trim().toLowerCase();$('zlb').querySelectorAll('[data-zk]').forEach(r=>{r.hidden=!!q&&r.dataset.s.indexOf(q)<0});$('zlb').querySelectorAll('.zgw').forEach(g=>{g.hidden=!g.querySelector('[data-zk]:not([hidden])')})};
-    $('zlb').onchange=e=>{const t=e.target;if(t.id==='zbx'){t.checked?zBair.addTo(zmap):zmap.removeLayer(zBair)}else if(t.id==='zcx'){t.checked?zCam.addTo(zmap):zmap.removeLayer(zCam)}};
-    if(!$('v-zona').hidden)setTimeout(()=>zmap.invalidateSize(),0)});
+    $('zq').oninput=e=>{const q=e.target.value.trim().toLowerCase();$('zlb').querySelectorAll('.zr').forEach(r=>{r.hidden=!!q&&r.dataset.s.indexOf(q)<0});$('zlb').querySelectorAll('.zgw').forEach(g=>{g.hidden=!g.querySelector('.zr:not([hidden])')})};
+    $('zlb').onchange=e=>{const t=e.target;if(t.id==='zbx'){t.checked?zBair.addTo(zmap):zmap.removeLayer(zBair)}};
+    zmap.invalidateSize();applyMode(true)});
 }
 
 go(location.hash.slice(1));netUI();
