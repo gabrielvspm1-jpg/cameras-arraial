@@ -39,6 +39,13 @@ button{font:inherit;color:inherit;cursor:pointer}
 #fotosmes{font-size:15px;padding:12px 20px;box-shadow:0 0 0 0 rgba(34,211,238,.55),0 6px 24px rgba(34,211,238,.28);animation:fmp 2.4s ease-out infinite}
 @keyframes fmp{0%{box-shadow:0 0 0 0 rgba(34,211,238,.5),0 6px 24px rgba(34,211,238,.28)}70%,100%{box-shadow:0 0 0 12px rgba(34,211,238,0),0 6px 24px rgba(34,211,238,.28)}}
 @media(prefers-reduced-motion:reduce){#fotosmes{animation:none}}
+.fmcard{margin:0 0 14px;padding:16px 18px;border-color:rgba(34,211,238,.35)}.fmtop{display:flex;justify-content:space-between;align-items:flex-end;gap:12px}
+.fmk{font:600 10.5px Inter,sans-serif;letter-spacing:.18em;color:var(--cy);margin-bottom:4px;text-transform:uppercase}.fmbig b{font:700 30px 'Space Grotesk',Inter,sans-serif}.fmbig span{color:var(--fg2);font-size:13.5px}.fmbig i{font-style:normal}
+.fmright{text-align:right}.fmright b{display:block;font:700 30px 'Space Grotesk',Inter,sans-serif;color:#F5B84B;line-height:1}.fmright span{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--fg2)}
+.fmbar{height:8px;border-radius:99px;background:rgba(255,255,255,.07);margin:12px 0 10px;overflow:hidden}.fmbar i{display:block;height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,#22D3EE,#34D399);transition:width .4s}
+.fmfoot{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;font-size:13px;color:var(--fg2)}.fmfoot .lnk{background:none;border:0;color:var(--cy);font-weight:600;padding:4px 0}
+.fmmiss{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;max-height:116px;overflow:auto;padding-top:10px;border-top:1px solid var(--line)}.fmmiss span{font:600 12px ui-monospace,Menlo,monospace;padding:3px 8px;border-radius:8px;background:rgba(245,184,75,.1);border:1px solid rgba(245,184,75,.3);color:#F5D79A}
+.fmcard.done .fmright b{color:#34D399}
 .fmi small{display:block;font-size:10.5px;color:var(--cy)}
 .ed-bg{position:fixed;inset:0;z-index:2000;background:rgba(3,6,12,.72);backdrop-filter:blur(4px);display:grid;place-items:center;padding:16px}
 .ed{width:100%;max-width:460px;max-height:92vh;overflow:auto;background:var(--panel);border:1px solid var(--cy);border-radius:18px;padding:20px;box-shadow:0 0 60px rgba(34,211,238,.18)}
@@ -299,6 +306,12 @@ details#imp{margin:0 0 14px;padding:0}details#imp summary{cursor:pointer;padding
     <div class="k off"><div class="kt">Offline <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v9"/><path d="M6.3 6.8a8 8 0 1 0 11.4 0"/></svg></div><div class="kv" id="k-off">0</div><div class="ks">fora do ar</div></div>
     <div class="k pct"><div class="kt">Disponibilidade <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg></div><div class="kv" id="k-pct">0%</div><div class="pbar"><i id="k-bar"></i></div></div>
   </div>
+  <div class="card fmcard" id="fmcard" hidden>
+    <div class="fmtop"><div><div class="fmk">FOTOS DO MÊS · <span id="fm-mes"></span></div><div class="fmbig"><b id="fm-n">0</b><span> de <i id="fm-t">0</i> câmeras fotografadas</span></div></div><div class="fmright"><b id="fm-f">0</b><span>faltam</span></div></div>
+    <div class="fmbar"><i id="fm-bar"></i></div>
+    <div class="fmfoot"><span id="fm-msg"></span><button type="button" class="lnk" id="fm-ver">Ver quais faltam</button></div>
+    <div class="fmmiss" id="fm-miss" hidden></div>
+  </div>
   <div class="row2">
     <div class="card"><h3 class="ch">Por tipo de câmera</h3><div class="tbar" id="tbar"></div><div class="tleg" id="tleg"></div></div>
     <div class="card"><h3 class="ch">Atenção agora <span class="badge" id="al-n"></span></h3><div id="alerts"></div></div>
@@ -477,10 +490,20 @@ async function fmRender(){const L=$('fml'),rows=await FM.all();rows.sort((a,b)=>
   L.innerHTML=rows.map(r=>{const c=r.cam&&byId(r.cam);const n=r.cam?(seen[r.cam]=(seen[r.cam]||0)+1):0;
     return '<div class="fmi" data-id="'+r.id+'"><img alt="" src="'+r.d+'"><div><div class="fmn"><input type="number" inputmode="numeric" min="1" placeholder="Nº" value="'+(r.cam||'')+'" aria-label="Número da câmera"></div><div class="fmc '+(c?'ok':'bad')+'">'+(c?esc2(cn(c))+(n>1?' · foto '+n:''):(r.cam?'Câmera não encontrada':'Informe o número'))+'</div>'+(r.gps?'<small>número sugerido pelo GPS</small>':'')+(r.auto?'<small style="color:#F5B84B">preenchido pela semelhança com a foto da câmera · confira</small>':'')+chips(r)+(!r.cam&&r.pos?'<div class="fmch"><button type="button" class="fmb fmnc" style="width:auto;padding:0 12px">＋ Câmera nova neste local</button></div>':'')+'</div><button type="button" class="fmx" aria-label="Remover foto">×</button></div>'}).join('')||'<p class="fmh">Nenhuma foto ainda. Toque em "Tirar foto" ou "Da galeria".</p>';
   $('fmcnt').textContent=rows.length?rows.length+(rows.length>1?' fotos · ':' foto · ')+cc.size+(cc.size===1?' câmera':' câmeras'):'';
-  const b=$('fotosmes');b.textContent='📷 Tirar foto da câmera'+(rows.length?' ('+rows.length+')':'');return rows}
+  fmStatus();const b=$('fotosmes');b.textContent='📷 Tirar foto da câmera'+(rows.length?' ('+rows.length+')':'');return rows}
+let fmMiss=false;
+async function fmStatus(){const c=$('fmcard');if(!c||!window.indexedDB){return}let rows=[];try{rows=await FM.all()}catch(e){}
+  const tot=cams.length;if(!tot){c.hidden=true;return}c.hidden=false;const have=new Set(rows.filter(r=>r.cam&&byId(r.cam)).map(r=>r.cam)),n=have.size,f=tot-n;
+  $('fm-mes').textContent=new Date().toLocaleDateString('pt-BR',{month:'long',year:'numeric',timeZone:'America/Sao_Paulo'});
+  $('fm-n').textContent=n;$('fm-t').textContent=tot;$('fm-f').textContent=f;$('fm-bar').style.width=(n/tot*100).toFixed(1)+'%';
+  c.classList.toggle('done',f===0);
+  $('fm-msg').textContent=f===0?'Todas as câmeras fotografadas. Já pode gerar o relatório completo.':(f===1?'Falta 1 foto':'Faltam '+f+' fotos')+' para fechar o mês e gerar o relatório completo.';
+  const miss=cams.filter(x=>!have.has(x.id));$('fm-ver').hidden=!miss.length;$('fm-ver').textContent=fmMiss?'Esconder lista':'Ver quais faltam';
+  $('fm-miss').hidden=!fmMiss||!miss.length;$('fm-miss').innerHTML=miss.map(x=>'<span title="'+esc2(cn(x))+'">'+pad(x.id)+'</span>').join('')}
 function fmOpen(){$('fmbg').hidden=false;fmRender().catch(()=>{})}
 (function(){const b=$('csv'),fb=$('fotosmes');b.hidden=false;fb.hidden=false;
   if(!window.indexedDB){fb.hidden=true}else{FM.all().then(()=>fmRender()).catch(()=>{})}
+  $('fm-ver').onclick=()=>{fmMiss=!fmMiss;fmStatus()};$('fmcard').onclick=e=>{if(!e.target.closest('button')&&!e.target.closest('.fmmiss'))fmOpen()};$('fmcard').style.cursor='pointer';
   fb.onclick=fmOpen;$('fmnew').onclick=()=>{$('fmbg').hidden=true;openEd(null)};$('fmok').onclick=()=>{$('fmbg').hidden=true};
   $('fmbg').addEventListener('click',e=>{if(e.target===$('fmbg'))$('fmbg').hidden=true});
   $('fmclr').onclick=async()=>{const n=(await FM.all()).length;if(n&&confirm('Apagar as '+n+' fotos do mês deste aparelho?')){await FM.clear();fmRender()}};
@@ -589,7 +612,7 @@ $('ms').addEventListener('input',e=>{const q=norm(e.target.value.trim()),r=$('re
 /* ---------- Firebase ---------- */
 let db=null,auth=null,statLoaded=false;
 function setStatus(c){if(!c.on)beep();if(!db)return;const p=track(db.collection('cameras').doc(String(c.id)).set({on:c.on,at:firebase.firestore.FieldValue.serverTimestamp(),by:(auth.currentUser&&auth.currentUser.email)||''},{merge:true}));p.catch(e=>toast('Não foi possível salvar: '+e.message))}
-function refresh(){kpis();if(!$('v-painel').hidden)renderPanel();if(sel)sheet();draw()}
+function refresh(){kpis();if(typeof fmStatus==='function')fmStatus();if(!$('v-painel').hidden)renderPanel();if(sel)sheet();draw()}
 (function(){
   const cfg=window.FIREBASE_CONFIG;
   if(typeof firebase==='undefined'||!cfg||!cfg.apiKey||cfg.apiKey.indexOf('COLE')===0){
