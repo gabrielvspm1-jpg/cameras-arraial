@@ -76,7 +76,26 @@ input:focus{outline:2px solid var(--cy);outline-offset:1px}
 .coord{font:500 13px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--cy);margin:6px 0 10px;overflow-wrap:anywhere}
 .sheet .acts{display:flex;gap:8px;flex-wrap:wrap}
 .sheet .x{position:absolute;right:8px;top:6px;border:0;background:none;font-size:20px;color:var(--fg2)}
-#login{position:fixed;inset:0;z-index:50;background:var(--bg);display:grid;place-items:center;padding:16px}#login form{width:100%;max-width:360px;display:flex;flex-direction:column;gap:10px}#login .in{flex:none;width:100%;height:44px;display:block}#login h2{margin:0}#lmsg,#fbwarn{color:var(--amber);font-size:12.5px}.empty{border-color:var(--amber)}#imp{margin:0 0 14px}#imp code{color:var(--cy)}.note{color:var(--fg2);font-size:12px;margin:0 0 20px}
+[hidden]{display:none!important}
+#fbwarn{color:var(--amber);font-size:12.5px;padding:8px 0}
+#login{position:fixed;inset:0;z-index:100;display:grid;place-items:center;padding:16px;overflow:auto;background:radial-gradient(900px 500px at 80% -10%,rgba(34,211,238,.18),transparent 60%),radial-gradient(700px 500px at 0% 100%,rgba(167,139,250,.16),transparent 60%),#050912}
+.lg-bg{position:absolute;inset:0;pointer-events:none;background-image:linear-gradient(rgba(34,211,238,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(34,211,238,.07) 1px,transparent 1px);background-size:44px 44px;-webkit-mask-image:radial-gradient(ellipse at center,#000 20%,transparent 75%);mask-image:radial-gradient(ellipse at center,#000 20%,transparent 75%);animation:lgm 18s linear infinite}
+@keyframes lgm{to{background-position:44px 44px}}
+#lf{position:relative;width:100%;max-width:390px;padding:30px 26px 26px;border-radius:22px;background:rgba(11,18,32,.88);border:1px solid rgba(34,211,238,.4);box-shadow:0 0 0 1px rgba(34,211,238,.08),0 0 70px rgba(34,211,238,.18),0 30px 60px rgba(0,0,0,.5);display:flex;flex-direction:column;gap:14px}
+#lf::before{content:"";position:absolute;left:24px;right:24px;top:-1px;height:2px;background:linear-gradient(90deg,transparent,#22D3EE,#A78BFA,transparent)}
+.lg-logo{width:52px;height:52px;border-radius:15px;display:grid;place-items:center;background:linear-gradient(135deg,#22D3EE,#A78BFA);color:#04101c;box-shadow:0 0 30px rgba(34,211,238,.45)}
+.lg-kick{font:600 10.5px 'Space Grotesk',sans-serif;letter-spacing:.28em;color:var(--cy);margin-top:4px}
+#lf h2{margin:0;font-size:26px;line-height:1.1;letter-spacing:.01em}
+.lg-sub{margin:-6px 0 4px;color:var(--fg2);font-size:13px}
+.lg-f{display:flex;flex-direction:column;gap:6px;font:600 10.5px 'Space Grotesk',sans-serif;letter-spacing:.18em;text-transform:uppercase;color:var(--fg2)}
+.lg-f input{width:100%;height:48px;border-radius:12px;border:1px solid var(--line);background:#070D1A;color:var(--fg);padding:0 14px;font:15px Inter,system-ui,sans-serif;letter-spacing:0;text-transform:none;outline:0;transition:border-color .15s,box-shadow .15s}
+.lg-f input:focus{border-color:var(--cy);box-shadow:0 0 0 3px rgba(34,211,238,.2)}
+.lg-pw{position:relative}.lg-pw input{padding-right:78px}
+.lg-pw button{position:absolute;right:6px;top:6px;height:36px;padding:0 12px;border:0;border-radius:9px;background:var(--panel2);color:var(--fg2);font:12px Inter,sans-serif}
+.lg-go{height:50px;border:0;border-radius:13px;background:linear-gradient(135deg,#22D3EE,#38BDF8 55%,#A78BFA);color:#04101c;font:700 15px 'Space Grotesk',sans-serif;letter-spacing:.06em;box-shadow:0 8px 30px rgba(34,211,238,.35);margin-top:4px}
+.lg-go:hover{filter:brightness(1.08)}.lg-go:disabled{opacity:.6;cursor:wait}
+#lmsg{min-height:18px;color:#F5B84B;font-size:13px}
+.lg-foot{text-align:center;font-size:11px;color:var(--fg2);letter-spacing:.06em}.empty{border-color:var(--amber)}#imp{margin:0 0 14px}#imp code{color:var(--cy)}.note{color:var(--fg2);font-size:12px;margin:0 0 20px}
 @media(max-width:560px){.tabs{margin-left:0;width:100%}.tabs button{flex:1}.chips{right:10px}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
@@ -88,7 +107,18 @@ input:focus{outline:2px solid var(--cy);outline-offset:1px}
   <div class="tabs" role="tablist"><button role="tab" id="t-painel" aria-selected="true" data-go="painel">Painel</button><button role="tab" id="t-mapa" aria-selected="false" data-go="mapa">Mapa</button></div>
 </div>
 
-<div id="login" hidden><form id="lf" class="card"><h2>Central de câmeras</h2><p class="tag" style="margin:0">Entre com o e-mail e senha cadastrados.</p><input class="in" type="email" id="le" placeholder="E-mail" autocomplete="username" autofocus required><input class="in" type="password" id="lp" placeholder="Senha" autocomplete="current-password" required><button class="btn pri" type="submit">Entrar</button><div id="lmsg"></div></form></div>
+<div id="login" hidden><div class="lg-bg"></div>
+<form id="lf" novalidate>
+  <div class="lg-logo"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3.5"/></svg></div>
+  <div class="lg-kick">ACESSO RESTRITO</div>
+  <h2>Central de câmeras</h2>
+  <p class="lg-sub">Mobilidade Urbana · Arraial do Cabo</p>
+  <label class="lg-f">E-mail<input id="le" type="email" inputmode="email" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="voce@exemplo.com"></label>
+  <label class="lg-f">Senha<span class="lg-pw"><input id="lp" type="password" autocomplete="current-password" placeholder="••••••••"><button type="button" id="lt">mostrar</button></span></label>
+  <button class="lg-go" type="submit" id="lgo">ENTRAR</button>
+  <div id="lmsg" role="alert"></div>
+  <div class="lg-foot">Sistema monitorado · uso exclusivo da prefeitura</div>
+</form></div>
 <div id="fbwarn" hidden>Firebase ainda não configurado (veja o README): o status não está sendo salvo nem sincronizado.</div>
 <section class="view" id="v-painel">
   <div class="kpis">
@@ -261,7 +291,11 @@ function refresh(){kpis();if(!$('v-painel').hidden)renderPanel();if(sel)sheet();
     if(u)unsub2=db.collection('config').doc('cameras').onSnapshot(d=>{loadList(d.exists&&Array.isArray(d.data().list)?d.data().list:[]);$('imp').classList.toggle('empty',!cams.length)},e=>{$('fbwarn').hidden=false;$('fbwarn').textContent='Erro ao ler a lista de câmeras: '+e.message});
     if(u)unsub=db.collection('cameras').onSnapshot(s=>{s.forEach(d=>{STAT[+d.id]=d.data().on!==false;const c=cams[+d.id-1];if(c)c.on=STAT[+d.id]});refresh()},e=>{$('fbwarn').hidden=false;$('fbwarn').textContent='Erro ao ler o status: '+e.message});
   });
-  $('lf').addEventListener('submit',e=>{e.preventDefault();$('lmsg').textContent='';auth.signInWithEmailAndPassword($('le').value.trim(),$('lp').value).catch(er=>{const c=er&&er.code||'';$('lmsg').textContent=(c==='auth/invalid-credential'||c==='auth/wrong-password'||c==='auth/user-not-found'||c==='auth/invalid-email')?'E-mail ou senha incorretos.':'Não foi possível entrar ('+c+'). '+(er&&er.message||'')})});
+  $('lt').onclick=()=>{const p=$('lp'),h=p.type==='password';p.type=h?'text':'password';$('lt').textContent=h?'ocultar':'mostrar'};
+  $('lf').addEventListener('submit',e=>{e.preventDefault();const m=$('lmsg'),em=$('le').value.trim(),pw=$('lp').value;m.textContent='';
+    if(!em||!pw){m.textContent='Preencha o e-mail e a senha.';return}
+    const b=$('lgo');b.disabled=true;b.textContent='ENTRANDO…';
+    auth.signInWithEmailAndPassword(em,pw).catch(er=>{const c=er&&er.code||'';m.textContent=(c==='auth/invalid-credential'||c==='auth/wrong-password'||c==='auth/user-not-found'||c==='auth/invalid-email')?'E-mail ou senha incorretos.':'Não foi possível entrar ('+c+'). '+(er&&er.message||'')}).then(()=>{b.disabled=false;b.textContent='ENTRAR'})});
   $('out').onclick=()=>auth.signOut();
   $('impf').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
     r.onload=()=>{try{const a=JSON.parse(r.result);if(!Array.isArray(a)||!a.length||a.some(x=>typeof x.a!=='number'||typeof x.o!=='number'))throw new Error('formato inválido');
