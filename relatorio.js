@@ -15,11 +15,12 @@ const hex=h=>[1,3,5].map(i=>(parseInt(h.slice(i,i+2),16)/255).toFixed(3)).join('
 function Doc(){this.pages=[];this.cur=null;this.newPage()}
 Doc.prototype.newPage=function(){this.cur=[];this.pages.push(this.cur);this.y=TOP};
 Doc.prototype.text=function(x,y,s,o){o=o||{};const size=o.size||10,bold=!!o.bold;let xx=x;const w=tw(s,size,bold);if(o.align==='right')xx=x-w;else if(o.align==='center')xx=x-w/2;
-  this.cur.push('BT /'+(bold?'F2':'F1')+' '+size+' Tf '+hex(o.color||'#111111')+' rg '+xx.toFixed(2)+' '+(H-y).toFixed(2)+' Td ('+esc(s)+') Tj ET')};
+  let tws='';if(o.just){const n=(String(s).match(/ /g)||[]).length;if(n)tws=((o.just-w)/n).toFixed(3)+' Tw '}
+  this.cur.push('BT /'+(bold?'F2':'F1')+' '+size+' Tf '+tws+hex(o.color||'#111111')+' rg '+xx.toFixed(2)+' '+(H-y).toFixed(2)+' Td ('+esc(s)+') Tj'+(tws?' 0 Tw':'')+' ET')};
 Doc.prototype.rect=function(x,y,w,h,fill,stroke){const op=[];if(fill)op.push(hex(fill)+' rg');if(stroke)op.push(hex(stroke)+' RG 0.6 w');op.push(x.toFixed(2)+' '+(H-y-h).toFixed(2)+' '+w.toFixed(2)+' '+h.toFixed(2)+' re '+(fill&&stroke?'B':fill?'f':'S'));this.cur.push(op.join(' '))};
 Doc.prototype.line=function(x1,y1,x2,y2,color,wd){this.cur.push(hex(color||'#999999')+' RG '+(wd||.6)+' w '+x1.toFixed(2)+' '+(H-y1).toFixed(2)+' m '+x2.toFixed(2)+' '+(H-y2).toFixed(2)+' l S')};
 Doc.prototype.need=function(h){if(this.y+h>H-BOT)this.newPage()};
-Doc.prototype.para=function(s,o){o=o||{};const size=o.size||10.5,lh=size*1.5;wrap(s,W-2*MX-(o.indent||0),size,o.bold).forEach(l=>{this.need(lh);this.text(MX+(o.indent||0),this.y+size,l,o);this.y+=lh});this.y+=o.after===undefined?6:o.after};
+Doc.prototype.para=function(s,o){o=o||{};const size=o.size||10.5,lh=size*1.5;const ww=W-2*MX-(o.indent||0),ls=wrap(s,ww,size,o.bold);ls.forEach((l,i)=>{this.need(lh);this.text(MX+(o.indent||0),this.y+size,l,Object.assign({},o,{just:(i<ls.length-1&&o.just!==false)?ww:0}));this.y+=lh});this.y+=o.after===undefined?6:o.after};
 Doc.prototype.h=function(s){this.need(80);this.y+=8;this.text(MX,this.y+12,s,{size:12,bold:true,color:'#0B3D5C'});this.line(MX,this.y+18,W-MX,this.y+18,'#22A6C8',1);this.y+=28};
 Doc.prototype.table=function(cols,rows,o){o=o||{};const size=o.size||8.5,rh=o.rh||17;const k0=(W-2*MX)/cols.reduce((a,c)=>a+c.w,0);cols=cols.map(c=>Object.assign({},c,{w:c.w*k0}));const tot=cols.reduce((a,c)=>a+c.w,0);
   const head=()=>{this.need(rh*2);this.rect(MX,this.y,tot,rh,'#0B3D5C');let x=MX;cols.forEach(c=>{this.text(c.al==='r'?x+c.w-6:x+6,this.y+rh-5.5,c.t,{size,bold:true,color:'#FFFFFF',align:c.al==='r'?'right':'left'});x+=c.w});this.y+=rh};
