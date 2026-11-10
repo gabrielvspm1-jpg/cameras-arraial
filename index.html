@@ -1,0 +1,273 @@
+<title>Central de câmeras</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap">
+<style>
+:root{--bg:#070B14;--panel:#0B1220;--panel2:#0F1A2E;--line:#1B2A44;--fg:#E6EDF7;--fg2:#8FA0B8;--cy:#22D3EE;--on:#34D399;--off:#FB7185;--amber:#F5B84B;--vio:#A78BFA;--pink:#F472B6;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--fg);font:14px/1.45 Inter,system-ui,sans-serif;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0;overflow-x:hidden;
+background-image:radial-gradient(900px 400px at 85% -10%,rgba(34,211,238,.12),transparent 60%),radial-gradient(700px 400px at -10% 10%,rgba(167,139,250,.10),transparent 60%)}
+h1,h2,h3,.sg{font-family:'Space Grotesk',Inter,sans-serif}
+button{font:inherit;color:inherit;cursor:pointer}
+.top{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:14px 0}
+.brand{display:flex;align-items:center;gap:10px;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:18px;letter-spacing:.02em}
+.logo{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:linear-gradient(135deg,var(--cy),var(--vio));color:#04101c}
+.brand small{display:block;font:500 10px Inter;letter-spacing:.18em;color:var(--fg2);text-transform:uppercase}
+.tabs{display:flex;gap:4px;margin-left:auto;background:var(--panel);border:1px solid var(--line);padding:4px;border-radius:12px}
+.tabs button{border:0;background:none;padding:8px 16px;border-radius:9px;color:var(--fg2);font-weight:500}
+.tabs button[aria-selected=true]{background:var(--panel2);color:var(--cy);box-shadow:inset 0 0 0 1px var(--line)}
+.view[hidden]{display:none!important}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:6px 0 14px}
+.card{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:16px;padding:16px;min-width:0}
+.kpi .l{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--fg2)}
+.kpi .v{font:700 34px 'Space Grotesk';margin-top:4px}
+.hero{display:flex;align-items:center;gap:16px;flex-wrap:wrap;justify-content:space-between;margin-bottom:14px;border-color:rgba(34,211,238,.35);box-shadow:0 0 40px rgba(34,211,238,.08)}
+.hero h2{margin:0 0 2px;font-size:20px}.hero p{margin:0;color:var(--fg2)}
+.btn{border:1px solid var(--line);background:var(--panel2);padding:10px 16px;border-radius:12px;font-weight:600}
+.btn.pri{background:linear-gradient(135deg,var(--cy),#38BDF8);color:#04101c;border:0}
+.btn:hover{filter:brightness(1.12)}
+.bar{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 12px;align-items:center}
+input[type=search],.in{background:var(--panel);border:1px solid var(--line);color:var(--fg);padding:10px 14px;border-radius:12px;min-width:0;flex:1 1 200px;font:inherit}
+input:focus{outline:2px solid var(--cy);outline-offset:1px}
+.chip{border:1px solid var(--line);background:var(--panel);padding:6px 12px;border-radius:999px;color:var(--fg2);font-size:12.5px;display:inline-flex;gap:6px;align-items:center}
+.chip i{width:9px;height:9px;border-radius:50%;display:inline-block}
+.chip[aria-pressed=true]{color:var(--fg);border-color:var(--cy);background:rgba(34,211,238,.08)}
+.chip[aria-pressed=false] i{opacity:.3}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px;padding-bottom:max(24px,env(safe-area-inset-bottom,0px))}
+.cam{display:flex;flex-direction:column;gap:10px}
+.cam .n{font:500 11px 'Space Grotesk';color:var(--fg2);letter-spacing:.1em}
+.cam .t{font-weight:600;overflow-wrap:anywhere}
+.cam .row{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.tag{font-size:11px;color:var(--fg2)}
+.sw{border:1px solid var(--line);border-radius:999px;padding:5px 12px 5px 8px;display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:600;background:var(--panel)}
+.sw b{width:10px;height:10px;border-radius:50%;background:var(--on);box-shadow:0 0 10px var(--on)}
+.sw.off b{background:var(--off);box-shadow:0 0 10px var(--off)}
+.sw.off{color:var(--off)}.sw:not(.off){color:var(--on)}
+.lk{background:none;border:0;color:var(--cy);padding:4px;font-size:12.5px}
+.mapwrap{position:relative;height:calc(100dvh - 76px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));min-height:420px;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#050912;margin-bottom:max(12px,env(safe-area-inset-bottom,0px))}
+#map{position:absolute;inset:0;z-index:0;background:#e8eaed}
+.cp{background:none;border:0}.cp svg{display:block;filter:drop-shadow(0 2px 3px rgba(0,0,0,.45))}
+.cc{display:grid;place-items:center;border-radius:50%;background:rgba(11,18,32,.95);border:2px solid #22D3EE;color:#E6EDF7;font:700 13px 'Space Grotesk',sans-serif;box-shadow:0 0 0 4px rgba(34,211,238,.25),0 2px 8px rgba(0,0,0,.4)}
+.leaflet-container{font-family:Inter,system-ui,sans-serif}
+.ov{position:absolute;z-index:3}
+.zoom{right:10px;top:10px;display:flex;flex-direction:column;gap:6px}
+.zoom button{width:40px;height:40px;border-radius:12px;border:1px solid var(--line);background:rgba(11,18,32,.9);font-size:20px;line-height:1;backdrop-filter:blur(6px)}
+.search{left:10px;top:10px;right:60px;max-width:420px}
+.search input{width:100%;background:rgba(11,18,32,.92)}
+.res{margin-top:6px;background:rgba(11,18,32,.97);border:1px solid var(--line);border-radius:12px;max-height:240px;overflow:auto}
+.res button{display:block;width:100%;text-align:left;border:0;background:none;padding:9px 12px;border-bottom:1px solid var(--line)}
+.res button:hover{background:var(--panel2)}
+.chips{left:10px;top:62px;right:60px;display:flex;gap:6px;flex-wrap:wrap}
+.chips .chip{background:rgba(11,18,32,.9)}
+.hud{left:12px;bottom:10px;font:500 11px 'Space Grotesk';color:var(--fg2);letter-spacing:.08em;pointer-events:none;display:flex;flex-direction:column;gap:5px}
+.scale{height:6px;border:2px solid var(--cy);border-top:0;display:inline-block}
+.sheet{left:10px;right:10px;bottom:10px;max-width:460px;background:rgba(11,18,32,.96);border:1px solid var(--cy);border-radius:16px;padding:14px;backdrop-filter:blur(8px);box-shadow:0 0 40px rgba(34,211,238,.15)}
+.sheet h3{margin:2px 0 4px;font-size:18px;overflow-wrap:anywhere}
+.coord{font:500 13px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--cy);margin:6px 0 10px;overflow-wrap:anywhere}
+.sheet .acts{display:flex;gap:8px;flex-wrap:wrap}
+.sheet .x{position:absolute;right:8px;top:6px;border:0;background:none;font-size:20px;color:var(--fg2)}
+#login{position:fixed;inset:0;z-index:50;background:var(--bg);display:grid;place-items:center;padding:16px}#login form{width:100%;max-width:360px;display:flex;flex-direction:column;gap:10px}#login h2{margin:0}#lmsg,#fbwarn{color:var(--amber);font-size:12.5px}.empty{border-color:var(--amber)}#imp{margin:0 0 14px}#imp code{color:var(--cy)}.note{color:var(--fg2);font-size:12px;margin:0 0 20px}
+@media(max-width:560px){.tabs{margin-left:0;width:100%}.tabs button{flex:1}.chips{right:10px}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="top">
+  <div class="brand"><div class="logo"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3.5"/></svg></div>
+    <div>Central de câmeras<small>Mobilidade Urbana · Arraial do Cabo</small></div></div>
+  <button class="btn" id="out" hidden>Sair</button>
+  <div class="tabs" role="tablist"><button role="tab" id="t-painel" aria-selected="true" data-go="painel">Painel</button><button role="tab" id="t-mapa" aria-selected="false" data-go="mapa">Mapa</button></div>
+</div>
+
+<div id="login" hidden><form id="lf" class="card"><h2>Central de câmeras</h2><p class="tag" style="margin:0">Entre com o e-mail e senha cadastrados.</p><input class="in" type="email" id="le" placeholder="E-mail" autocomplete="username" required><input class="in" type="password" id="lp" placeholder="Senha" autocomplete="current-password" required><button class="btn pri" type="submit">Entrar</button><div id="lmsg"></div></form></div>
+<div id="fbwarn" hidden>Firebase ainda não configurado (veja o README): o status não está sendo salvo nem sincronizado.</div>
+<section class="view" id="v-painel">
+  <div class="kpis">
+    <div class="card kpi"><div class="l">Câmeras</div><div class="v" id="k-tot">0</div></div>
+    <div class="card kpi"><div class="l">Online</div><div class="v" style="color:var(--on)" id="k-on">0</div></div>
+    <div class="card kpi"><div class="l">Offline</div><div class="v" style="color:var(--off)" id="k-off">0</div></div>
+    <div class="card kpi"><div class="l">Disponibilidade</div><div class="v" id="k-pct">0%</div></div>
+  </div>
+  <div class="card hero">
+    <div><h2>Mapa interativo das câmeras</h2><p>Todas as coordenadas do KMZ. Use a pinça para aproximar até o ponto exato.</p></div>
+    <button class="btn pri" data-go="mapa">Abrir mapa</button>
+  </div>
+  <div class="bar">
+    <input type="search" id="q" placeholder="Buscar câmera por nome ou número…" aria-label="Buscar câmera">
+    <button class="btn" id="csv" hidden>Exportar lista (CSV)</button>
+  </div>
+  <div class="bar" id="f-status">
+    <button class="chip" data-st="all" aria-pressed="true">Todas</button>
+    <button class="chip" data-st="on" aria-pressed="false"><i style="background:var(--on)"></i>Online</button>
+    <button class="chip" data-st="off" aria-pressed="false"><i style="background:var(--off)"></i>Offline</button>
+  </div>
+  <div class="grid" id="grid"></div>
+  <div class="card" id="imp"><b>Lista de câmeras</b><p class="tag" style="margin:4px 0 10px" id="impmsg">Para cadastrar ou atualizar a lista, escolha o arquivo <code>cameras.json</code>. A lista fica guardada no Firebase e só aparece para quem estiver logado.</p><input type="file" id="impf" accept=".json,application/json"></div>
+  <p class="note">Status marcado manualmente e sincronizado entre todos os aparelhos. Fotos e fichas em PDF entram na próxima etapa.</p>
+</section>
+
+<section class="view" id="v-mapa" hidden>
+  <div class="mapwrap" id="mw">
+    <div id="map" aria-label="Mapa com a posição das câmeras"></div>
+    <div class="ov search"><input type="search" id="ms" placeholder="Buscar câmera no mapa…" aria-label="Buscar no mapa"><div class="res" id="res" hidden></div></div>
+    <div class="ov chips" id="tchips"></div>
+    <div class="ov zoom"><button id="zi" aria-label="Aproximar">+</button><button id="zo" aria-label="Afastar">−</button><button id="zf" aria-label="Enquadrar todas" style="font-size:15px">⤢</button><button id="zl" aria-label="Trocar camada do mapa" style="font-size:11px;font-weight:600">Mapa</button></div>
+    <div class="ov sheet" id="sheet" hidden></div>
+  </div>
+</section>
+
+<script>
+const TYPES=[["OCR","#22D3EE"],["Facial","#A78BFA"],["360°","#F5B84B"],["Comum","#34D399"],["Outros","#F472B6"]];
+const LATM=110900,LONM=102500,LAT0=-22.97,LON0=-42.026;
+const cams=[],STAT={};
+function loadList(arr){
+  cams.length=0;arr.forEach((r,i)=>cams.push({id:i+1,lat:+r.a,lon:+r.o,t:+r.t,name:String(r.n),on:STAT[i+1]!==false}));
+  if(typeof rebuildMarkers==='function')rebuildMarkers();
+  if(map&&!mapReady&&cams.length&&!$('v-mapa').hidden){mapReady=true;fit(cams,true)}
+  refresh();
+}
+const cn=c=>c.name.indexOf('Sem nome')===0?'Câmera '+String(c.id).padStart(3,'0'):c.name;
+const pad=n=>String(n).padStart(3,'0');
+const norm=s=>s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+const $=id=>document.getElementById(id);
+const CAMP=new Path2D('M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z');
+const LENS=new Path2D();LENS.arc(12,13,3.5,0,Math.PI*2);
+
+/* ---------- navegação ---------- */
+let mapReady=false;
+function go(v){
+  if(v!=='mapa')v='painel';
+  $('v-painel').hidden=v!=='painel';$('v-mapa').hidden=v!=='mapa';
+  $('t-painel').setAttribute('aria-selected',v==='painel');$('t-mapa').setAttribute('aria-selected',v==='mapa');
+  if(location.hash!=='#'+v)history.replaceState(null,'','#'+v);
+  if(v==='mapa'){if(ensureMap()){map.invalidateSize();if(!mapReady&&cams.length){mapReady=true;fit(cams,true)}draw()}} else renderPanel();
+}
+document.addEventListener('click',e=>{const g=e.target.closest('[data-go]');if(g)go(g.dataset.go)});
+addEventListener('hashchange',()=>go(location.hash.slice(1)));
+
+/* ---------- painel ---------- */
+let stF='all';
+function kpis(){const on=cams.filter(c=>c.on).length;$('k-tot').textContent=cams.length;$('k-on').textContent=on;$('k-off').textContent=cams.length-on;$('k-pct').textContent=(cams.length?Math.round(on/cams.length*100):0)+'%'}
+function renderPanel(){
+  kpis();const q=norm($('q').value.trim());const g=$('grid');g.textContent='';
+  const fr=document.createDocumentFragment();
+  cams.forEach(c=>{
+    if(stF==='on'&&!c.on||stF==='off'&&c.on)return;
+    if(q&&norm(cn(c)).indexOf(q)<0&&pad(c.id).indexOf(q)<0)return;
+    const d=document.createElement('div');d.className='card cam';
+    d.innerHTML='<div><div class="n">Nº '+pad(c.id)+'</div><div class="t"></div><div class="tag">'+TYPES[c.t][0]+'</div></div><div class="row"><button class="sw'+(c.on?'':' off')+'" data-id="'+c.id+'" aria-pressed="'+c.on+'"><b></b>'+(c.on?'Online':'Offline')+'</button><button class="lk" data-map="'+c.id+'">Ver no mapa →</button></div>';
+    d.querySelector('.t').textContent=cn(c);fr.appendChild(d);
+  });
+  g.appendChild(fr);
+}
+$('grid').addEventListener('click',e=>{
+  const s=e.target.closest('.sw');if(s){const c=cams[s.dataset.id-1];c.on=!c.on;setStatus(c);s.classList.toggle('off',!c.on);s.setAttribute('aria-pressed',c.on);s.lastChild.textContent=c.on?'Online':'Offline';kpis();if(stF!=='all')renderPanel();return}
+  const m=e.target.closest('[data-map]');if(m){go('mapa');select(cams[m.dataset.map-1],true)}
+});
+$('q').addEventListener('input',renderPanel);
+$('f-status').addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b)return;stF=b.dataset.st;[].forEach.call($('f-status').children,x=>x.setAttribute('aria-pressed',x===b));renderPanel()});
+(function(){const b=$('csv');b.hidden=false;b.onclick=()=>{const rows=['numero;nome;tipo;status;latitude;longitude'].concat(cams.map(c=>[pad(c.id),'"'+cn(c).replace(/"/g,'""')+'"',TYPES[c.t][0],c.on?'online':'offline',c.lat,c.lon].join(';')));const u=URL.createObjectURL(new Blob(['\ufeff'+rows.join('\n')],{type:'text/csv'}));const a=document.createElement('a');a.href=u;a.download='cameras-arraial-do-cabo.csv';a.click();setTimeout(()=>URL.revokeObjectURL(u),1500)}})();
+
+/* ---------- mapa (Leaflet) ---------- */
+let map=null,cluster=null,mk={},sel=null,hidden=new Set(),offOnly=false,layerI=0,baseLayers=[];
+const vis=()=>cams.filter(c=>!hidden.has(c.t)&&(!offOnly||!c.on));
+function pinIcon(c,big){
+  const col=c.on?TYPES[c.t][1]:'#FB7185',w=big?44:34,h=big?56:44;
+  return L.divIcon({className:'cp',iconSize:[w,h],iconAnchor:[w/2,h-1],html:
+   '<svg width="'+w+'" height="'+h+'" viewBox="0 0 34 44"><path d="M17 43C17 43 3 27 3 16a14 14 0 0 1 28 0c0 11-14 27-14 27z" fill="#0B1220" stroke="'+(big?'#fff':col)+'" stroke-width="'+(big?3:2.2)+'"/><g transform="translate(8.5 7.5) scale(.7)" fill="none" stroke="'+col+'" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3.5"/></g><circle cx="27" cy="8" r="4.5" fill="'+(c.on?'#34D399':'#FB7185')+'" stroke="#0B1220" stroke-width="1.5"/></svg>'});
+}
+function ensureMap(){
+  if(map)return true;
+  if(typeof L==='undefined'){$('map').innerHTML='<p style="padding:24px;color:#333">Não foi possível carregar o mapa (biblioteca Leaflet). Verifique a conexão.</p>';return false}
+  map=L.map('map',{zoomControl:false,minZoom:4,maxZoom:20,zoomSnap:.5,zoomDelta:1,wheelPxPerZoomLevel:90}).setView([-22.96,-42.03],12);
+  const voy=L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{subdomains:'abcd',maxZoom:20,attribution:'© OpenStreetMap · © CARTO'});
+  const sat=L.layerGroup([L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxNativeZoom:19,maxZoom:20,attribution:'Imagens © Esri'}),L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/dark_only_labels/{z}/{x}/{y}{r}.png',{subdomains:'abcd',maxZoom:20,attribution:'© OpenStreetMap · © CARTO'})]);
+  const osm=L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap contributors'});
+  baseLayers=[['Mapa',voy],['Satélite',sat],['OSM',osm]];
+  voy.addTo(map);
+  L.control.scale({imperial:false,position:'bottomleft'}).addTo(map);
+  cluster=L.markerClusterGroup({maxClusterRadius:48,showCoverageOnHover:false,spiderfyOnMaxZoom:true,disableClusteringAtZoom:18,animate:true,
+    iconCreateFunction:c=>{const n=c.getChildCount(),s=n<10?36:n<50?42:48;return L.divIcon({className:'cp',iconSize:[s,s],html:'<div class="cc" style="width:'+s+'px;height:'+s+'px">'+n+'</div>'})}});
+  map.addLayer(cluster);rebuildMarkers();
+  map.on('click',()=>{if(sel){sel=null;sheet();draw()}});
+  return true;
+}
+function rebuildMarkers(){
+  if(!map)return;
+  cluster.clearLayers();mk={};
+  cams.forEach(c=>{const m=L.marker([c.lat,c.lon],{icon:pinIcon(c),title:cn(c),riseOnHover:true});m.on('click',()=>select(c,false));mk[c.id]=m});
+  draw();
+}
+function resize(){if(ensureMap())setTimeout(()=>map.invalidateSize(),0)}
+function draw(){
+  if(!map)return;
+  const v=vis(),ids=new Set(v.map(c=>c.id));
+  cluster.clearLayers();
+  v.forEach(c=>{mk[c.id].setIcon(pinIcon(c,c===sel));mk[c.id].setZIndexOffset(c===sel?1000:0)});
+  cluster.addLayers(v.map(c=>mk[c.id]));
+}
+function fit(list,instant){
+  if(!map||!list.length)return;
+  map.fitBounds(L.latLngBounds(list.map(c=>[c.lat,c.lon])),{padding:[70,70],animate:!instant,maxZoom:17});
+}
+function select(c,instant){
+  if(!ensureMap())return;
+  sel=c;sheet();draw();
+  const z=Math.max(map.getZoom(),18);
+  instant?map.setView([c.lat,c.lon],z,{animate:false}):map.flyTo([c.lat,c.lon],z,{duration:.9});
+}
+$('zi').onclick=()=>map&&map.zoomIn();$('zo').onclick=()=>map&&map.zoomOut();
+$('zf').onclick=()=>{sel=null;sheet();draw();fit(vis(),false)};
+$('zl').onclick=()=>{if(!map)return;map.removeLayer(baseLayers[layerI][1]);layerI=(layerI+1)%baseLayers.length;baseLayers[layerI][1].addTo(map);baseLayers[layerI][1].bringToBack&&baseLayers[layerI][1].bringToBack();$('zl').textContent=baseLayers[layerI][0]};
+function sheet(){
+  const s=$('sheet');if(!sel){s.hidden=true;return}
+  const c=sel;s.hidden=false;s.textContent='';
+  const lat=c.lat.toFixed(6),lon=c.lon.toFixed(6);
+  s.innerHTML='<button class="x" aria-label="Fechar">×</button><div class="n tag sg">Nº '+pad(c.id)+' · '+TYPES[c.t][0]+'</div><h3></h3><div class="coord">'+lat+', '+lon+'</div><div class="acts"><button class="sw'+(c.on?'':' off')+'"><b></b>'+(c.on?'Online':'Offline')+'</button><button class="btn" id="cp">Copiar coordenadas</button><a class="btn" target="_blank" rel="noopener" style="color:inherit;text-decoration:none" href="https://www.google.com/maps?q='+lat+','+lon+'">Google Maps ↗</a></div>';
+  s.querySelector('h3').textContent=cn(c);
+  s.querySelector('.x').onclick=()=>{sel=null;sheet();draw()};
+  s.querySelector('.sw').onclick=()=>{c.on=!c.on;setStatus(c);sheet();draw()};
+  s.querySelector('#cp').onclick=e=>{const b=e.currentTarget,txt=lat+', '+lon;const ok=()=>{b.textContent='Copiado ✓';setTimeout(()=>b.textContent='Copiar coordenadas',1500)};
+    (navigator.clipboard?navigator.clipboard.writeText(txt):Promise.reject()).then(ok).catch(()=>{const r=document.createRange();r.selectNodeContents(s.querySelector('.coord'));const sl=getSelection();sl.removeAllRanges();sl.addRange(r);b.textContent='Selecionado'})};
+}
+(function(){const w=$('tchips');TYPES.forEach((t,i)=>{const b=document.createElement('button');b.className='chip';b.setAttribute('aria-pressed','true');b.innerHTML='<i style="background:'+t[1]+'"></i>'+t[0];b.onclick=()=>{hidden.has(i)?hidden.delete(i):hidden.add(i);b.setAttribute('aria-pressed',!hidden.has(i));draw()};w.appendChild(b)});
+  const o=document.createElement('button');o.className='chip';o.setAttribute('aria-pressed','false');o.innerHTML='<i style="background:#FB7185"></i>Só offline';o.onclick=()=>{offOnly=!offOnly;o.setAttribute('aria-pressed',offOnly);draw()};w.appendChild(o)})();
+$('ms').addEventListener('input',e=>{const q=norm(e.target.value.trim()),r=$('res');r.textContent='';if(!q){r.hidden=true;return}
+  const m=cams.filter(c=>c.name.indexOf('Sem nome')!==0&&norm(c.name).indexOf(q)>=0||pad(c.id)===q.padStart(3,'0')&&/^\d+$/.test(q)).slice(0,8);
+  r.hidden=!m.length;m.forEach(c=>{const b=document.createElement('button');b.textContent=pad(c.id)+' · '+cn(c);b.onclick=()=>{r.hidden=true;$('ms').value='';select(c,false)};r.appendChild(b)})});
+
+/* ---------- Firebase ---------- */
+let db=null,auth=null;
+function setStatus(c){if(!db)return;db.collection('cameras').doc(String(c.id)).set({on:c.on,at:firebase.firestore.FieldValue.serverTimestamp(),by:(auth.currentUser&&auth.currentUser.email)||''},{merge:true}).catch(e=>alert('Não foi possível salvar: '+e.message))}
+function refresh(){kpis();if(!$('v-painel').hidden)renderPanel();if(sel)sheet();draw()}
+(function(){
+  const cfg=window.FIREBASE_CONFIG;
+  if(typeof firebase==='undefined'||!cfg||!cfg.apiKey||cfg.apiKey.indexOf('COLE')===0){$('fbwarn').hidden=false;return}
+  firebase.initializeApp(cfg);auth=firebase.auth();db=firebase.firestore();
+  let unsub=null,unsub2=null;
+  auth.onAuthStateChanged(u=>{
+    $('login').hidden=!!u;$('out').hidden=!u;
+    if(unsub){unsub();unsub=null}
+    if(unsub2){unsub2();unsub2=null}
+    if(u)unsub2=db.collection('config').doc('cameras').onSnapshot(d=>{loadList(d.exists&&Array.isArray(d.data().list)?d.data().list:[]);$('imp').classList.toggle('empty',!cams.length)},e=>{$('fbwarn').hidden=false;$('fbwarn').textContent='Erro ao ler a lista de câmeras: '+e.message});
+    if(u)unsub=db.collection('cameras').onSnapshot(s=>{s.forEach(d=>{STAT[+d.id]=d.data().on!==false;const c=cams[+d.id-1];if(c)c.on=STAT[+d.id]});refresh()},e=>{$('fbwarn').hidden=false;$('fbwarn').textContent='Erro ao ler o status: '+e.message});
+  });
+  $('lf').addEventListener('submit',e=>{e.preventDefault();$('lmsg').textContent='';auth.signInWithEmailAndPassword($('le').value.trim(),$('lp').value).catch(()=>{$('lmsg').textContent='E-mail ou senha incorretos.'})});
+  $('out').onclick=()=>auth.signOut();
+  $('impf').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
+    r.onload=()=>{try{const a=JSON.parse(r.result);if(!Array.isArray(a)||!a.length||a.some(x=>typeof x.a!=='number'||typeof x.o!=='number'))throw new Error('formato inválido');
+      db.collection('config').doc('cameras').set({list:a,updatedAt:firebase.firestore.FieldValue.serverTimestamp()}).then(()=>{$('impmsg').textContent='Lista importada: '+a.length+' câmeras.'}).catch(x=>{$('impmsg').textContent='Erro ao salvar: '+x.message})}
+      catch(x){$('impmsg').textContent='Arquivo inválido: '+x.message}};r.readAsText(f);e.target.value=''});
+  $('login').hidden=true;
+})();
+
+go(location.hash.slice(1));
+</script>
