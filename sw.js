@@ -2,8 +2,8 @@
 // - arquivos do próprio site: tenta a internet (até 4 s); se falhar, usa a cópia guardada
 // - bibliotecas (Leaflet, Firebase): ficam guardadas
 // - pedaços do mapa já vistos: ficam guardados
-const V='cam-v2',T='cam-tiles-v1';
-const CORE=['./','index.html','relatorio.js','firebase-config.js','manifest.webmanifest','icon-192.png','icon-512.png'];
+const V='cam-v3',T='cam-tiles-v1';
+const CORE=['./','index.html','relatorio.js','firebase-config.js','manifest.webmanifest','icon-192.png','icon-512.png','fotos/004.jpg'];
 const LIBS=['https://unpkg.com/leaflet@1.9.4/dist/leaflet.css','https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css','https://unpkg.com/leaflet@1.9.4/dist/leaflet.js','https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js','https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js','https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js','https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js'];
 self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(V).then(c=>Promise.allSettled(CORE.concat(LIBS).map(u=>c.add(u)))))});
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==V&&k!==T).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
