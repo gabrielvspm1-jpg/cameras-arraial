@@ -459,6 +459,7 @@ function loadImg(u){return new Promise(r=>{const i=new Image();i.onload=()=>r(i)
 function sigOf(img){const cv=document.createElement('canvas');cv.width=cv.height=SG;const x=cv.getContext('2d',{willReadFrequently:true});x.drawImage(img,0,0,SG,SG);const d=x.getImageData(0,0,SG,SG).data,g=new Float32Array(SG*SG);for(let i=0;i<SG*SG;i++)g[i]=.299*d[4*i]+.587*d[4*i+1]+.114*d[4*i+2];return g}
 function nccS(a,b,S){let best=-1;for(let dy=-S;dy<=S;dy++)for(let dx=-S;dx<=S;dx++){let n=0,sa=0,sb=0,saa=0,sbb=0,sab=0;for(let y=Math.max(0,-dy);y<SG-Math.max(0,dy);y++)for(let x=Math.max(0,-dx);x<SG-Math.max(0,dx);x++){const u=a[y*SG+x],v=b[(y+dy)*SG+x+dx];n++;sa+=u;sb+=v;saa+=u*u;sbb+=v*v;sab+=u*v}const va=saa-sa*sa/n,vb=sbb-sb*sb/n;if(va>1e-6&&vb>1e-6){const r=(sab-sa*sb/n)/Math.sqrt(va*vb);if(r>best)best=r}}return best}
 async function refSigs(extra){const refs=[];const add=async(key,cam,url)=>{if(!SIGC.has(key)){const i=await loadImg(url);SIGC.set(key,i?sigOf(i):null)}const g=SIGC.get(key);if(g)refs.push({cam,g})};
+  for(let i=0;i<cams.length;i+=12)await Promise.all(cams.slice(i,i+12).map(c=>getPhoto(c.id).catch(()=>null)));
   const seen=new Set();for(const id of Object.keys(FIXAS)){seen.add(+id);await add('f'+id,+id,FIXAS[id])}
   for(const id of Object.keys(PH)){if(PH[id]&&!seen.has(+id)){seen.add(+id);await add('p'+id+':'+PH[id].length,+id,PH[id])}}
   (extra||[]).forEach(r=>{if(r.cam)refs.push({cam:r.cam,g:r.g})});return refs}
