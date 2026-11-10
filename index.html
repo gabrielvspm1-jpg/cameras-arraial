@@ -462,9 +462,8 @@ function sheet(){
   const s=$('sheet');if(!sel){s.hidden=true;return}
   const c=sel;s.hidden=false;s.textContent='';
   const lat=c.lat.toFixed(6),lon=c.lon.toFixed(6);
-  s.innerHTML='<button class="x" aria-label="Fechar">×</button><div class="fw" id="fw"></div><div class="n tag sg">Nº '+pad(c.id)+' · '+TYPES[c.t][0]+'</div><h3></h3><div class="coord">'+lat+', '+lon+'</div><div class="zinfo" id="zinfo"></div><div class="acts"><button class="sw'+(c.on?'':' off')+'"><b></b>'+(c.on?'Online':'Offline')+'</button><button class="btn" id="cp">Copiar coordenadas</button><button class="btn" id="ed">✎ Editar</button><a class="btn" target="_blank" rel="noopener" style="color:inherit;text-decoration:none" href="https://www.google.com/maps?q='+lat+','+lon+'">Google Maps ↗</a></div>';
+  s.innerHTML='<button class="x" aria-label="Fechar">×</button><div class="fw" id="fw"></div><div class="n tag sg">Nº '+pad(c.id)+' · '+TYPES[c.t][0]+'</div><h3></h3><div class="coord">'+lat+', '+lon+'</div><div class="acts"><button class="sw'+(c.on?'':' off')+'"><b></b>'+(c.on?'Online':'Offline')+'</button><button class="btn" id="cp">Copiar coordenadas</button><button class="btn" id="ed">✎ Editar</button><a class="btn" target="_blank" rel="noopener" style="color:inherit;text-decoration:none" href="https://www.google.com/maps?q='+lat+','+lon+'">Google Maps ↗</a></div>';
   s.querySelector('h3').textContent=cn(c);
-  loadZon().then(d=>{const z=s.querySelector('#zinfo');if(d&&z&&sel===c)z.innerHTML=zinfoHTML(c)});
   getPhoto(c.id).then(d=>{const w=s.querySelector('#fw');if(d&&w&&sel===c){const i=new Image();i.src=d;i.alt='Foto da câmera';i.title='Toque para ampliar';i.onclick=()=>{$('lb').querySelector('img').src=d;$('lb').hidden=false};w.textContent='';w.appendChild(i)}});
   s.querySelector('.x').onclick=()=>{sel=null;sheet();draw()};
   s.querySelector('.sw').onclick=()=>{c.on=!c.on;setStatus(c);sheet();draw()};
@@ -481,7 +480,7 @@ $('ms').addEventListener('input',e=>{const q=norm(e.target.value.trim()),r=$('re
 /* ---------- Firebase ---------- */
 let db=null,auth=null,statLoaded=false;
 function setStatus(c){if(!c.on)beep();if(!db)return;const p=track(db.collection('cameras').doc(String(c.id)).set({on:c.on,at:firebase.firestore.FieldValue.serverTimestamp(),by:(auth.currentUser&&auth.currentUser.email)||''},{merge:true}));p.catch(e=>toast('Não foi possível salvar: '+e.message))}
-function refresh(){if(typeof zRefresh==='function')zRefresh();kpis();if(!$('v-painel').hidden)renderPanel();if(sel)sheet();draw()}
+function refresh(){kpis();if(!$('v-painel').hidden)renderPanel();if(sel)sheet();draw()}
 (function(){
   const cfg=window.FIREBASE_CONFIG;
   if(typeof firebase==='undefined'||!cfg||!cfg.apiKey||cfg.apiKey.indexOf('COLE')===0){
@@ -613,12 +612,6 @@ function zonesOf(c){const k=c.id+'|'+c.lat+'|'+c.lon;if(zcache[k])return zcache[
   const b=ZD.bairros.find(f=>inFeat(f,c.lat,c.lon));return zcache[k]={zs,b:b?b.n:null}}
 const esc2=t=>String(t).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
 function zinfoHTML(c){const r=zonesOf(c),p=[];if(r.b)p.push('Bairro: <b>'+esc2(r.b)+'</b>');if(r.zs.length)p.push('Zona: '+r.zs.map(z=>'<b>'+esc2(z.n)+'</b>').join(', '));return p.join(' · ')}
-function zRefresh(){if(!zmap||!ZD)return;zDrawCams();zCounts()}
-function zDrawCams(){if(!zCam)return;zCam.clearLayers();zCamMk={};
-  cams.forEach(c=>{const m=L.circleMarker([c.lat,c.lon],{radius:5.5,color:'#fff',weight:1.5,fillColor:c.on?'#34D399':'#FB7185',fillOpacity:1});
-    m.bindTooltip(pad(c.id)+' · '+cn(c),{direction:'top'});
-    m.on('click',()=>{m.unbindPopup();m.bindPopup('<b>'+esc2(cn(c))+'</b><br>Nº '+pad(c.id)+' · '+TYPES[c.t][0]+' · '+(c.on?'Online':'Offline')+(zinfoHTML(c)?'<br>'+zinfoHTML(c):'')).openPopup()});zCam.addLayer(m)})}
-function zCounts(){ZD.zonas.forEach(z=>{const n=cams.filter(c=>zonesOf(c).zs.some(q=>q.k===z.k)).length;const e=document.querySelector('[data-zc="'+z.k+'"]');if(e)e.textContent=z.f.length+(z.f.length>1?' áreas':' área')+' · '+n+' câm.'})}
 function ensureZMap(){
   if(zmap){setTimeout(()=>zmap.invalidateSize(),0);return}
   if(typeof L==='undefined'){$('zmap').innerHTML='<p style="padding:24px;color:#333">Não foi possível carregar o mapa (biblioteca Leaflet). Verifique a conexão.</p>';return}
@@ -641,16 +634,15 @@ function ensureZMap(){
     d.zonas.forEach(z=>{const grp=L.featureGroup();zGroups[z.k]=grp;
       z.f.forEach(f=>f.g.forEach(g=>{const p=L.polygon(g.map(r=>{const o=[];for(let i=0;i<r.length;i+=2)o.push([r[i+1],r[i]]);return o}),{pane:'pZ',color:z.cor,weight:1.6,fillColor:z.cor,fillOpacity:.38});
         p.bindTooltip(f.n,{sticky:true});
-        p.on('click',e=>{const inside=cams.filter(c=>inFeat(f,c.lat,c.lon));p.unbindPopup();p.bindPopup('<b>'+esc2(f.n)+'</b><br>'+esc2(z.nome)+(f.d?'<br><i>'+esc2(f.d)+'</i>':'')+'<br>'+(inside.length?inside.length+' câmera(s): '+inside.slice(0,8).map(c=>pad(c.id)).join(', ')+(inside.length>8?'…':''):'Nenhuma câmera nesta área')).openPopup(e.latlng)});
+        p.on('click',e=>{p.unbindPopup();p.bindPopup('<b>'+esc2(f.n)+'</b><br>'+esc2(z.nome)+(f.d?'<br><i>'+esc2(f.d)+'</i>':'')).openPopup(e.latlng)});
         grp.addLayer(p);zAll.addLayer(p)}));grp.addTo(zmap)});
-    zCam=L.layerGroup().addTo(zmap);zDrawCams();
     zmap.fitBounds(zAll.getBounds(),{padding:[20,20]});
     let h='<div class="zbt"><button id="zon">Mostrar todas</button><button id="zoff">Ocultar todas</button></div>';
-    d.zonas.forEach(z=>{h+='<label class="zr"><input type="checkbox" checked data-zk="'+z.k+'"><i style="background:'+z.cor+'"></i><b title="'+esc2(z.nome)+'">'+esc2(z.k)+' · '+esc2(z.nome.replace(/^Zona (de |do |da |especial de )?/i,''))+'</b><em data-zc="'+z.k+'"></em></label>'});
-    h+='<div class="zsep"></div><label class="zr"><input type="checkbox" id="zbx"><i style="background:transparent;border:1.5px dashed #fff"></i><b>Bairros (contornos)</b></label><label class="zr"><input type="checkbox" id="zcx" checked><i style="background:#34D399"></i><b>Câmeras</b></label>';
-    $('zlb').innerHTML=h;zCounts();
+    d.zonas.forEach(z=>{h+='<label class="zr"><input type="checkbox" checked data-zk="'+z.k+'"><i style="background:'+z.cor+'"></i><b title="'+esc2(z.nome)+'">'+esc2(z.k)+' · '+esc2(z.nome.replace(/^Zona (de |do |da |especial de )?/i,''))+'</b><em>'+z.f.length+(z.f.length>1?' áreas':' área')+'</em></label>'});
+    h+='<div class="zsep"></div><label class="zr"><input type="checkbox" id="zbx"><i style="background:transparent;border:1.5px dashed #fff"></i><b>Bairros (contornos)</b></label>';
+    $('zlb').innerHTML=h;
     $('zlb').onchange=e=>{const t=e.target;if(t.dataset.zk){t.checked?zGroups[t.dataset.zk].addTo(zmap):zmap.removeLayer(zGroups[t.dataset.zk])}
-      else if(t.id==='zbx'){t.checked?zBair.addTo(zmap):zmap.removeLayer(zBair)}else if(t.id==='zcx'){t.checked?zCam.addTo(zmap):zmap.removeLayer(zCam)}};
+      else if(t.id==='zbx'){t.checked?zBair.addTo(zmap):zmap.removeLayer(zBair)}};
     $('zlb').onclick=e=>{const id=e.target.id;if(id==='zon'||id==='zoff'){const on=id==='zon';$('zlb').querySelectorAll('[data-zk]').forEach(x=>{x.checked=on;on?zGroups[x.dataset.zk].addTo(zmap):zmap.removeLayer(zGroups[x.dataset.zk])})}};
     if(!$('v-zona').hidden)setTimeout(()=>zmap.invalidateSize(),0)});
 }
