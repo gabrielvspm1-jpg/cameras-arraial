@@ -266,7 +266,7 @@ details#imp{margin:0 0 14px;padding:0}details#imp summary{cursor:pointer;padding
     <select class="in" id="sso" aria-label="Ordenar"><option value="n">Ordenar: nº</option><option value="name">Ordenar: nome</option><option value="off">Offline primeiro</option></select>
     <button class="btn pri" data-go="mapa">Abrir mapa</button>
     <button class="btn" id="addc">＋ Adicionar câmera</button>
-    <button class="btn" id="csv" hidden>Exportar CSV</button>
+    <button class="btn" id="csv" hidden>⬇ Exportar Excel</button>
   </div>
   <div class="bar" id="f-status">
     <button class="chip" data-st="all" aria-pressed="true">Todas</button>
@@ -373,7 +373,9 @@ $('sso').addEventListener('change',e=>{soF=e.target.value;renderPanel()});
 $('f-status').addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b)return;stF=b.dataset.st;[].forEach.call($('f-status').children,x=>x.setAttribute('aria-pressed',x===b));renderPanel()});
 (function(){const f=()=>{$('clk').textContent=new Date().toLocaleString('pt-BR',{weekday:'short',day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit',second:'2-digit',timeZone:'America/Sao_Paulo'}).replace(/\./g,'')};f();setInterval(f,1000);
   const im=new Image();im.onload=()=>$('hero').style.setProperty('--hero-img','url(banner.jpg)');im.src='banner.jpg'})();
-(function(){const b=$('csv');b.hidden=false;b.onclick=()=>{const rows=['numero;nome;tipo;status;latitude;longitude'].concat(cams.map(c=>[pad(c.id),'"'+cn(c).replace(/"/g,'""')+'"',TYPES[c.t][0],c.on?'online':'offline',c.lat,c.lon].join(';')));const u=URL.createObjectURL(new Blob(['\ufeff'+rows.join('\n')],{type:'text/csv'}));const a=document.createElement('a');a.href=u;a.download='cameras-arraial-do-cabo.csv';a.click();setTimeout(()=>URL.revokeObjectURL(u),1500)}})();
+(function(){const b=$('csv');b.hidden=false;b.onclick=()=>{const q=v=>'"'+String(v).replace(/"/g,'""')+'"',f=n=>n.toFixed(6).replace('.',',');
+  const rows=['Nº;Nome;Tipo;Status;Latitude;Longitude;Google Maps'].concat(cams.map(c=>[pad(c.id),q(cn(c)),TYPES[c.t][0],c.on?'Online':'Offline',q(f(c.lat)),q(f(c.lon)),'https://www.google.com/maps?q='+c.lat.toFixed(6)+','+c.lon.toFixed(6)].join(';')));
+  const u=URL.createObjectURL(new Blob(['\ufeff'+rows.join('\r\n')],{type:'text/csv;charset=utf-8'}));const a=document.createElement('a');a.href=u;a.download='cameras-arraial-do-cabo-'+new Date().toISOString().slice(0,10)+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(u),1500)}})();
 
 /* ---------- mapa (Leaflet) ---------- */
 let map=null,cluster=null,mk={},sel=null,hidden=new Set(),offOnly=false,layerI=0,baseLayers=[];
