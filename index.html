@@ -554,7 +554,7 @@ addEventListener('online',netUI);addEventListener('offline',netUI);
 let tT=0;function toast(m){const t=$('toast');t.textContent=m;t.hidden=false;clearTimeout(tT);tT=setTimeout(()=>{t.hidden=true},6000)}
 /* ---------- fotos ---------- */
 const PH={};let edPhoto;
-const FIXAS={2:'fotos/002.jpg',3:'fotos/003.jpg',4:'fotos/004.jpg',5:'fotos/005.jpg',7:'fotos/007.jpg',8:'fotos/008.jpg',9:'fotos/009.jpg',10:'fotos/010.jpg',11:'fotos/011.jpg',13:'fotos/013.jpg',14:'fotos/014.jpg',15:'fotos/015.jpg',17:'fotos/017.jpg',18:'fotos/018.jpg',30:'fotos/030.jpg',31:'fotos/031.jpg',35:'fotos/035.jpg',36:'fotos/036.jpg',37:'fotos/037.jpg',38:'fotos/038.jpg',39:'fotos/039.jpg',40:'fotos/040.jpg',41:'fotos/041.jpg',42:'fotos/042.jpg',43:'fotos/043.jpg'};
+const FIXAS={2:'fotos/002.jpg',3:'fotos/003.jpg',4:'fotos/004.jpg',5:'fotos/005.jpg',7:'fotos/007.jpg',8:'fotos/008.jpg',9:'fotos/009.jpg',10:'fotos/010.jpg',11:'fotos/011.jpg',13:'fotos/013.jpg',14:'fotos/014.jpg',15:'fotos/015.jpg',17:'fotos/017.jpg',18:'fotos/018.jpg',30:'fotos/030.jpg',31:'fotos/031.jpg',35:'fotos/035.jpg',36:'fotos/036.jpg',37:'fotos/037.jpg',38:'fotos/038.jpg',39:'fotos/039.jpg',40:'fotos/040.jpg',41:'fotos/041.jpg',42:'fotos/042.jpg',43:'fotos/043.jpg',44:'fotos/044.jpg'};
 const fotoRef=id=>db.collection('config').doc('foto-'+id);
 function getPhoto(id){
   if(PH[id]!==undefined)return Promise.resolve(PH[id]);
