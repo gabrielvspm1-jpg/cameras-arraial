@@ -1,4 +1,5 @@
 <title>Central de câmeras</title>
+<!-- v3 -->
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
@@ -75,7 +76,7 @@ input:focus{outline:2px solid var(--cy);outline-offset:1px}
 .coord{font:500 13px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--cy);margin:6px 0 10px;overflow-wrap:anywhere}
 .sheet .acts{display:flex;gap:8px;flex-wrap:wrap}
 .sheet .x{position:absolute;right:8px;top:6px;border:0;background:none;font-size:20px;color:var(--fg2)}
-#login{position:fixed;inset:0;z-index:50;background:var(--bg);display:grid;place-items:center;padding:16px}#login form{width:100%;max-width:360px;display:flex;flex-direction:column;gap:10px}#login .in{flex:none;width:100%}#login h2{margin:0}#lmsg,#fbwarn{color:var(--amber);font-size:12.5px}.empty{border-color:var(--amber)}#imp{margin:0 0 14px}#imp code{color:var(--cy)}.note{color:var(--fg2);font-size:12px;margin:0 0 20px}
+#login{position:fixed;inset:0;z-index:50;background:var(--bg);display:grid;place-items:center;padding:16px}#login form{width:100%;max-width:360px;display:flex;flex-direction:column;gap:10px}#login .in{flex:none;width:100%;height:44px;display:block}#login h2{margin:0}#lmsg,#fbwarn{color:var(--amber);font-size:12.5px}.empty{border-color:var(--amber)}#imp{margin:0 0 14px}#imp code{color:var(--cy)}.note{color:var(--fg2);font-size:12px;margin:0 0 20px}
 @media(max-width:560px){.tabs{margin-left:0;width:100%}.tabs button{flex:1}.chips{right:10px}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
@@ -87,7 +88,7 @@ input:focus{outline:2px solid var(--cy);outline-offset:1px}
   <div class="tabs" role="tablist"><button role="tab" id="t-painel" aria-selected="true" data-go="painel">Painel</button><button role="tab" id="t-mapa" aria-selected="false" data-go="mapa">Mapa</button></div>
 </div>
 
-<div id="login" hidden><form id="lf" class="card"><h2>Central de câmeras</h2><p class="tag" style="margin:0">Entre com o e-mail e senha cadastrados.</p><input class="in" type="email" id="le" placeholder="E-mail" autocomplete="username" required><input class="in" type="password" id="lp" placeholder="Senha" autocomplete="current-password" required><button class="btn pri" type="submit">Entrar</button><div id="lmsg"></div></form></div>
+<div id="login" hidden><form id="lf" class="card"><h2>Central de câmeras</h2><p class="tag" style="margin:0">Entre com o e-mail e senha cadastrados.</p><input class="in" type="email" id="le" placeholder="E-mail" autocomplete="username" autofocus required><input class="in" type="password" id="lp" placeholder="Senha" autocomplete="current-password" required><button class="btn pri" type="submit">Entrar</button><div id="lmsg"></div></form></div>
 <div id="fbwarn" hidden>Firebase ainda não configurado (veja o README): o status não está sendo salvo nem sincronizado.</div>
 <section class="view" id="v-painel">
   <div class="kpis">
@@ -260,7 +261,7 @@ function refresh(){kpis();if(!$('v-painel').hidden)renderPanel();if(sel)sheet();
     if(u)unsub2=db.collection('config').doc('cameras').onSnapshot(d=>{loadList(d.exists&&Array.isArray(d.data().list)?d.data().list:[]);$('imp').classList.toggle('empty',!cams.length)},e=>{$('fbwarn').hidden=false;$('fbwarn').textContent='Erro ao ler a lista de câmeras: '+e.message});
     if(u)unsub=db.collection('cameras').onSnapshot(s=>{s.forEach(d=>{STAT[+d.id]=d.data().on!==false;const c=cams[+d.id-1];if(c)c.on=STAT[+d.id]});refresh()},e=>{$('fbwarn').hidden=false;$('fbwarn').textContent='Erro ao ler o status: '+e.message});
   });
-  $('lf').addEventListener('submit',e=>{e.preventDefault();$('lmsg').textContent='';auth.signInWithEmailAndPassword($('le').value.trim(),$('lp').value).catch(()=>{$('lmsg').textContent='E-mail ou senha incorretos.'})});
+  $('lf').addEventListener('submit',e=>{e.preventDefault();$('lmsg').textContent='';auth.signInWithEmailAndPassword($('le').value.trim(),$('lp').value).catch(er=>{const c=er&&er.code||'';$('lmsg').textContent=(c==='auth/invalid-credential'||c==='auth/wrong-password'||c==='auth/user-not-found'||c==='auth/invalid-email')?'E-mail ou senha incorretos.':'Não foi possível entrar ('+c+'). '+(er&&er.message||'')})});
   $('out').onclick=()=>auth.signOut();
   $('impf').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
     r.onload=()=>{try{const a=JSON.parse(r.result);if(!Array.isArray(a)||!a.length||a.some(x=>typeof x.a!=='number'||typeof x.o!=='number'))throw new Error('formato inválido');
