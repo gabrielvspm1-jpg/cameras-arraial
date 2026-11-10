@@ -308,8 +308,7 @@ details#imp{margin:0 0 14px;padding:0}details#imp summary{cursor:pointer;padding
     <select class="in" id="sty" aria-label="Tipo"><option value="all">Todos os tipos</option><option value="0">OCR</option><option value="1">Facial</option><option value="2">360°</option><option value="3">Comum</option><option value="4">Outros</option></select>
     <select class="in" id="sso" aria-label="Ordenar"><option value="n">Ordenar: nº</option><option value="name">Ordenar: nome</option><option value="off">Offline primeiro</option></select>
     <button class="btn pri" data-go="mapa">Abrir mapa</button>
-    <button class="btn" id="addc">＋ Adicionar câmera</button>
-    <button class="btn pri" id="fotosmes" hidden>📷 Enviar fotos do mês</button>
+    <button class="btn pri" id="fotosmes" hidden>📷 Tirar foto da câmera</button>
     <button class="btn" id="csv" hidden>Gerar relatório</button>
   </div>
   <div class="bar" id="f-status">
@@ -348,9 +347,9 @@ details#imp{margin:0 0 14px;padding:0}details#imp summary{cursor:pointer;padding
 <div id="lb" hidden><img alt="Foto da câmera"><span>×</span></div>
 <div id="net" hidden role="status"></div><div id="toast" hidden role="alert"></div>
 <div class="ed-bg" id="fmbg" hidden><div class="ed fm" role="dialog" aria-modal="true" aria-labelledby="fmt">
-  <h3 id="fmt">Fotos do mês</h3>
-  <p class="fmh">As fotos ficam só neste aparelho e saem do app quando você gerar o relatório. Com "Tirar foto" o app usa a sua localização para achar a câmera. Confira sempre o número.</p>
-  <div class="acts"><label class="btn pri fmadd">📷 Tirar foto<input type="file" id="fmcam" accept="image/*" capture="environment" hidden></label><label class="btn fmadd">＋ Da galeria<input type="file" id="fmfile" accept="image/*" multiple hidden></label><button type="button" class="btn" id="fmclr">Apagar todas</button></div>
+  <h3 id="fmt">Fotos das câmeras</h3>
+  <p class="fmh">Tire a foto perto da câmera: o app descobre qual é pela sua localização. Se não existir câmera ali, aparece o botão para cadastrar uma nova. As fotos ficam neste aparelho e saem quando você gerar o relatório.</p>
+  <div class="acts"><label class="btn pri fmadd">📷 Tirar foto<input type="file" id="fmcam" accept="image/*" capture="environment" hidden></label><label class="btn fmadd">＋ Da galeria<input type="file" id="fmfile" accept="image/*" multiple hidden></label><button type="button" class="btn" id="fmclr">Apagar todas</button><button type="button" class="btn" id="fmnew">＋ Cadastrar sem foto</button></div>
   <div id="fmprog" class="fmh" hidden></div>
   <div id="fml"></div>
   <div class="acts"><span class="fmh" id="fmcnt" style="flex:1;align-self:center"></span><button type="button" class="btn pri" id="fmok">Concluir</button></div>
@@ -476,13 +475,13 @@ const chips=r=>{let l=(r.cand||[]).filter(id=>id!==r.cam&&byId(id));if(!r.cam&&r
 async function fmRender(){const L=$('fml'),rows=await FM.all();rows.sort((a,b)=>a.at-b.at);let last=0;rows.forEach(r=>{r.seq=(!r.cam&&last)?last+1:0;if(r.cam)last=r.cam});rows.sort((a,b)=>(a.cam||1e9)-(b.cam||1e9)||a.at-b.at);
   const seen={};const cc=new Set(rows.filter(r=>r.cam).map(r=>r.cam));
   L.innerHTML=rows.map(r=>{const c=r.cam&&byId(r.cam);const n=r.cam?(seen[r.cam]=(seen[r.cam]||0)+1):0;
-    return '<div class="fmi" data-id="'+r.id+'"><img alt="" src="'+r.d+'"><div><div class="fmn"><input type="number" inputmode="numeric" min="1" placeholder="Nº" value="'+(r.cam||'')+'" aria-label="Número da câmera"></div><div class="fmc '+(c?'ok':'bad')+'">'+(c?esc2(cn(c))+(n>1?' · foto '+n:''):(r.cam?'Câmera não encontrada':'Informe o número'))+'</div>'+(r.gps?'<small>número sugerido pelo GPS</small>':'')+(r.auto?'<small style="color:#F5B84B">preenchido pela semelhança com a foto da câmera · confira</small>':'')+chips(r)+'</div><button type="button" class="fmx" aria-label="Remover foto">×</button></div>'}).join('')||'<p class="fmh">Nenhuma foto ainda. Toque em "Tirar foto" ou "Da galeria".</p>';
+    return '<div class="fmi" data-id="'+r.id+'"><img alt="" src="'+r.d+'"><div><div class="fmn"><input type="number" inputmode="numeric" min="1" placeholder="Nº" value="'+(r.cam||'')+'" aria-label="Número da câmera"></div><div class="fmc '+(c?'ok':'bad')+'">'+(c?esc2(cn(c))+(n>1?' · foto '+n:''):(r.cam?'Câmera não encontrada':'Informe o número'))+'</div>'+(r.gps?'<small>número sugerido pelo GPS</small>':'')+(r.auto?'<small style="color:#F5B84B">preenchido pela semelhança com a foto da câmera · confira</small>':'')+chips(r)+(!r.cam&&r.pos?'<div class="fmch"><button type="button" class="fmb fmnc" style="width:auto;padding:0 12px">＋ Câmera nova neste local</button></div>':'')+'</div><button type="button" class="fmx" aria-label="Remover foto">×</button></div>'}).join('')||'<p class="fmh">Nenhuma foto ainda. Toque em "Tirar foto" ou "Da galeria".</p>';
   $('fmcnt').textContent=rows.length?rows.length+(rows.length>1?' fotos · ':' foto · ')+cc.size+(cc.size===1?' câmera':' câmeras'):'';
-  const b=$('fotosmes');b.textContent='📷 Enviar fotos do mês'+(rows.length?' ('+rows.length+')':'');return rows}
+  const b=$('fotosmes');b.textContent='📷 Tirar foto da câmera'+(rows.length?' ('+rows.length+')':'');return rows}
 function fmOpen(){$('fmbg').hidden=false;fmRender().catch(()=>{})}
 (function(){const b=$('csv'),fb=$('fotosmes');b.hidden=false;fb.hidden=false;
   if(!window.indexedDB){fb.hidden=true}else{FM.all().then(()=>fmRender()).catch(()=>{})}
-  fb.onclick=fmOpen;$('fmok').onclick=()=>{$('fmbg').hidden=true};
+  fb.onclick=fmOpen;$('fmnew').onclick=()=>{$('fmbg').hidden=true;openEd(null)};$('fmok').onclick=()=>{$('fmbg').hidden=true};
   $('fmbg').addEventListener('click',e=>{if(e.target===$('fmbg'))$('fmbg').hidden=true});
   $('fmclr').onclick=async()=>{const n=(await FM.all()).length;if(n&&confirm('Apagar as '+n+' fotos do mês deste aparelho?')){await FM.clear();fmRender()}};
   const ingest=async(fs,live)=>{if(!fs.length)return;const P=$('fmprog');P.hidden=false;let ok=0,sem=0;
@@ -493,12 +492,16 @@ function fmOpen(){$('fmbg').hidden=false;fmRender().catch(()=>{})}
         else if(vis.length&&vis[0].v>=.8&&(!vis[1]||vis[0].v-vis[1].v>=.1)){cam=vis[0].id;auto=true}
         const cand=[];near.slice(0,3).forEach(x=>cand.push(x.c.id));vis.forEach(x=>{if(!cand.includes(x.id))cand.push(x.id)});
         if(!cam&&live&&!g)sem++;
-        await FM.add({cam,d,w,h,at:live?Date.now():(fs[i].lastModified||Date.now()),gps,auto,cand:cand.filter(id=>id!==cam).slice(0,4)});ok++}catch(err){toast('Não consegui ler a foto '+(i+1)+'.')}}
+        await FM.add({cam,d,w,h,at:live?Date.now():(fs[i].lastModified||Date.now()),gps,auto,pos:g?{lat:g.lat,lon:g.lon}:null,cand:cand.filter(id=>id!==cam).slice(0,4)});ok++}catch(err){toast('Não consegui ler a foto '+(i+1)+'.')}}
     P.hidden=true;await fmRender();if(ok)toast(ok+(ok>1?' fotos adicionadas.':' foto adicionada.')+(sem?' Sem localização: informe o número.':''))};
   $('fmfile').onchange=async e=>{const fs=[...e.target.files];e.target.value='';ingest(fs,false)};
   $('fmcam').onchange=async e=>{const fs=[...e.target.files];e.target.value='';ingest(fs,true)};
   $('fml').addEventListener('change',async e=>{const row=e.target.closest('.fmi');if(!row||e.target.tagName!=='INPUT')return;const id=+row.dataset.id,rec=(await FM.all()).find(r=>r.id===id);if(!rec)return;const v=parseInt(e.target.value,10);rec.cam=v>0?v:null;rec.gps=false;rec.auto=false;await FM.put(rec);fmRender()});
-  $('fml').addEventListener('click',async e=>{const bt=e.target.closest('.fmb');if(bt){const id=+bt.closest('.fmi').dataset.id,rec=(await FM.all()).find(r=>r.id===id);if(rec){rec.cam=+bt.dataset.cam;rec.gps=false;rec.auto=false;await FM.put(rec);fmRender()}return}const x=e.target.closest('.fmx');if(!x)return;await FM.del(+x.closest('.fmi').dataset.id);fmRender()});
+  $('fml').addEventListener('click',async e=>{const nc=e.target.closest('.fmnc');if(nc){const id0=+nc.closest('.fmi').dataset.id,rec=(await FM.all()).find(r=>r.id===id0);if(!rec||!rec.pos)return;
+      const id=cams.reduce((m,x)=>Math.max(m,x.id),0)+1,c={id,name:'Sem nome '+pad(id),t:3,lat:rec.pos.lat,lon:rec.pos.lon,on:true};cams.push(c);cams.sort((x,y)=>x.id-y.id);STAT[id]=true;PH[id]=rec.d;
+      const ops=[saveList()];if(db){const ts=firebase.firestore.FieldValue.serverTimestamp();ops.push(fotoRef(id).set({d:rec.d,at:ts}));ops.push(db.collection('cameras').doc(String(id)).set({on:true,at:ts,by:(auth.currentUser&&auth.currentUser.email)||''},{merge:true}))}
+      track(Promise.all(ops)).catch(x=>toast('Não foi possível salvar: '+x.message));rec.cam=id;rec.gps=false;rec.auto=false;await FM.put(rec);rebuildMarkers();refresh();fmRender();toast('Câmera '+pad(id)+' cadastrada neste local, com esta foto. Depois dê um nome em Editar.');return}
+    const bt=e.target.closest('.fmb');if(bt){const id=+bt.closest('.fmi').dataset.id,rec=(await FM.all()).find(r=>r.id===id);if(rec){rec.cam=+bt.dataset.cam;rec.gps=false;rec.auto=false;await FM.put(rec);fmRender()}return}const x=e.target.closest('.fmx');if(!x)return;await FM.del(+x.closest('.fmi').dataset.id);fmRender()});
   b.onclick=async()=>{
     if(typeof gerarRelatorioPDF==='undefined'){alert('Não foi possível carregar o gerador de relatório. Atualize a página (Ctrl+Shift+R).');return}
     if(!cams.length){alert('Não há câmeras cadastradas.');return}
@@ -672,7 +675,7 @@ $('ph-file').onchange=e=>{const f=e.target.files[0];e.target.value='';if(!f)retu
 $('ph-rm').onclick=()=>{edPhoto=null;showPh(null)};
 $('edbg').addEventListener('mousedown',e=>{if(e.target===$('edbg'))closeEd()});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('edbg').hidden)closeEd()});
-$('addc').onclick=()=>openEd(null);
+
 $('edf').addEventListener('submit',e=>{
   e.preventDefault();const er=$('ed-err');er.textContent='';
   const id=Math.round(+$('ed-n').value),nm=$('ed-name').value.trim(),t=+$('ed-t').value,on=$('ed-on').value==='1';
