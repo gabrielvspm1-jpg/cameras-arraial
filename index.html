@@ -324,7 +324,7 @@ details#imp{margin:0 0 14px;padding:0}details#imp summary{cursor:pointer;padding
   <div class="card fmcard" id="fmcard" hidden>
     <div class="fmtop"><div><div class="fmk">FOTOS DO MÊS · <span id="fm-mes"></span></div><div class="fmbig"><b id="fm-n">0</b><span> de <i id="fm-t">0</i> câmeras fotografadas</span></div></div><div class="fmright"><b id="fm-f">0</b><span>faltam</span></div></div>
     <div class="fmbar"><i id="fm-bar"></i></div>
-    <div class="fmfoot"><span id="fm-msg"></span><button type="button" class="lnk" id="fm-ver">Ver quais faltam</button></div>
+    <div class="fmsrc" id="fm-src" style="font-size:11px;opacity:.65;margin-top:6px"></div><div class="fmfoot"><span id="fm-msg"></span><button type="button" class="lnk" id="fm-ver">Ver quais faltam</button></div>
     <div class="fmmiss" id="fm-miss" hidden></div>
   </div>
   <div class="row2">
@@ -482,7 +482,7 @@ const FM={ldb:null,rows:[],ready:null,unsub:null,tm:0,
   async mig(){if(!window.indexedDB)return;let old=[];try{old=await this.ltx('readonly',st=>st.getAll())}catch(e){return}if(!old.length)return;
     let tag='';try{tag=localStorage.getItem('fmTag')||'';if(!tag){tag=Math.random().toString(36).slice(2,6);localStorage.setItem('fmTag',tag)}}catch(e){tag='x'}
     const by=(auth&&auth.currentUser&&auth.currentUser.email)||'';let n=0;
-    for(const r of old){const id='m'+tag+'_'+r.id,rec=Object.assign({},r,{by});delete rec.id;try{await this.ref(id).set(rec);await this.ltx('readwrite',st=>st.delete(r.id));n++}catch(e){return}}
+    for(const r of old){const id='m'+tag+'_'+r.id,rec=Object.assign({},r,{by});delete rec.id;try{await this.ref(id).set(rec);await this.ltx('readwrite',st=>st.delete(r.id));n++}catch(e){toast('Não consegui enviar as fotos do aparelho: '+(e&&e.message||e));return}}
     if(n)toast(n+(n>1?' fotos que estavam só neste aparelho foram enviadas para todos os aparelhos.':' foto que estava só neste aparelho foi enviada para todos os aparelhos.'))},
   async all(){if(!this.on()){try{return await this.ltx('readonly',st=>st.getAll())}catch(e){return[]}}
     await Promise.race([this.ready,new Promise(r=>setTimeout(r,6000))]);return this.rows.map(r=>Object.assign({},r))},
@@ -505,6 +505,7 @@ async function fmStatus(){const c=$('fmcard');if(!c||!window.indexedDB){return}l
   $('fm-mes').textContent=new Date().toLocaleDateString('pt-BR',{month:'long',year:'numeric',timeZone:'America/Sao_Paulo'});
   $('fm-n').textContent=n;$('fm-t').textContent=tot;$('fm-f').textContent=f;$('fm-bar').style.width=(n/tot*100).toFixed(1)+'%';
   c.classList.toggle('done',f===0);
+  (async()=>{let loc=0;try{if(window.indexedDB)loc=(await FM.ltx('readonly',st=>st.count()))||0}catch(e){}$('fm-src').textContent='v33 · '+(FM.on()?'sincronizado entre aparelhos':'só neste aparelho (sem sincronizar)')+(loc?' · '+loc+' foto(s) ainda neste aparelho, aguardando envio':'')})();
   $('fm-msg').textContent=f===0?'Todas as câmeras fotografadas. Já pode gerar o relatório completo.':(f===1?'Falta 1 foto':'Faltam '+f+' fotos')+' para fechar o mês e gerar o relatório completo.';
   const miss=cams.filter(x=>!have.has(x.id));$('fm-ver').hidden=!miss.length;$('fm-ver').textContent=fmMiss?'Esconder lista':'Ver quais faltam';
   $('fm-miss').hidden=!fmMiss||!miss.length;$('fm-miss').innerHTML=miss.map(x=>'<span title="'+esc2(cn(x))+'">'+pad(x.id)+'</span>').join('')}
