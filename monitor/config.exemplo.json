@@ -1,0 +1,9 @@
+{
+  "apiKey": "AIzaSyDkaUaLW-n37ZLN93aVZQZBbqPEYtb_gsw",
+  "projectId": "cameras-arraial",
+  "email": "COLOQUE_AQUI_O_EMAIL_DO_LOGIN_DO_PROGRAMA",
+  "senha": "COLOQUE_AQUI_A_SENHA",
+  "intervaloSegundos": 60,
+  "falhasParaOffline": 3,
+  "timeoutMs": 1500
+}

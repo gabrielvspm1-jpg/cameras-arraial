@@ -276,6 +276,7 @@ details#imp{margin:0 0 14px;padding:0}details#imp summary{cursor:pointer;padding
 @keyframes bping{to{box-shadow:0 0 0 10px rgba(52,211,153,0)}}
 .lg-ban{display:flex;align-items:center}.lg-ban svg{flex:1;min-width:0}
 @media(prefers-reduced-motion:reduce){.brz,.brz *,.brz-d::after{animation:none!important}}
+.mon{margin-top:10px;font-size:12px;letter-spacing:.04em;display:flex;align-items:center;gap:7px;color:#8aa0c0}.mon i{width:8px;height:8px;border-radius:50%;background:#34D399;box-shadow:0 0 8px #34D399;animation:bping 2s ease-out infinite}.mon.old{color:#F5B84B}.mon.old i{background:#F5B84B;box-shadow:none;animation:none}
 .viewer #fotosmes,.viewer #csv,.viewer #fmcard,.viewer #fmbg,.viewer #imp,.viewer #ed,.viewer [data-edit],.viewer #clrbar{display:none!important}.viewer .sw2,.viewer .sw{pointer-events:none}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}.lensx .ring,.lensx .eye,.lensx .blink{animation:none}}
 </style>
@@ -313,6 +314,7 @@ details#imp{margin:0 0 14px;padding:0}details#imp summary{cursor:pointer;padding
       <h1>Central de câmeras</h1>
       <p>Mobilidade Urbana · Prefeitura Municipal de Arraial do Cabo</p>
       <div class="hstat"><span><b id="h-on">0</b>online</span><span><b id="h-off">0</b>offline</span></div>
+      <div class="mon" id="mon" hidden></div>
     </div>
     <div class="ringbox"><svg viewBox="0 0 120 120" aria-hidden="true"><defs><linearGradient id="rgg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#34D399"/><stop offset="1" stop-color="#22D3EE"/></linearGradient></defs><circle class="bg" cx="60" cy="60" r="52"/><circle class="fg" id="rg" cx="60" cy="60" r="52"/></svg><div class="rv"><span id="rv">0%</span><small>operacional</small></div></div>
   </div>
@@ -467,7 +469,7 @@ $('f-status').addEventListener('click',e=>{const b=e.target.closest('.chip');if(
 (function(){const f=()=>{$('clk').textContent=new Date().toLocaleString('pt-BR',{weekday:'short',day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit',second:'2-digit',timeZone:'America/Sao_Paulo'}).replace(/\./g,'')};f();setInterval(f,1000);
   const im=new Image();im.onload=()=>$('hero').style.setProperty('--hero-img','url(banner.jpg)');im.src='banner.jpg'})();
 /* ---------- fotos do mês (guardadas no banco até gerar o relatório) ---------- */
-const EDITORS=['gabrielvspm1@gmail.com','secmobilidadeurbana@gmail.com'];let IS_ED=false;
+const EDITORS=['gabrielvspm1@gmail.com','secmobilidadeurbana@gmail.com'];let IS_ED=false,MONT=null;function monUI(){const m=$('mon');if(!m)return;if(!MONT){m.hidden=true;return}const min=Math.max(0,Math.round((Date.now()-MONT)/60000)),ok=min<=3;m.hidden=false;m.className='mon'+(ok?'':' old');m.innerHTML='<i></i>'+(ok?'Monitoramento automático ativo · verificado há '+(min<1?'menos de 1':min)+' min':'Monitoramento automático parado há '+(min>=120?Math.round(min/60)+' h':min+' min')+' · status pode estar desatualizado')}setInterval(monUI,30000);
 const DBR=()=>{try{return db}catch(e){return null}};
 const FM={ldb:null,rows:[],ready:null,unsub:null,tm:0,
   lopen(){return this.ldb||(this.ldb=new Promise((res,rej)=>{const q=indexedDB.open('cam-fotos-mes',1);q.onupgradeneeded=()=>q.result.createObjectStore('f',{keyPath:'id',autoIncrement:true});q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)}))},
@@ -649,13 +651,15 @@ function refresh(){kpis();if(typeof fotosMig==='function')setTimeout(fotosMig,15
     $('lf').addEventListener('submit',e=>{e.preventDefault();$('lmsg').textContent=why});return}
   $('lgv').textContent='';
   firebase.initializeApp(cfg);auth=firebase.auth();db=firebase.firestore();try{db.enablePersistence({synchronizeTabs:true}).catch(()=>{})}catch(e){}
-  let unsub=null,unsub2=null;
+  let unsub=null,unsub2=null,unsub3=null;
   auth.onAuthStateChanged(u=>{
     $('login').hidden=!!u;$('out').hidden=!u;$('usrw').hidden=!u;$('usr').textContent=u?u.email:'';
     if(unsub){unsub();unsub=null}
     if(unsub2){unsub2();unsub2=null}
     IS_ED=!!u&&EDITORS.indexOf((u.email||'').toLowerCase())>=0;document.body.classList.toggle('viewer',!!u&&!IS_ED);
     if(u&&IS_ED)FM.start();else FM.stop();
+    if(unsub3){unsub3();unsub3=null}
+    if(u)unsub3=db.collection('config').doc('monitor').onSnapshot(d=>{const t=d.exists&&d.data().t;MONT=t&&t.toDate?t.toDate().getTime():null;monUI()},()=>{});
     if(u)unsub2=db.collection('config').doc('cameras').onSnapshot({includeMetadataChanges:true},d=>{pCfg=d.metadata.hasPendingWrites;netUI();if(d.metadata.fromCache&&!d.exists)return;loadList(d.exists&&Array.isArray(d.data().list)?d.data().list:[]);if(!cams.length)$('imp').open=true},e=>{$('fbwarn').hidden=false;$('fbwarn').textContent='Erro ao ler a lista de câmeras: '+e.message});
     if(u)unsub=db.collection('cameras').onSnapshot({includeMetadataChanges:true},s=>{pCam=s.metadata.hasPendingWrites;netUI();let wentOff=false;s.forEach(d=>{STAT[+d.id]=d.data().on!==false;{const t=d.data().at;ATS[+d.id]=t&&t.toDate?t.toDate():null}const c=byId(d.id);if(c){if(statLoaded&&c.on&&!STAT[+d.id])wentOff=true;c.on=STAT[+d.id]}});statLoaded=true;if(wentOff)beep();refresh()},e=>{$('fbwarn').hidden=false;$('fbwarn').textContent='Erro ao ler o status: '+e.message});
   });

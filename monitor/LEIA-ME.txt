@@ -1,0 +1,37 @@
+MONITOR DE CAMERAS - Arraial do Cabo
+=====================================
+
+O que faz: a cada minuto testa o IP de cada camera (ping) e atualiza o status no app.
+Camera so vira OFFLINE depois de 3 falhas seguidas (cerca de 3 minutos).
+
+PASSO A PASSO (no computador Windows que fica ligado)
+-----------------------------------------------------
+1) Copie esta pasta inteira para o computador, por exemplo em C:\monitor
+
+2) Crie o arquivo cameras.csv (pode copiar o cameras.exemplo.csv e editar).
+   Duas colunas: numero e ip. Uma camera por linha. Exemplo:
+       numero,ip
+       1,10.0.0.11
+       2,10.0.0.12
+   Pode salvar pelo Excel como CSV. Cameras que nao estiverem na lista continuam com status manual.
+
+3) TESTE PRIMEIRO (nao grava nada no app):
+   De dois cliques em  testar-ping.bat
+   Ele mostra quantas cameras responderam e quais nao responderam.
+   Se aparecer muita camera sem resposta que esta funcionando, me avise antes de continuar.
+
+4) Crie o login do programa no Firebase:
+   console.firebase.google.com > projeto cameras-arraial > Authentication > Usuarios > Adicionar usuario.
+   Use um e-mail so para o programa (ex.: monitor.cameras@gmail.com) e uma senha forte.
+   Me passe o e-mail para eu liberar a gravacao.
+
+5) Copie config.exemplo.json para config.json e preencha "email" e "senha".
+   Nao compartilhe esse arquivo.
+
+6) De dois cliques em iniciar-monitor.bat. A janela preta mostra "Login feito. Monitorando".
+   Deixe a janela aberta. Quando uma camera cair/voltar, aparece uma linha na tela e o app atualiza.
+
+PARA INICIAR SOZINHO COM O WINDOWS
+----------------------------------
+Win+R > shell:startup > coloque um atalho do iniciar-monitor.bat nessa pasta.
+(Ou use o Agendador de Tarefas: "Ao iniciar o computador".)
