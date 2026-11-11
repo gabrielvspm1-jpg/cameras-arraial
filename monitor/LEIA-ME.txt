@@ -1,37 +1,125 @@
-MONITOR DE CAMERAS - Arraial do Cabo
-=====================================
+﻿MONITOR DE CAMERAS - Arraial do Cabo (versao 2)
+===============================================
 
-O que faz: a cada minuto testa o IP de cada camera (ping) e atualiza o status no app.
-Camera so vira OFFLINE depois de 3 falhas seguidas (cerca de 3 minutos).
+O QUE ESTE PROGRAMA FAZ
+-----------------------
+Ele fica "perguntando" para cada camera, a cada 1 minuto, se ela esta respondendo na rede
+(isso se chama PING). Se uma camera para de responder, o programa avisa o app, e a camera
+aparece como OFFLINE no painel, com o som de alerta. Quando ela volta, volta a ONLINE sozinha.
 
-PASSO A PASSO (no computador Windows que fica ligado)
------------------------------------------------------
-1) Copie esta pasta inteira para o computador, por exemplo em C:\monitor
+Para evitar alarme falso, so marca OFFLINE depois de 3 falhas seguidas (uns 3 minutos).
 
-2) Crie o arquivo cameras.csv (pode copiar o cameras.exemplo.csv e editar).
-   Duas colunas: numero e ip. Uma camera por linha. Exemplo:
-       numero,ip
-       1,10.0.0.11
-       2,10.0.0.12
-   Pode salvar pelo Excel como CSV. Cameras que nao estiverem na lista continuam com status manual.
+IMPORTANTE: o ping so mostra se o equipamento responde. Se a camera estiver ligada mas com a
+imagem travada, ela continua aparecendo como ONLINE.
 
-3) TESTE PRIMEIRO (nao grava nada no app):
-   De dois cliques em  testar-ping.bat
-   Ele mostra quantas cameras responderam e quais nao responderam.
-   Se aparecer muita camera sem resposta que esta funcionando, me avise antes de continuar.
 
-4) Crie o login do programa no Firebase:
-   console.firebase.google.com > projeto cameras-arraial > Authentication > Usuarios > Adicionar usuario.
-   Use um e-mail so para o programa (ex.: monitor.cameras@gmail.com) e uma senha forte.
-   Me passe o e-mail para eu liberar a gravacao.
+O QUE TEM NA PASTA (cada arquivo)
+---------------------------------
+  testar-ping.bat ................ TESTE. Mostra quem responde e quem nao. NAO grava nada no app.
+  configurar.bat ................. Pergunta o e-mail e a senha do login do programa e cria o config.json.
+  iniciar-monitor.bat ............ Liga o monitor de verdade (grava no app).
+  iniciar-automatico-com-windows.bat  Faz o monitor abrir sozinho quando o computador liga.
+  cameras.exemplo.csv ............ Modelo da lista de cameras (numero e IP). Voce copia e edita.
+  config.exemplo.json ............ Modelo de configuracao. (O configurar.bat cria o config.json certo.)
+  monitor.ps1 / configurar.ps1 ... O programa em si. Nao precisa abrir.
+  LEIA-ME.txt .................... Este guia.
 
-5) Copie config.exemplo.json para config.json e preencha "email" e "senha".
-   Nao compartilhe esse arquivo.
+Arquivos que o programa cria sozinho: resultado-teste.txt (do teste) e monitor.log (historico).
 
-6) De dois cliques em iniciar-monitor.bat. A janela preta mostra "Login feito. Monitorando".
-   Deixe a janela aberta. Quando uma camera cair/voltar, aparece uma linha na tela e o app atualiza.
 
-PARA INICIAR SOZINHO COM O WINDOWS
-----------------------------------
-Win+R > shell:startup > coloque um atalho do iniciar-monitor.bat nessa pasta.
-(Ou use o Agendador de Tarefas: "Ao iniciar o computador".)
+=====================================================================
+PARTE A - TESTAR EM QUALQUER COMPUTADOR (sem risco, so para aprender)
+=====================================================================
+
+PASSO 1 - Colocar a pasta no computador
+  a) Salve o arquivo monitor-cameras.zip no computador (por exemplo, na Area de Trabalho).
+  b) Clique com o botao DIREITO no zip e escolha "Extrair tudo...". Clique em "Extrair".
+     (Nao abra os arquivos de dentro do zip sem extrair antes, senao nao funciona.)
+  c) Mova a pasta "monitor" para um lugar facil, como C:\monitor  (disco C, pasta "monitor").
+
+PASSO 2 - Criar a lista de cameras (cameras.csv)
+  a) Dentro da pasta monitor, copie o arquivo "cameras.exemplo.csv" e cole no mesmo lugar.
+     Vai criar "cameras.exemplo - Copia.csv". Renomeie para exatamente:  cameras.csv
+     (Se nao aparecer ".csv" no nome, ative em Exibir > Mostrar > Extensoes de nomes de arquivos.)
+  b) Abra o cameras.csv com o Bloco de Notas (botao direito > Abrir com > Bloco de Notas).
+  c) Ele vem assim:
+         numero,ip
+         1,192.168.0.1
+         2,192.168.0.2
+         3,192.168.0.99
+     - A primeira linha (numero,ip) NAO pode ser apagada.
+     - Cada linha: numero da camera, virgula, IP da camera. Sem espacos extras.
+     - Para o teste, troque os IPs por IPs que existam na rede desse computador:
+         * o IP do roteador/modem (descubra no passo abaixo);
+         * o IP de outro aparelho ligado (um celular no wi-fi, por exemplo);
+         * e deixe um IP inventado (como 192.168.0.99) para ver uma camera "SEM RESPOSTA".
+  d) Salve (Ctrl+S) e feche.
+
+  Como descobrir o IP do roteador: aperte Win+R, digite  cmd  e Enter. Na janela preta digite
+  ipconfig  e Enter. Procure "Gateway Padrao": o numero ao lado (ex.: 192.168.0.1) e o IP do roteador.
+
+PASSO 3 - Rodar o teste
+  a) De dois cliques em  testar-ping.bat
+  b) Se o Windows mostrar "O Windows protegeu seu computador": clique em "Mais informacoes" e
+     depois em "Executar assim mesmo".
+  c) Vai abrir uma janela preta e, em poucos segundos, mostrar uma linha por camera:
+         001  192.168.0.1       RESPONDE (3 ms)      <- verde = esta respondendo
+         003  192.168.0.99      SEM RESPOSTA         <- vermelho = nao respondeu
+     No fim aparece o RESUMO e o resultado fica salvo em resultado-teste.txt.
+  d) Aperte qualquer tecla para fechar a janela.
+
+  Este teste NAO mexe no app. Pode repetir quantas vezes quiser.
+
+
+=====================================================================
+PARTE B - USAR DE VERDADE (grava o status no app)
+=====================================================================
+So faca depois de testar na Parte A e com o aval do chefe.
+Use o computador que vai ficar ligado o tempo todo, dentro da rede das cameras.
+
+PASSO 4 - Lista real de cameras
+  Monte o cameras.csv com TODAS as cameras que tem IP (numero e IP). O numero e o mesmo que
+  aparece no app. Quem esta no app e nao esta na lista continua com status manual.
+  Dica para montar no Excel: coluna A = numero, coluna B = IP, com os titulos "numero" e "ip" na
+  primeira linha. Depois: Arquivo > Salvar como > escolha "CSV (separado por virgulas)" ou
+  "CSV UTF-8" > nome: cameras.csv  > salvar na pasta monitor. (CSV com ponto e virgula tambem funciona.)
+
+PASSO 5 - Criar o login do programa no Firebase (uma vez so)
+  a) Abra: https://console.firebase.google.com  e entre com a conta dona do projeto.
+  b) Clique no projeto  cameras-arraial.
+  c) No menu da esquerda: Criacao (Build) > Authentication > aba "Usuarios" > "Adicionar usuario".
+  d) Escreva um e-mail so para o programa (ex.: monitor.cameras@gmail.com - nao precisa existir de
+     verdade) e uma senha forte. Clique em "Adicionar usuario". Anote o e-mail e a senha.
+  e) Me passe SO O E-MAIL (nunca a senha) para eu liberar esse login nas regras do banco.
+     Enquanto eu nao liberar, o programa entra mas nao consegue gravar (ele avisa isso na tela).
+
+PASSO 6 - Configurar
+  De dois cliques em  configurar.bat . Ele pergunta o e-mail e a senha (a senha nao aparece
+  enquanto voce digita - e normal) e cria o arquivo config.json sozinho.
+
+PASSO 7 - Ligar
+  De dois cliques em  iniciar-monitor.bat . A janela preta mostra:
+      Login feito.
+      Monitorando 150 cameras a cada 60 s...
+  DEIXE A JANELA ABERTA (pode minimizar). Se fechar, o monitoramento para.
+  Quando uma camera cair ou voltar, aparece uma linha na tela (vermelha = caiu, verde = voltou)
+  e o app atualiza na hora. No painel do app aparece "Monitoramento automatico ativo".
+
+PASSO 8 - Para abrir sozinho quando o computador ligar (recomendado)
+  De dois cliques em  iniciar-automatico-com-windows.bat . Pronto.
+  Tambem configure o computador para NAO dormir: Configuracoes > Sistema > Energia >
+  "Suspender" / "Tela e suspensao" > escolha "Nunca" (na tomada).
+
+
+=====================================================================
+SE ALGO DER ERRADO
+=====================================================================
+"Nao achei o arquivo cameras.csv"  -> o nome precisa ser exatamente cameras.csv, na mesma pasta do monitor.ps1.
+"cameras.csv esta vazio ou fora do formato" -> confira se a primeira linha e  numero,ip  e as outras tem numero,IP.
+Muitas cameras "SEM RESPOSTA" no teste, mas elas estao funcionando -> o computador pode estar
+   em outra rede (wi-fi diferente) ou alguma camera bloqueia ping. Me mande o resultado-teste.txt.
+"E-mail ou senha incorretos" -> rode configurar.bat de novo e confira o e-mail/senha criados no Firebase.
+"NAO tem permissao para gravar" -> falta eu liberar o e-mail nas regras do Firestore. Me passe o e-mail.
+Janela fecha sozinha / nada acontece -> de dois cliques no .bat (nao no .ps1) e tire print da tela.
+Para ver o historico do que aconteceu: abra o arquivo monitor.log com o Bloco de Notas.
+Para parar o programa: feche a janela preta (ou Ctrl+C).
