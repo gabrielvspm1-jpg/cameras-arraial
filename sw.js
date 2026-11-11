@@ -2,7 +2,7 @@
 // - arquivos do próprio site: tenta a internet (até 4 s); se falhar, usa a cópia guardada
 // - bibliotecas (Leaflet, Firebase): ficam guardadas
 // - pedaços do mapa já vistos: ficam guardados
-const V='cam-v50',T='cam-tiles-v1';
+const V='cam-v51',T='cam-tiles-v1';
 const CORE=['./','index.html','relatorio.js','firebase-config.js','manifest.webmanifest','icon-192.png','icon-512.png','brasao.png','fotos/001.jpg','fotos/004.jpg','fotos/002.jpg','fotos/003.jpg','papel-timbrado.jpg','zoneamento.json','fotos/005.jpg','fotos/007.jpg','fotos/008.jpg','fotos/009.jpg','fotos/010.jpg','fotos/011.jpg','fotos/013.jpg','fotos/014.jpg','fotos/015.jpg','fotos/017.jpg','fotos/018.jpg','fotos/030.jpg','fotos/031.jpg','fotos/035.jpg','fotos/036.jpg','fotos/037.jpg','fotos/038.jpg','fotos/039.jpg','fotos/040.jpg','fotos/041.jpg','fotos/042.jpg','fotos/043.jpg','fotos/044.jpg','fotos/045.jpg','fotos/048.jpg','fotos/049.jpg','fotos/050.jpg','fotos/051.jpg','fotos/055.jpg','fotos/056.jpg','fotos/057.jpg'];
 const LIBS=['https://unpkg.com/leaflet@1.9.4/dist/leaflet.css','https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css','https://unpkg.com/leaflet@1.9.4/dist/leaflet.js','https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js','https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js','https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js','https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js'];
 self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(V).then(c=>Promise.allSettled(CORE.concat(LIBS).map(u=>c.add(u)))))});

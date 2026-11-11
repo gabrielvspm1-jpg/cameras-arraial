@@ -108,6 +108,8 @@ input.zq{width:100%;height:36px;min-height:0;max-height:36px;flex:0 0 36px;box-s
 .zlab span{position:absolute;transform:translate(-50%,-50%);color:#fff;font:700 12px 'Chakra Petch',Inter,sans-serif;text-shadow:0 0 3px #000,0 0 6px #000;white-space:nowrap;pointer-events:none}
 .zcam span{position:absolute;left:-15px;top:-15px;width:30px;height:30px;border-radius:50%;box-sizing:border-box;display:flex;align-items:center;justify-content:center;background:rgba(6,11,22,.92);border:2px solid var(--c);color:#fff;font:700 11px 'Chakra Petch',Inter,sans-serif;box-shadow:0 0 12px var(--c);cursor:pointer}
 #zw.zdraw .zcam{pointer-events:none}#zw.zdraw .leaflet-container{cursor:crosshair}
+.zmd::after{content:"+";position:absolute;left:-11px;top:-11px;width:22px;height:22px;border-radius:50%;box-sizing:border-box;background:rgba(6,11,22,.92);border:2px solid #22D3EE;color:#E6FBFF;font:700 15px/17px Inter,sans-serif;text-align:center;cursor:pointer;opacity:.85}
+.zxb span{position:absolute;left:-16px;top:-54px;width:32px;height:32px;border-radius:50%;box-sizing:border-box;background:#FB7185;color:#fff;font:700 20px/28px Inter,sans-serif;text-align:center;border:2px solid #fff;box-shadow:0 2px 12px rgba(0,0,0,.65);cursor:pointer}
 #zomira{position:absolute;left:50%;top:50%;width:40px;height:40px;margin:-20px 0 0 -20px;pointer-events:none;z-index:4}#zomira[hidden]{display:none}
 #zomira::before,#zomira::after{content:"";position:absolute;background:#FACC15;box-shadow:0 0 0 1px rgba(0,0,0,.6)}#zomira::before{left:19px;top:0;width:2px;height:40px}#zomira::after{top:19px;left:0;height:2px;width:40px}
 .zcard .zob{height:32px;font-size:12px}.zcard .zrw{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}.zcard .zlk{cursor:pointer}.zcard .zlk:hover{background:rgba(34,211,238,.08)}
@@ -1030,7 +1032,7 @@ const ZO=(()=>{
     let h=head('PONTO CONSULTADO',ll.lat.toFixed(6)+', '+ll.lng.toFixed(6));h+='<div class="zsub">Neste ponto</div>'+(zs.length?zs.map(z=>'<div class="zi zlk" data-zid="'+z.id+'"><span class="zdot" style="--c:'+z.c+'"></span><div><b>'+esc2(z.n)+'</b><span>'+inside(z).length+' câm. OCR na zona</span></div></div>').join(''):'<div class="none">Nenhuma zona neste ponto.</div>');
     h+='<div class="zsub">OCR mais próximas</div>'+near.map(x=>'<div class="zi zlk" data-cid="'+x.c.id+'"><span class="zdot" style="--c:'+col(x.c)+'"></span><div><b>'+esc2(nm(x.c))+'</b><span>a '+fmtD(x.d)+(x.c.on?'':' · offline')+'</span></div></div>').join('');
     show(h)}
-  function click(e){if(S){if(!mira&&!S.closed)addPoint(e.latlng);return}pointInfo(e.latlng)}
+  function click(e){if(S){if(S.closed)clearSel();else if(!mira)addPoint(e.latlng);return}pointInfo(e.latlng)}
 
   /* ----- desenho ----- */
   function startDraw(shape){if(!IS_ED||!on)return;if(S)cancel(true);selId=null;$('zcard').hidden=true;if(pin){zmap.removeLayer(pin);pin=null}
@@ -1045,7 +1047,7 @@ const ZO=(()=>{
     dg.addTo(zmap);[S.pg,S.pl,S.rb,S.lab].forEach(l=>l.addTo(dg));zonesDraw();
     $('zw').classList.add('zdraw');if(innerWidth<700){$('zlb').hidden=true;$('zlc').textContent='▸'}
     $('zomira').hidden=true;fitZ(z);buildV();redraw();bar()}
-  function cancel(silent){if(!S)return;const eid=S.id;S.vm.forEach(m=>zmap.removeLayer(m));dg.clearLayers();zmap.removeLayer(dg);S=null;$('zodraw').hidden=true;$('zomira').hidden=true;$('zw').classList.remove('zdraw');zonesDraw();if(!silent){list();const z=eid&&zones.find(q=>q.id===eid);if(z)info(z)}}
+  function cancel(silent){if(!S)return;const eid=S.id;clearSel();(S.mm||[]).forEach(m=>zmap.removeLayer(m));S.vm.forEach(m=>zmap.removeLayer(m));dg.clearLayers();zmap.removeLayer(dg);S=null;$('zodraw').hidden=true;$('zomira').hidden=true;$('zw').classList.remove('zdraw');zonesDraw();if(!silent){list();const z=eid&&zones.find(q=>q.id===eid);if(z)info(z)}}
   function rectPts(a,b){return [[a[0],a[1]],[a[0],b[1]],[b[0],b[1]],[b[0],a[1]]]}
   function addPoint(ll){if(!S||S.closed)return;const p=[ll.lat,ll.lng];
     if(S.shape==='rect'){if(!S.pts.length){S.pts=[p]}else{if(hav(S.pts[0],p)<1)return;S.pts=rectPts(S.pts[0],p);closeShape();return}}
@@ -1053,17 +1055,25 @@ const ZO=(()=>{
     buildV();redraw();bar()}
   function undo(){if(!S||S.closed||!S.pts.length)return;S.pts.pop();buildV();redraw();bar()}
   function closeShape(){if(!S||S.pts.length<3){toast('Marque pelo menos 3 pontos para fechar a zona.');return}S.closed=true;if(S.rl){dg.removeLayer(S.rl);S.rl=null}S.rb.setLatLngs([]);$('zomira').hidden=true;buildV();redraw();bar()}
-  function buildV(){S.vm.forEach(m=>zmap.removeLayer(m));S.vm=S.pts.map((p,i)=>{
+  function buildV(){clearSel();S.vm.forEach(m=>zmap.removeLayer(m));S.vm=S.pts.map((p,i)=>{
     const m=L.marker(p,{draggable:true,zIndexOffset:1000,keyboard:false,icon:L.divIcon({className:'zvx'+(i===0&&!S.closed&&S.shape==='poly'?' first':''),iconSize:[0,0]})});
     m.on('drag',e=>drag(i,e.latlng));m.on('dragend',()=>{redraw();if(S.closed)stats()});
-    m.on('click',()=>{if(i===0&&!S.closed&&S.shape==='poly'&&S.pts.length>=3)closeShape()});
-    m.addTo(zmap);const el=m.getElement();if(el)el.style.setProperty('--vc',S.c);return m})}
+    m.on('dragstart',clearSel);m.on('click',()=>{if(!S.closed){if(i===0&&S.shape==='poly'&&S.pts.length>=3)closeShape()}else selV(i)});
+    m.addTo(zmap);const el=m.getElement();if(el)el.style.setProperty('--vc',S.c);return m});buildM()}
+  function buildM(){(S.mm||[]).forEach(m=>zmap.removeLayer(m));S.mm=[];if(!S.closed)return;const p=S.pts;
+    for(let i=0;i<p.length;i++){const a=p[i],b=p[(i+1)%p.length],mp=[(a[0]+b[0])/2,(a[1]+b[1])/2];
+      const m=L.marker(mp,{keyboard:false,zIndexOffset:900,icon:L.divIcon({className:'zmd',iconSize:[0,0]})});
+      m.on('click',()=>{S.pts.splice(i+1,0,mp);S.shape='poly';buildV();redraw();stats()});m.addTo(zmap);S.mm.push(m)}}
+  function updM(){if(!S||!S.mm)return;const p=S.pts;S.mm.forEach((m,i)=>{const a=p[i],b=p[(i+1)%p.length];if(a&&b)m.setLatLng([(a[0]+b[0])/2,(a[1]+b[1])/2])})}
+  function clearSel(){if(S&&S.xm){zmap.removeLayer(S.xm);S.xm=null}if(S)S.sel=null}
+  function selV(i){clearSel();S.sel=i;S.xm=L.marker(S.pts[i],{keyboard:false,zIndexOffset:1200,icon:L.divIcon({className:'zxb',html:'<span title="Apagar este ponto">×</span>',iconSize:[0,0]})});S.xm.on('click',()=>delV(i));S.xm.addTo(zmap)}
+  function delV(i){if(!S||!S.closed)return;if(S.pts.length<=3){toast('A zona precisa de pelo menos 3 pontos.');clearSel();return}S.pts.splice(i,1);S.shape='poly';buildV();redraw();stats()}
   function drag(i,ll){const p=[ll.lat,ll.lng];
     if(S.closed&&S.shape==='rect'&&S.pts.length===4){const o=S.pts[(i+2)%4],a=[p[0],o[1]],b=[o[0],p[1]],n=[S.pts[i],null,o,null];
       const n1=(i%2===0)?[p[0],o[1]]:[o[0],p[1]],n3=(i%2===0)?[o[0],p[1]]:[p[0],o[1]];
       S.pts[i]=p;S.pts[(i+1)%4]=n1;S.pts[(i+3)%4]=n3;S.vm.forEach((m,k)=>{if(k!==i)m.setLatLng(S.pts[k])})}
     else S.pts[i]=p;
-    redraw();if(S.closed)stats()}
+    updM();redraw();if(S.closed)stats()}
   function redraw(){if(!S)return;const p=S.pts;
     S.pg.setStyle({color:S.c,fillColor:S.c,fillOpacity:S.o});S.pl.setStyle({color:S.c});S.vm.forEach(m=>{const el=m.getElement();if(el)el.style.setProperty('--vc',S.c)});
     if(S.closed){S.pg.setLatLngs(p);S.pl.setLatLngs([])}else{S.pg.setLatLngs([]);S.pl.setLatLngs(p)}
@@ -1084,7 +1094,7 @@ const ZO=(()=>{
       h+='<div class="rw">'+(mira?'<button class="zob p" data-zo="addc">＋ Adicionar ponto</button>':'')+'<button class="zob" data-zo="undo"'+(n?'':' disabled')+'>↶ Desfazer</button>'+(r?'':'<button class="zob" data-zo="close"'+(n>=3?'':' disabled')+'>Fechar zona</button>')+'<button class="zob" data-zo="mira">Mira: '+(mira?'ligada':'desligada')+'</button><button class="zob" data-zo="unit">Unidade: '+unit+'</button><button class="zob d" data-zo="cancel">Cancelar</button></div>'}
     else{h='<div class="rw"><input type="text" id="zon-n" maxlength="60" placeholder="Nome da zona (ex.: Zona Centro)" aria-label="Nome da zona" value="'+esc2(S.name||'')+'"></div>';
       h+='<div class="rw">'+COLORS.map(c=>'<button class="zsq'+(c===S.c?' on':'')+'" data-c="'+c+'" style="--c:'+c+'" aria-label="Cor '+c+'"></button>').join('')+'<input type="color" id="zocol" value="'+S.c+'" aria-label="Outra cor"></div>';
-      h+='<div class="rw"><span class="sm">Transparência</span><input type="range" id="zoop" min="10" max="80" step="5" value="'+Math.round(S.o*100)+'"><span class="sm" id="zoopv">'+Math.round(S.o*100)+'%</span></div><div class="sm" id="zof-s"></div>';
+      h+='<div class="rw"><span class="sm">Transparência</span><input type="range" id="zoop" min="10" max="80" step="5" value="'+Math.round(S.o*100)+'"><span class="sm" id="zoopv">'+Math.round(S.o*100)+'%</span></div><div class="sm" id="zof-s"></div><div class="sm">Toque num ponto e depois no <b style="color:#FB7185">×</b> para apagá-lo. Toque no <b>＋</b> entre dois pontos para criar um novo e arraste para dar a forma que quiser.</div>';
       h+='<div class="rw"><button class="zob p" data-zo="ok">OK · salvar zona</button><button class="zob" data-zo="unit">Unidade: '+unit+'</button><button class="zob d" data-zo="cancel">Cancelar</button></div>'}
     b.innerHTML=h;if(S.closed)stats();else if(S.last&&S.pts.length)rubber(S.last)}
   function save(){if(!IS_ED||!S||!S.closed)return;const nmv=(($('zon-n')||{}).value||S.name||'').trim()||('Zona '+(zones.length+1));
