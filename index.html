@@ -517,6 +517,7 @@ async function fmStatus(){const c=$('fmcard');if(!c||!window.indexedDB){return}l
   $('fm-miss').hidden=!fmMiss||!miss.length;$('fm-miss').innerHTML=miss.map(x=>'<span title="'+esc2(cn(x))+'">'+pad(x.id)+'</span>').join('')}
 function fmOpen(){$('fmbg').hidden=false;fmRender().catch(()=>{})}
 (function(){const b=$('csv'),fb=$('fotosmes');b.hidden=false;fb.hidden=false;
+  try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist()}catch(e){}
   if(!window.indexedDB){fb.hidden=true}else{FM.all().then(()=>fmRender()).catch(()=>{})}
   $('fm-ver').onclick=()=>{fmMiss=!fmMiss;fmStatus()};$('fmcard').onclick=e=>{if(!e.target.closest('button')&&!e.target.closest('.fmmiss'))fmOpen()};$('fmcard').style.cursor='pointer';
   fb.onclick=fmOpen;$('fmnew').onclick=()=>{$('fmbg').hidden=true;openEd(null)};$('fmok').onclick=()=>{$('fmbg').hidden=true};
