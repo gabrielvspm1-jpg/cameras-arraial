@@ -324,7 +324,7 @@ details#imp{margin:0 0 14px;padding:0}details#imp summary{cursor:pointer;padding
   <div class="card fmcard" id="fmcard" hidden>
     <div class="fmtop"><div><div class="fmk">FOTOS DO MÊS · <span id="fm-mes"></span></div><div class="fmbig"><b id="fm-n">0</b><span> de <i id="fm-t">0</i> câmeras fotografadas</span></div></div><div class="fmright"><b id="fm-f">0</b><span>faltam</span></div></div>
     <div class="fmbar"><i id="fm-bar"></i></div>
-    <div class="fmsrc" id="fm-src" style="font-size:11px;opacity:.65;margin-top:6px"></div><div class="fmfoot"><span id="fm-msg"></span><button type="button" class="lnk" id="fm-ver">Ver quais faltam</button></div>
+    <div class="fmfoot"><span id="fm-msg"></span><button type="button" class="lnk" id="fm-ver">Ver quais faltam</button></div>
     <div class="fmmiss" id="fm-miss" hidden></div>
   </div>
   <div class="row2">
@@ -505,10 +505,14 @@ async function fmStatus(){const c=$('fmcard');if(!c||!window.indexedDB){return}l
   $('fm-mes').textContent=new Date().toLocaleDateString('pt-BR',{month:'long',year:'numeric',timeZone:'America/Sao_Paulo'});
   $('fm-n').textContent=n;$('fm-t').textContent=tot;$('fm-f').textContent=f;$('fm-bar').style.width=(n/tot*100).toFixed(1)+'%';
   c.classList.toggle('done',f===0);
-  (async()=>{let loc=0;try{if(window.indexedDB)loc=(await FM.ltx('readonly',st=>st.count()))||0}catch(e){}$('fm-src').textContent='v33 · '+(FM.on()?'sincronizado entre aparelhos':'só neste aparelho (sem sincronizar)')+(loc?' · '+loc+' foto(s) ainda neste aparelho, aguardando envio':'')})();
   $('fm-msg').textContent=f===0?'Todas as câmeras fotografadas. Já pode gerar o relatório completo.':(f===1?'Falta 1 foto':'Faltam '+f+' fotos')+' para fechar o mês e gerar o relatório completo.';
   const miss=cams.filter(x=>!have.has(x.id));$('fm-ver').hidden=!miss.length;$('fm-ver').textContent=fmMiss?'Esconder lista':'Ver quais faltam';
   $('fm-miss').hidden=!fmMiss||!miss.length;$('fm-miss').innerHTML=miss.map(x=>'<span title="'+esc2(cn(x))+'">'+pad(x.id)+'</span>').join('')}
+function askClear(n){let b=$('clrbar');if(b)b.remove();b=document.createElement('div');b.id='clrbar';
+  b.style.cssText='position:fixed;left:12px;right:12px;bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:9999;background:#0f1a33;border:1px solid #22D3EE;border-radius:14px;padding:14px;box-shadow:0 10px 40px rgba(0,0,0,.6);color:#e8f0ff;display:flex;gap:10px;align-items:center;flex-wrap:wrap;max-width:560px;margin:0 auto';
+  b.innerHTML='<div style="flex:1 1 220px;font-size:14px"><b>Relatório gerado.</b> Confira o PDF e depois apague as '+n+(n>1?' fotos':' foto')+' do mês (em todos os aparelhos).</div><button type="button" class="btn" id="clrno">Manter</button><button type="button" class="btn pri" id="clryes">Apagar fotos</button>';
+  document.body.appendChild(b);$('clrno').onclick=()=>b.remove();
+  $('clryes').onclick=async()=>{b.remove();await FM.clear();fmRender();toast('Fotos do mês apagadas.')}}
 function fmOpen(){$('fmbg').hidden=false;fmRender().catch(()=>{})}
 (function(){const b=$('csv'),fb=$('fotosmes');b.hidden=false;fb.hidden=false;
   try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist()}catch(e){}
@@ -546,7 +550,7 @@ function fmOpen(){$('fmbg').hidden=false;fmRender().catch(()=>{})}
     b.disabled=true;
     try{const u8=await gerarRelatorioPDF(cams,TYPES,ATS,'',pad,cn,fotos);
       const u=URL.createObjectURL(new Blob([u8],{type:'application/pdf'}));const a=document.createElement('a');a.href=u;a.download='relatorio-cameras-arraial-do-cabo-'+new Date().toLocaleDateString('en-CA',{timeZone:'America/Sao_Paulo'})+'.pdf';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);
-      if(fotos.length)setTimeout(async()=>{if(confirm('Relatório gerado. Apagar as '+fotos.length+(fotos.length>1?' fotos':' foto')+' do mês, em todos os aparelhos?')){await FM.clear();fmRender();toast('Fotos do mês apagadas.')}},1500)
+      if(fotos.length)askClear(fotos.length)
     }catch(e){alert('Erro ao gerar o relatório: '+e.message)}finally{b.disabled=false}}})();
 
 /* ---------- mapa (Leaflet) ---------- */
