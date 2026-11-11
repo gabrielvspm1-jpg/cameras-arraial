@@ -93,6 +93,27 @@ input.zq{width:100%;height:36px;min-height:0;max-height:36px;flex:0 0 36px;box-s
 .zcard .bk{margin:8px 0 4px;font-size:13px}.zcard .bk b{color:#E6FBFF}.zcard .zi{display:flex;gap:10px;padding:8px 0;border-top:1px solid var(--line)}.zcard .zi .zdot{margin-top:3px}.zcard .zi b{font:600 13px 'Chakra Petch',Inter,sans-serif;display:block}.zcard .zi span{display:block;font-size:12px;color:var(--fg2);line-height:1.4}.zcard .none{font-size:12.5px;color:var(--fg2);padding:8px 0;border-top:1px solid var(--line)}
 .zb{cursor:pointer}.zb .zdot{width:9px;height:9px;background:transparent;border:1.5px dashed #cfe8ff;box-shadow:none}
 @media(max-width:700px){.zcard{right:10px;left:10px;width:auto}}
+.zseg{grid-template-columns:1fr 1fr 1fr}.zseg button{padding:0 2px;font-size:12px}
+.zmo{display:flex;flex-direction:column;gap:8px;min-height:0;overflow:auto}.zmo[hidden]{display:none}
+.zob{height:36px;padding:0 12px;border-radius:10px;border:1px solid rgba(34,211,238,.45);background:rgba(34,211,238,.12);color:#E6FBFF;font:600 12.5px Inter,sans-serif;cursor:pointer}.zob.p{background:rgba(34,211,238,.32)}.zob.d{border-color:rgba(251,113,133,.55);background:rgba(251,113,133,.14);color:#FFD5DB}.zob:disabled{opacity:.4;cursor:default}
+.zmo-h{display:grid;grid-template-columns:1fr 1fr;gap:6px}.zmo-n{font-size:12px;color:var(--fg2);margin:0;line-height:1.4}
+#zores .zr,#zolist .zr{padding:6px 8px}.zr .zt small{display:block}
+#zodraw.zodraw{position:fixed;left:10px;right:10px;bottom:calc(10px + env(safe-area-inset-bottom,0px));top:auto;max-width:560px;max-height:62vh;overflow:auto;z-index:1500;padding:12px;background:linear-gradient(180deg,rgba(10,19,36,.96),rgba(6,11,22,.96));border:1px solid rgba(34,211,238,.45);border-radius:16px;backdrop-filter:blur(14px);box-shadow:0 12px 40px rgba(0,0,0,.55);display:flex;flex-direction:column;gap:8px;z-index:5}.zodraw[hidden]{display:none}
+.zodraw .rw{display:flex;flex-wrap:wrap;gap:6px;align-items:center}.zodraw .big{font:700 18px 'Chakra Petch',Inter,sans-serif;color:#E6FBFF}.zodraw .sm{font-size:12px;color:var(--fg2);line-height:1.4}
+.zodraw input[type=text]{flex:1;min-width:140px;height:36px;padding:0 10px;background:rgba(0,0,0,.3);border:1px solid var(--line);border-radius:10px;color:var(--fg);font-size:14px}
+.zodraw input[type=range]{flex:1;min-width:110px}.zodraw input[type=color]{width:34px;height:30px;padding:0;border:1px solid var(--line);border-radius:8px;background:none}
+.zsq{width:26px;height:26px;border-radius:50%;border:2px solid transparent;cursor:pointer;padding:0;background:var(--c)}.zsq.on{border-color:#fff;box-shadow:0 0 10px var(--c)}
+.zvx{width:26px;height:26px;margin:-13px 0 0 -13px;border-radius:50%;background:#fff;border:4px solid var(--vc,#22D3EE);box-shadow:0 0 0 2px rgba(0,0,0,.4),0 0 12px var(--vc,#22D3EE);cursor:grab;box-sizing:border-box}.zvx.first{background:#FACC15}
+.zol,.zlab,.zcam{overflow:visible!important}.zol span{position:absolute;transform:translate(-50%,-50%);background:rgba(6,11,22,.9);color:#E6FBFF;border:1px solid rgba(34,211,238,.55);border-radius:8px;padding:1px 6px;font:600 11px Inter,sans-serif;white-space:nowrap;pointer-events:none}
+.zlab span{position:absolute;transform:translate(-50%,-50%);color:#fff;font:700 12px 'Chakra Petch',Inter,sans-serif;text-shadow:0 0 3px #000,0 0 6px #000;white-space:nowrap;pointer-events:none}
+.zcam span{position:absolute;left:-15px;top:-15px;width:30px;height:30px;border-radius:50%;box-sizing:border-box;display:flex;align-items:center;justify-content:center;background:rgba(6,11,22,.92);border:2px solid var(--c);color:#fff;font:700 11px 'Chakra Petch',Inter,sans-serif;box-shadow:0 0 12px var(--c);cursor:pointer}
+#zw.zdraw .zcam{pointer-events:none}#zw.zdraw .leaflet-container{cursor:crosshair}
+#zomira{position:absolute;left:50%;top:50%;width:40px;height:40px;margin:-20px 0 0 -20px;pointer-events:none;z-index:4}#zomira[hidden]{display:none}
+#zomira::before,#zomira::after{content:"";position:absolute;background:#FACC15;box-shadow:0 0 0 1px rgba(0,0,0,.6)}#zomira::before{left:19px;top:0;width:2px;height:40px}#zomira::after{top:19px;left:0;height:2px;width:40px}
+.zcard .zob{height:32px;font-size:12px}.zcard .zrw{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}.zcard .zlk{cursor:pointer}.zcard .zlk:hover{background:rgba(34,211,238,.08)}
+.zcard .zsub{font:600 10px Inter,sans-serif;letter-spacing:.18em;color:var(--cy);text-transform:uppercase;margin:10px 0 2px}
+
+
 .zinfo{font-size:12.5px;color:var(--fg2);margin:-2px 0 10px;line-height:1.5}.zinfo b{color:var(--fg);font-weight:600}
 #zmap{position:absolute;inset:0;z-index:0;background:#e8eaed}
 .leaflet-popup-content{font-size:13px;line-height:1.45;margin:10px 12px}
@@ -277,7 +298,7 @@ details#imp{margin:0 0 14px;padding:0}details#imp summary{cursor:pointer;padding
 .lg-ban{display:flex;align-items:center}.lg-ban svg{flex:1;min-width:0}
 @media(prefers-reduced-motion:reduce){.brz,.brz *,.brz-d::after{animation:none!important}}
 .mon{margin-top:10px;font-size:12px;letter-spacing:.04em;display:flex;align-items:center;gap:7px;color:#8aa0c0}.mon i{width:8px;height:8px;border-radius:50%;background:#34D399;box-shadow:0 0 8px #34D399;animation:bping 2s ease-out infinite}.mon.old{color:#F5B84B}.mon.old i{background:#F5B84B;box-shadow:none;animation:none}
-.viewer #fotosmes,.viewer #csv,.viewer #fmcard,.viewer #fmbg,.viewer #imp,.viewer #ed,.viewer [data-edit],.viewer #clrbar{display:none!important}.viewer .sw2,.viewer .sw{pointer-events:none}
+.viewer .zedit,.viewer #fotosmes,.viewer #csv,.viewer #fmcard,.viewer #fmbg,.viewer #imp,.viewer #ed,.viewer [data-edit],.viewer #clrbar{display:none!important}.viewer .sw2,.viewer .sw{pointer-events:none}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}.lensx .ring,.lensx .eye,.lensx .blink{animation:none}}
 </style>
 
@@ -369,7 +390,7 @@ details#imp{margin:0 0 14px;padding:0}details#imp summary{cursor:pointer;padding
 <section class="view" id="v-zona" hidden>
   <div class="mapwrap" id="zw">
     <div id="zmap" aria-label="Mapa de zoneamento do município"></div>
-    <div class="ov zcard" id="zcard" hidden></div>
+    <div class="ov zcard" id="zcard" hidden></div><div id="zomira" hidden></div><div class="ov zodraw" id="zodraw" hidden></div>
     <div class="ov zoom"><button id="zzi" aria-label="Aproximar">+</button><button id="zzo" aria-label="Afastar">−</button><button id="zzf" aria-label="Enquadrar o município" style="font-size:15px">⤢</button><button id="zzl" aria-label="Trocar camada do mapa" style="font-size:11px;font-weight:600">Mapa</button></div>
     <div class="ov zleg" id="zleg"><div class="zh"><div><small>ZONEAMENTO</small><strong>Camadas do mapa</strong></div><button class="zlt" id="zlt" aria-expanded="true" aria-label="Recolher ou abrir o painel"><span id="zlc">▾</span></button></div><div id="zlb"></div></div></div>
   </div>
@@ -440,6 +461,7 @@ addEventListener('hashchange',()=>go(location.hash.slice(1)));
 let stF='all',tyF='all',soF='n';
 function setNum(el,n){const from=+el.dataset.v||0;el.dataset.v=n;if(from===n||matchMedia('(prefers-reduced-motion:reduce)').matches){el.textContent=n;return}const t0=performance.now();(function st(t){const k=Math.min(1,(t-t0)/450);el.textContent=Math.round(from+(n-from)*k);if(k<1)requestAnimationFrame(st)})(t0)}
 function kpis(){
+  try{if(typeof ZO!=='undefined'&&ZO.on)ZO.camsDraw()}catch(e){}
   const tot=cams.length,on=cams.filter(c=>c.on).length,off=tot-on,pct=tot?Math.round(on/tot*100):0;
   setNum($('k-tot'),tot);setNum($('k-on'),on);setNum($('k-off'),off);$('k-pct').textContent=pct+'%';$('k-bar').style.width=pct+'%';
   $('h-on').textContent=on;$('h-off').textContent=off;$('rv').textContent=pct+'%';$('rg').style.strokeDashoffset=326.7*(1-pct/100);
@@ -505,6 +527,36 @@ const FM={ldb:null,rows:[],ready:null,unsub:null,tm:0,
   del(id){if(!this.on())return this.ltx('readwrite',st=>st.delete(id));this.rows=this.rows.filter(x=>x.id!==id);this.ref(id).delete().catch(e=>toast('Não foi possível apagar: '+e.message));return Promise.resolve()},
   clear(){if(!this.on())return this.ltx('readwrite',st=>st.clear());const ids=this.rows.map(x=>x.id);this.rows=[];
     for(let i=0;i<ids.length;i+=400){const b=DBR().batch();ids.slice(i,i+400).forEach(id=>b.delete(this.ref(id)));b.commit().catch(e=>toast('Não foi possível apagar: '+e.message))}return Promise.resolve()}};
+async function exifGPS(file){try{const b=new DataView(await file.slice(0,262144).arrayBuffer());if(b.getUint16(0)!==0xFFD8)return null;let o=2;
+  while(o<b.byteLength-4){const m=b.getUint16(o);if((m&0xFF00)!==0xFF00||m===0xFFDA)break;const len=b.getUint16(o+2);
+    if(m===0xFFE1&&b.getUint32(o+4)===0x45786966){const t=o+10,le=b.getUint16(t)===0x4949,g16=p=>b.getUint16(p,le),g32=p=>b.getUint32(p,le);
+      const ifd=p=>{const n=g16(p),r={};for(let i=0;i<n;i++){const e=p+2+i*12;r[g16(e)]=e}return r};
+      const i0=ifd(t+g32(t+4));if(!i0[0x8825])return null;const gp=ifd(t+g32(i0[0x8825]+8));if(!gp[2]||!gp[4])return null;
+      const rat=e=>{const p=t+g32(e+8);return [0,1,2].map(i=>g32(p+i*8)/g32(p+i*8+4))};
+      let la=rat(gp[2]),lo=rat(gp[4]);la=la[0]+la[1]/60+la[2]/3600;lo=lo[0]+lo[1]/60+lo[2]/3600;
+      if(gp[1]&&String.fromCharCode(b.getUint8(gp[1]+8))==='S')la=-la;if(gp[3]&&String.fromCharCode(b.getUint8(gp[3]+8))==='W')lo=-lo;
+      return (isFinite(la)&&isFinite(lo)&&(la||lo))?{lat:la,lon:lo}:null}
+    o+=2+len}}catch(e){}return null}
+function camsNear(g,max){if(!g)return[];const R=6371000,rad=Math.PI/180;
+  return cams.map(c=>{const dl=(c.lat-g.lat)*rad,dn=(c.lon-g.lon)*rad,a=Math.sin(dl/2)**2+Math.cos(g.lat*rad)*Math.cos(c.lat*rad)*Math.sin(dn/2)**2;return {c,d:2*R*Math.asin(Math.sqrt(a))}}).filter(x=>x.d<=max).sort((a,b)=>a.d-b.d)}
+function livePos(){return new Promise(res=>{if(!navigator.geolocation)return res(null);navigator.geolocation.getCurrentPosition(p=>res({lat:p.coords.latitude,lon:p.coords.longitude,acc:p.coords.accuracy}),()=>res(null),{enableHighAccuracy:true,timeout:9000,maximumAge:30000})})}
+/* reconhecimento visual: compara com as fotos que já estão nas câmeras */
+const SG=32,SIGC=new Map();
+function loadImg(u){return new Promise(r=>{const i=new Image();i.onload=()=>r(i);i.onerror=()=>r(null);i.src=u})}
+function sigOf(img){const cv=document.createElement('canvas');cv.width=cv.height=SG;const x=cv.getContext('2d',{willReadFrequently:true});x.drawImage(img,0,0,SG,SG);const d=x.getImageData(0,0,SG,SG).data,g=new Float32Array(SG*SG);for(let i=0;i<SG*SG;i++)g[i]=.299*d[4*i]+.587*d[4*i+1]+.114*d[4*i+2];return g}
+function nccS(a,b,S){let best=-1;for(let dy=-S;dy<=S;dy++)for(let dx=-S;dx<=S;dx++){let n=0,sa=0,sb=0,saa=0,sbb=0,sab=0;for(let y=Math.max(0,-dy);y<SG-Math.max(0,dy);y++)for(let x=Math.max(0,-dx);x<SG-Math.max(0,dx);x++){const u=a[y*SG+x],v=b[(y+dy)*SG+x+dx];n++;sa+=u;sb+=v;saa+=u*u;sbb+=v*v;sab+=u*v}const va=saa-sa*sa/n,vb=sbb-sb*sb/n;if(va>1e-6&&vb>1e-6){const r=(sab-sa*sb/n)/Math.sqrt(va*vb);if(r>best)best=r}}return best}
+async function refSigs(extra){const refs=[];const add=async(key,cam,url)=>{if(!SIGC.has(key)){const i=await loadImg(url);SIGC.set(key,i?sigOf(i):null)}const g=SIGC.get(key);if(g)refs.push({cam,g})};
+  for(let i=0;i<cams.length;i+=12)await Promise.all(cams.slice(i,i+12).map(c=>getPhoto(c.id).catch(()=>null)));
+  const seen=new Set();if(!MIG)for(const id of Object.keys(FIXAS)){seen.add(+id);await add('f'+id,+id,FIXAS[id])}
+  for(const id of Object.keys(PH)){if(PH[id]&&!seen.has(+id)){seen.add(+id);await add('p'+id+':'+PH[id].length,+id,PH[id])}}
+  (extra||[]).forEach(r=>{if(r.cam)refs.push({cam:r.cam,g:r.g})});return refs}
+async function visualCands(d,monthRows){try{const q=await loadImg(d);if(!q)return[];const qs=sigOf(q);
+  const ex=[];for(const r of monthRows||[]){if(!r.cam)continue;const k='m'+r.id;if(!SIGC.has(k)){const i=await loadImg(r.d);SIGC.set(k,i?sigOf(i):null)}if(SIGC.get(k))ex.push({cam:r.cam,g:SIGC.get(k)})}
+  const refs=await refSigs(ex),best={};refs.forEach(r=>{const v=nccS(qs,r.g,3);if(!(best[r.cam]>=v))best[r.cam]=v});
+  const l=Object.entries(best).map(([c,v])=>({id:+c,v})).sort((a,b)=>b.v-a.v);
+  return l.filter(x=>x.v>=.6).slice(0,2)}catch(e){return[]}}
+function imgDims(d){return new Promise(res=>{const i=new Image();i.onload=()=>res([i.naturalWidth,i.naturalHeight]);i.onerror=()=>res([0,0]);i.src=d})}
+const chips=r=>{let l=(r.cand||[]).filter(id=>id!==r.cam&&byId(id));if(!r.cam&&r.seq&&byId(r.seq)&&!l.includes(r.seq))l.push(r.seq);if(r.cam&&!r.gps&&!r.auto)l=[];return l.length?'<div class="fmch">'+(r.cam?'Ou: ':'Parece: ')+l.slice(0,4).map(id=>'<button type="button" class="fmb" data-cam="'+id+'">'+pad(id)+'</button>').join('')+'</div>':''};
 async function fmRender(){const L=$('fml'),rows=await FM.all();rows.sort((a,b)=>a.at-b.at);let last=0;rows.forEach(r=>{r.seq=(!r.cam&&last)?last+1:0;if(r.cam)last=r.cam});rows.sort((a,b)=>(a.cam||1e9)-(b.cam||1e9)||a.at-b.at);
   const seen={};const cc=new Set(rows.filter(r=>r.cam).map(r=>r.cam));
   L.innerHTML=rows.map(r=>{const c=r.cam&&byId(r.cam);const n=r.cam?(seen[r.cam]=(seen[r.cam]||0)+1):0;
@@ -666,6 +718,7 @@ function refresh(){kpis();if(typeof fotosMig==='function')setTimeout(fotosMig,15
     if(unsub2){unsub2();unsub2=null}
     IS_ED=!!u&&EDITORS.indexOf((u.email||'').toLowerCase())>=0;document.body.classList.toggle('viewer',!!u&&!IS_ED);
     if(u&&IS_ED)FM.start();else FM.stop();
+    if(u)ZO.start();else ZO.stop();
     if(unsub3){unsub3();unsub3=null}
     if(u)unsub3=db.collection('config').doc('monitor').onSnapshot(d=>{const t=d.exists&&d.data().t;MONT=t&&t.toDate?t.toDate().getTime():null;monUI()},()=>{});
     if(u)unsub2=db.collection('config').doc('cameras').onSnapshot({includeMetadataChanges:true},d=>{pCfg=d.metadata.hasPendingWrites;netUI();if(d.metadata.fromCache&&!d.exists)return;loadList(d.exists&&Array.isArray(d.data().list)?d.data().list:[]);if(!cams.length)$('imp').open=true},e=>{$('fbwarn').hidden=false;$('fbwarn').textContent='Erro ao ler a lista de câmeras: '+e.message});
@@ -835,13 +888,13 @@ function zCard(ll){
   zs.forEach(q=>{h+='<div class="zi"><span class="zdot" style="--c:'+q.z.cor+'"></span><div><b>'+esc2(q.f.n)+'</b><span>'+esc2(q.z.nome)+' · '+fmtHa(q.f.ha)+'</span>'+(q.f.d?'<span><i>'+esc2(q.f.d)+'</i></span>':'')+'</div></div>'});
   $('zcard').innerHTML=h;$('zcard').hidden=false;$('zcx2').onclick=()=>{$('zcard').hidden=true;if(zPin){zmap.removeLayer(zPin);zPin=null}}}
 function applyMode(fit){
-  if(!zmap||!ZD||!zBF)return;const b=zMode==='b';
-  const w=$('zlb');w.querySelectorAll('.zmz').forEach(e=>e.hidden=b);w.querySelectorAll('.zmb').forEach(e=>e.hidden=!b);
-  const tt=document.querySelector('#zleg .zh small'),t2=document.querySelector('#zleg .zh strong');if(tt)tt.textContent=b?'BAIRROS':'ZONEAMENTO';if(t2)t2.textContent=b?'Zoneamento de bairros':'Zoneamento total';
+  if(!zmap||!ZD||!zBF)return;const b=zMode==='b',o=zMode==='o';
+  const w=$('zlb');w.querySelectorAll('.zmz').forEach(e=>e.hidden=b||o);w.querySelectorAll('.zmb').forEach(e=>e.hidden=!b);$('zmo').hidden=!o;
+  const tt=document.querySelector('#zleg .zh small'),t2=document.querySelector('#zleg .zh strong');if(tt)tt.textContent=o?'ZONAS OCR':b?'BAIRROS':'ZONEAMENTO';if(t2)t2.textContent=o?'Zonas de busca':b?'Zoneamento de bairros':'Zoneamento total';
   $('zcard').hidden=true;if(zPin){zmap.removeLayer(zPin);zPin=null}
-  Object.keys(zGroups).forEach(k=>{const on=w.querySelector('[data-zk="'+k+'"]').classList.contains('on');if(b||!on)zmap.removeLayer(zGroups[k]);else zGroups[k].addTo(zmap)});
-  if(b){zmap.removeLayer(zBair);zBF.addTo(zmap)}else{zmap.removeLayer(zBF);if($('zbx').checked)zBair.addTo(zmap)}
-  if(fit)try{zmap.fitBounds((b?zBF:zAll).getBounds(),{padding:[20,20]})}catch(_){}}
+  Object.keys(zGroups).forEach(k=>{const on=w.querySelector('[data-zk="'+k+'"]').classList.contains('on');if(b||o||!on)zmap.removeLayer(zGroups[k]);else zGroups[k].addTo(zmap)});
+  if(b){zmap.removeLayer(zBair);zBF.addTo(zmap)}else{zmap.removeLayer(zBF);if($(o?'zbx2':'zbx').checked)zBair.addTo(zmap);else zmap.removeLayer(zBair)}
+  if(o)ZO.enter(fit);else{ZO.leave();if(fit)try{zmap.fitBounds((b?zBF:zAll).getBounds(),{padding:[20,20]})}catch(_){}}}
 function ensureZMap(){
   if(zmap){setTimeout(()=>{zmap.invalidateSize();applyMode(true)},0);return}
   if(typeof L==='undefined'){$('zmap').innerHTML='<p style="padding:24px;color:#333">Não foi possível carregar o mapa (biblioteca Leaflet). Verifique a conexão.</p>';return}
@@ -866,11 +919,11 @@ function ensureZMap(){
     d.zonas.forEach(z=>{const grp=L.featureGroup();zGroups[z.k]=grp;
       z.f.forEach(f=>f.g.forEach(g=>{const p=L.polygon(toLL(g),{pane:'pZ',color:z.cor,weight:1.6,fillColor:z.cor,fillOpacity:.38});
         p.bindTooltip(f.n+' · '+z.nome,{sticky:true});grp.addLayer(p);zAll.addLayer(p)}));grp.addTo(zmap)});
-    zmap.on('click',e=>zCard(e.latlng));
+    zmap.on('click',e=>zMode==='o'?ZO.click(e):zCard(e.latlng));
     const GR=[['Áreas urbanas',['ZR','EC','ZEN','ZEIS','ZH','ZOC','ZUESP','ZPORT','ZUR']],['Conservação',['ZPVS','ZCVS','ZUC','ZIE','ZEDS']],['Orla e mar',['ZO','ZP','ZIC','ZEP']]];
     const byK={};d.zonas.forEach(z=>byK[z.k]=z);
     const nAreas=d.zonas.reduce((a,z)=>a+z.f.length,0);
-    let h='<div class="zseg"><button data-mode="z" class="on">Zoneamento total</button><button data-mode="b">Bairros</button></div><div class="zmz"><div class="zst" style="grid-template-columns:repeat(3,1fr)"><div><b>'+d.zonas.length+'</b><span>zonas</span></div><div><b>'+nAreas+'</b><span>áreas</span></div><div><b>'+d.bairros.length+'</b><span>bairros</span></div></div>';
+    let h='<div class="zseg"><button data-mode="z" class="on">Zoneamento</button><button data-mode="b">Bairros</button><button data-mode="o">Zonas OCR</button></div><div class="zmz"><div class="zst" style="grid-template-columns:repeat(3,1fr)"><div><b>'+d.zonas.length+'</b><span>zonas</span></div><div><b>'+nAreas+'</b><span>áreas</span></div><div><b>'+d.bairros.length+'</b><span>bairros</span></div></div>';
     h+='<input class="zq" id="zq" type="search" placeholder="Filtrar zona ou bairro…" autocomplete="off" aria-label="Filtrar zona ou bairro"><div class="zbt"><button id="zon">Mostrar todas</button><button id="zoff">Ocultar todas</button></div></div><div id="zlist"><div class="zmz">';
     const rest=d.zonas.map(z=>z.k).filter(k=>!GR.some(g=>g[1].includes(k)));if(rest.length)GR.push(['Outras',rest]);
     GR.forEach(g=>{const ks=g[1].filter(k=>byK[k]);if(!ks.length)return;h+='<div class="zgw"><div class="zg">'+g[0]+'</div>';
@@ -878,7 +931,8 @@ function ensureZMap(){
     h+='</div><div class="zmb"><div class="zst" style="grid-template-columns:repeat(2,1fr)"><div><b>'+d.bairros.length+'</b><span>bairros</span></div><div><b>'+fmtHa(d.bairros.reduce((a,f)=>a+f.ha,0))+'</b><span>área total</span></div></div><div class="zgw"><div class="zg">Bairros ('+d.bairros.length+')</div>';
     d.bairros.map((f,i)=>[f,i]).sort((a,b)=>a[0].n.localeCompare(b[0].n,'pt-BR')).forEach(([f,i])=>{h+='<div class="zr zb" data-b="'+i+'" data-s="'+esc2((f.n+' '+(f.d||'')).toLowerCase())+'"><span class="zdot" style="--c:'+hue(i)+';background:var(--c);border:0"></span><div class="zt"><b>'+esc2(f.n)+'</b><small>'+(f.d?'Distrito '+esc2(f.d)+' · ':'')+fmtHa(f.ha)+'</small></div></div>'});h+='</div>';
     h+='</div></div><div class="zsw zmz"><label><input type="checkbox" id="zbx"><i></i>Contornos dos bairros</label></div>';
-    $('zlb').innerHTML=h;
+    h+='<div class="zmo" id="zmo" hidden><div class="zmo-h zedit"><button class="zob p" data-zo="new-poly">＋ Polígono</button><button class="zob" data-zo="new-rect">▭ Retângulo</button></div><p class="zmo-n" id="zomsg"></p><input class="zq" id="zoq" type="search" placeholder="Buscar câmera OCR (nº ou nome)…" autocomplete="off" aria-label="Buscar câmera OCR"><div id="zores"></div><div class="zg" id="zoh">Zonas</div><div id="zolist"></div><div class="zsw"><label><input type="checkbox" id="zbx2"><i></i>Contornos dos bairros</label></div></div>';
+    $('zlb').innerHTML=h;ZO.init();
     const setZ=(k,on)=>{const r=$('zlb').querySelector('[data-zk="'+k+'"]');if(r)r.classList.toggle('on',on);on?zGroups[k].addTo(zmap):zmap.removeLayer(zGroups[k])};
     const base={weight:1.6,fillOpacity:.38},hi={weight:3.2,fillOpacity:.68};
     $('zlb').onclick=e=>{
@@ -892,9 +946,166 @@ function ensureZMap(){
     $('zlb').onmouseover=e=>{const r=e.target.closest('[data-zk]');if(r&&r.classList.contains('on')&&zGroups[r.dataset.zk]){zGroups[r.dataset.zk].setStyle(hi);zGroups[r.dataset.zk].bringToFront()}};
     $('zlb').onmouseout=e=>{const r=e.target.closest('[data-zk]');if(r&&zGroups[r.dataset.zk])zGroups[r.dataset.zk].setStyle(base)};
     $('zq').oninput=e=>{const q=e.target.value.trim().toLowerCase();$('zlb').querySelectorAll('.zr').forEach(r=>{r.hidden=!!q&&r.dataset.s.indexOf(q)<0});$('zlb').querySelectorAll('.zgw').forEach(g=>{g.hidden=!g.querySelector('.zr:not([hidden])')})};
-    $('zlb').onchange=e=>{const t=e.target;if(t.id==='zbx'){t.checked?zBair.addTo(zmap):zmap.removeLayer(zBair)}};
+    $('zlb').onchange=e=>{const t=e.target;if(t.id==='zbx'||t.id==='zbx2'){t.checked?zBair.addTo(zmap):zmap.removeLayer(zBair)}};
     zmap.invalidateSize();applyMode(true)});
 }
+
+/* ---------- Zonas OCR (desenho de zonas de busca) ---------- */
+const ZO=(()=>{
+  const COLORS=['#22D3EE','#A78BFA','#F5B84B','#34D399','#F472B6','#FB7185','#60A5FA','#FACC15'];
+  const R=6371008.8,rad=Math.PI/180;
+  const hav=(a,b)=>{const x=Math.sin((b[0]-a[0])*rad/2)**2+Math.cos(a[0]*rad)*Math.cos(b[0]*rad)*Math.sin((b[1]-a[1])*rad/2)**2;return 2*R*Math.asin(Math.min(1,Math.sqrt(x)))};
+  const proj=(r,la0,lo0)=>{const kx=111320*Math.cos(la0*rad);return r.map(p=>[(p[1]-lo0)*kx,(p[0]-la0)*110574])};
+  const area=r=>{if(r.length<3)return 0;const q=proj(r,r[0][0],r[0][1]);let a=0;for(let i=0,j=q.length-1;i<q.length;j=i++)a+=q[j][0]*q[i][1]-q[i][0]*q[j][1];return Math.abs(a/2)};
+  const peri=r=>{let t=0;for(let i=0;i<r.length;i++)t+=hav(r[i],r[(i+1)%r.length]);return t};
+  const pip=(r,u,v)=>{let ins=false;for(let i=0,j=r.length-1;i<r.length;j=i++){if((r[i][1]>v)!==(r[j][1]>v)&&u<(r[j][0]-r[i][0])*(v-r[i][1])/(r[j][1]-r[i][1])+r[i][0])ins=!ins}return ins};
+  const sx=(p,q,r,s)=>{const d=(q[0]-p[0])*(s[1]-r[1])-(q[1]-p[1])*(s[0]-r[0]);if(!d)return false;const t=((r[0]-p[0])*(s[1]-r[1])-(r[1]-p[1])*(s[0]-r[0]))/d,u=((r[0]-p[0])*(q[1]-p[1])-(r[1]-p[1])*(q[0]-p[0]))/d;return t>=0&&t<=1&&u>=0&&u<=1};
+  const pd=(p,a,b)=>{const dx=b[0]-a[0],dy=b[1]-a[1],l=dx*dx+dy*dy;let t=l?((p[0]-a[0])*dx+(p[1]-a[1])*dy)/l:0;t=Math.max(0,Math.min(1,t));return Math.hypot(p[0]-a[0]-t*dx,p[1]-a[1]-t*dy)};
+  function rel(A,B){const a=proj(A,A[0][0],A[0][1]),b=proj(B,A[0][0],A[0][1]);
+    for(let i=0;i<a.length;i++)for(let j=0;j<b.length;j++)if(sx(a[i],a[(i+1)%a.length],b[j],b[(j+1)%b.length]))return 'sobrepõe';
+    if(pip(b,a[0][0],a[0][1])||pip(a,b[0][0],b[0][1]))return 'sobrepõe';
+    let m=1e9;a.forEach(p=>{for(let j=0;j<b.length;j++)m=Math.min(m,pd(p,b[j],b[(j+1)%b.length]))});b.forEach(p=>{for(let j=0;j<a.length;j++)m=Math.min(m,pd(p,a[j],a[(j+1)%a.length]))});
+    return m<=30?'faz divisa':null}
+  let unit='auto';
+  const fmtD=m=>unit==='m'?Math.round(m).toLocaleString('pt-BR')+' m':unit==='km'?(m/1000).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+' km':m<1000?Math.round(m)+' m':(m/1000).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+' km';
+  const fmtA=a=>a<10000?Math.round(a).toLocaleString('pt-BR')+' m²':a<1e6?(a/1e4).toLocaleString('pt-BR',{maximumFractionDigits:2})+' ha':(a/1e6).toLocaleString('pt-BR',{maximumFractionDigits:2})+' km²';
+  const ocr=()=>cams.filter(c=>c.t===0);
+  const nm=c=>pad(c.id)+(c.name&&c.name.indexOf('Sem nome')!==0?' · '+c.name:'');
+  let zones=[],on=false,lg=null,cg=null,dg=null,S=null,unsub=null,mira=false,selId=null,pendSel=null,pin=null,lastQ='';
+  try{mira=matchMedia('(pointer:coarse)').matches}catch(e){}
+  const inside=z=>ocr().filter(c=>pip(z.r,c.lat,c.lon));
+  const zonesOf=(la,lo)=>zones.filter(z=>pip(z.r,la,lo));
+  const col=c=>c.on?'#22D3EE':'#FB7185';
+
+  function start(){if(unsub||typeof db==='undefined'||!db)return;const P=firebase.firestore.FieldPath.documentId();
+    unsub=db.collection('config').where(P,'>=','zocr-').where(P,'<','zocr.').onSnapshot(s=>{
+      zones=s.docs.map(d=>{const x=d.data(),r=[];if(Array.isArray(x.p))for(let i=0;i+1<x.p.length;i+=2)r.push([+x.p[i],+x.p[i+1]]);return{id:d.id,n:x.n||'Zona',c:x.c||'#22D3EE',o:typeof x.o==='number'?x.o:.35,s:x.s==='r'?'r':'p',r}}).filter(z=>z.r.length>=3).sort((a,b)=>a.n.localeCompare(b.n,'pt-BR',{numeric:true}));
+      if(on){zonesDraw();list();if(pendSel){const z=zones.find(q=>q.id===pendSel);pendSel=null;if(z&&!S)info(z)}else if(selId&&!S){const z=zones.find(q=>q.id===selId);if(z&&!$('zcard').hidden)info(z,true);else if(!z){selId=null}}}
+    },e=>{if(typeof toast==='function')toast('Não consegui ler as zonas: '+e.message)})}
+  function stop(){if(unsub){unsub();unsub=null}zones=[];if(on){zonesDraw();list()}}
+
+  function init(){
+    if(lg)return;zmap.createPane('pO');zmap.getPane('pO').style.zIndex=430;zmap.createPane('pD');zmap.getPane('pD').style.zIndex=445;
+    lg=L.layerGroup();cg=L.layerGroup();dg=L.layerGroup();
+    $('zmo').onclick=e=>{const a=e.target.closest('[data-zo]');if(a){act(a.dataset.zo);return}const r=e.target.closest('[data-zid]');if(r){const z=zones.find(q=>q.id===r.dataset.zid);if(z){info(z);fitZ(z);if(innerWidth<700){$('zlb').hidden=true;$('zlc').textContent='▸'}}return}const c=e.target.closest('[data-cid]');if(c)goCam(+c.dataset.cid)};
+    $('zcard').onclick=e=>{const a=e.target.closest('[data-zo]');if(a){act(a.dataset.zo,a.dataset.id,a);return}const r=e.target.closest('[data-zid]');if(r){const z=zones.find(q=>q.id===r.dataset.zid);if(z){info(z);fitZ(z)}return}const c=e.target.closest('[data-cid]');if(c)goCam(+c.dataset.cid)};
+    $('zoq').oninput=e=>{lastQ=e.target.value.trim();search()};
+    $('zodraw').onclick=e=>{const a=e.target.closest('[data-zo]');if(a){act(a.dataset.zo,a.dataset.v);return}const q=e.target.closest('[data-c]');if(q&&S){S.c=q.dataset.c;$('zodraw').querySelectorAll('.zsq').forEach(x=>x.classList.toggle('on',x===q));const k=$('zocol');if(k)k.value=S.c;redraw()}};
+    $('zodraw').oninput=e=>{const t=e.target;if(!S)return;if(t.id==='zocol'){S.c=t.value;$('zodraw').querySelectorAll('.zsq').forEach(x=>x.classList.remove('on'));redraw()}else if(t.id==='zoop'){S.o=+t.value/100;$('zoopv').textContent=t.value+'%';redraw()}else if(t.id==='zon-n')S.name=t.value};
+    zmap.on('mousemove',e=>{if(S&&!S.closed&&!mira)rubber(e.latlng)});
+    zmap.on('move',()=>{if(S&&!S.closed&&mira)rubber(zmap.getCenter())});
+    addEventListener('keydown',e=>{if(e.key==='Escape'&&S&&on)cancel()});
+  }
+  function enter(fit){if(!lg)return;on=true;lg.addTo(zmap);cg.addTo(zmap);zonesDraw();camsDraw();list();msg();if(fit)fitAll();setTimeout(()=>zmap.invalidateSize(),0)}
+  function leave(){if(!on)return;on=false;if(S)cancel(true);if(lg){zmap.removeLayer(lg);zmap.removeLayer(cg)}if(pin&&zmap){zmap.removeLayer(pin);pin=null}$('zcard').hidden=true}
+  function msg(){const m=$('zomsg');if(!m)return;m.textContent=IS_ED?'Escolha Polígono ou Retângulo para desenhar uma zona. Toque numa zona ou num ponto do mapa para ver as câmeras OCR.':'Modo visualização: toque numa zona ou num ponto do mapa para ver as câmeras OCR. Só editores desenham.'}
+  function fitAll(){const pts=[];ocr().forEach(c=>pts.push([c.lat,c.lon]));zones.forEach(z=>z.r.forEach(p=>pts.push(p)));if(pts.length)try{zmap.fitBounds(L.latLngBounds(pts),{padding:[50,50],maxZoom:16})}catch(_){}}
+  function fitZ(z){try{zmap.fitBounds(L.latLngBounds(z.r),{padding:[60,60],maxZoom:17})}catch(_){}}
+
+  function zonesDraw(){if(!lg)return;lg.clearLayers();zones.forEach(z=>{if(S&&S.id===z.id)return;
+    L.polygon(z.r,{pane:'pO',color:z.c,weight:2,fillColor:z.c,fillOpacity:z.o,interactive:false}).addTo(lg);
+    const b=L.latLngBounds(z.r).getCenter();L.marker(b,{pane:'pO',interactive:false,keyboard:false,icon:L.divIcon({className:'zlab',html:'<span>'+esc2(z.n)+'</span>',iconSize:[0,0]})}).addTo(lg)})}
+  function camsDraw(){if(!cg)return;cg.clearLayers();ocr().forEach(c=>{const m=L.marker([c.lat,c.lon],{icon:L.divIcon({className:'zcam',html:'<span style="--c:'+col(c)+'">'+pad(c.id)+'</span>',iconSize:[0,0]}),title:cn(c),keyboard:false,zIndexOffset:200});m.on('click',()=>camInfo(c));m.addTo(cg)})}
+  function list(){const el=$('zolist');if(!el)return;$('zoh').textContent='Zonas ('+zones.length+')';
+    el.innerHTML=zones.length?zones.map(z=>'<div class="zr on" data-zid="'+z.id+'"><span class="zdot" style="--c:'+z.c+'"></span><div class="zt"><b>'+esc2(z.n)+'</b><small>'+inside(z).length+' câm. OCR · '+fmtA(area(z.r))+'</small></div></div>').join(''):'<p class="zmo-n">Nenhuma zona ainda.'+(IS_ED?' Use os botões acima para desenhar a primeira.':'')+'</p>'}
+  function search(){const el=$('zores');const q=lastQ.toLowerCase();if(!q){el.innerHTML='';return}
+    const r=ocr().filter(c=>pad(c.id).indexOf(q)>=0||String(c.id)===q||cn(c).toLowerCase().indexOf(q)>=0).slice(0,6);
+    el.innerHTML=r.length?r.map(c=>{const zs=zonesOf(c.lat,c.lon);return '<div class="zr on" data-cid="'+c.id+'"><span class="zdot" style="--c:'+col(c)+'"></span><div class="zt"><b>'+esc2(nm(c))+'</b><small>'+(zs.length?'Zona: '+zs.map(z=>esc2(z.n)).join(', '):'Fora de qualquer zona')+'</small></div></div>'}).join(''):'<p class="zmo-n">Nenhuma câmera OCR com esse número ou nome.</p>'}
+  function goCam(id){const c=ocr().find(x=>x.id===id);if(!c)return;zmap.setView([c.lat,c.lon],Math.max(zmap.getZoom(),17));camInfo(c);if(innerWidth<700){$('zlb').hidden=true;$('zlc').textContent='▸'}}
+
+  function head(sub,t){return '<div class="ch"><div><small>'+sub+'</small><div class="cc2" style="font:600 15px \'Chakra Petch\',Inter,sans-serif;color:#E6FBFF">'+t+'</div></div><button class="cx" data-zo="cclose" aria-label="Fechar">×</button></div>'}
+  function show(h){$('zcard').innerHTML=h;$('zcard').hidden=false}
+  function camRows(list,self){return list.map(c=>{const o=zonesOf(c.lat,c.lon).filter(z=>!self||z.id!==self.id);return '<div class="zi zlk" data-cid="'+c.id+'"><span class="zdot" style="--c:'+col(c)+'"></span><div><b>'+esc2(nm(c))+'</b><span>'+(c.on?'Online':'Offline')+(o.length?' · também em: '+o.map(z=>esc2(z.n)).join(', '):'')+'</span></div></div>'}).join('')}
+  function info(z,keep){selId=z.id;const cs=inside(z),nb=zones.filter(q=>q.id!==z.id).map(q=>({q,t:rel(z.r,q.r)})).filter(x=>x.t);
+    let h=head('ZONA',esc2(z.n));h+='<div class="bk"><span class="zdot" style="--c:'+z.c+';display:inline-block;vertical-align:-2px;margin-right:6px"></span>'+fmtA(area(z.r))+' · perímetro '+fmtD(peri(z.r))+'</div>';
+    h+='<div class="zsub">Câmeras OCR na zona ('+cs.length+')</div>'+(cs.length?camRows(cs,z):'<div class="none">Nenhuma câmera OCR dentro desta zona.</div>');
+    h+='<div class="zsub">Zonas vizinhas ('+nb.length+')</div>'+(nb.length?nb.map(x=>'<div class="zi zlk" data-zid="'+x.q.id+'"><span class="zdot" style="--c:'+x.q.c+'"></span><div><b>'+esc2(x.q.n)+'</b><span>'+x.t+' · '+inside(x.q).length+' câm. OCR</span></div></div>').join(''):'<div class="none">Nenhuma zona encosta nesta.</div>');
+    if(IS_ED)h+='<div class="zrw"><button class="zob" data-zo="edit" data-id="'+z.id+'">Editar</button><button class="zob d" data-zo="del" data-id="'+z.id+'">Apagar</button></div>';
+    show(h)}
+  function camInfo(c){const zs=zonesOf(c.lat,c.lon);let h=head('CÂMERA OCR',esc2(nm(c)));h+='<div class="bk">'+(c.on?'Online':'<b style="color:#FB7185">Offline</b>')+'</div><div class="zsub">Zona'+(zs.length>1?'s':'')+'</div>';
+    h+=zs.length?zs.map(z=>'<div class="zi zlk" data-zid="'+z.id+'"><span class="zdot" style="--c:'+z.c+'"></span><div><b>'+esc2(z.n)+'</b><span>'+inside(z).length+' câm. OCR na zona</span></div></div>').join(''):'<div class="none">Esta câmera não está dentro de nenhuma zona.</div>';
+    show(h)}
+  function pointInfo(ll){if(pin)zmap.removeLayer(pin);pin=L.circleMarker(ll,{radius:6,color:'#22D3EE',weight:2,fillColor:'#fff',fillOpacity:1,interactive:false}).addTo(zmap);
+    const zs=zonesOf(ll.lat,ll.lng),p=[ll.lat,ll.lng],near=ocr().map(c=>({c,d:hav(p,[c.lat,c.lon])})).sort((a,b)=>a.d-b.d).slice(0,3);
+    let h=head('PONTO CONSULTADO',ll.lat.toFixed(6)+', '+ll.lng.toFixed(6));h+='<div class="zsub">Neste ponto</div>'+(zs.length?zs.map(z=>'<div class="zi zlk" data-zid="'+z.id+'"><span class="zdot" style="--c:'+z.c+'"></span><div><b>'+esc2(z.n)+'</b><span>'+inside(z).length+' câm. OCR na zona</span></div></div>').join(''):'<div class="none">Nenhuma zona neste ponto.</div>');
+    h+='<div class="zsub">OCR mais próximas</div>'+near.map(x=>'<div class="zi zlk" data-cid="'+x.c.id+'"><span class="zdot" style="--c:'+col(x.c)+'"></span><div><b>'+esc2(nm(x.c))+'</b><span>a '+fmtD(x.d)+(x.c.on?'':' · offline')+'</span></div></div>').join('');
+    show(h)}
+  function click(e){if(S){if(!mira&&!S.closed)addPoint(e.latlng);return}pointInfo(e.latlng)}
+
+  /* ----- desenho ----- */
+  function startDraw(shape){if(!IS_ED||!on)return;if(S)cancel(true);selId=null;$('zcard').hidden=true;if(pin){zmap.removeLayer(pin);pin=null}
+    S={id:null,shape,pts:[],closed:false,name:'',c:COLORS[zones.length%COLORS.length],o:.35,vm:[]};
+    S.pg=L.polygon([],{pane:'pD',weight:2.5,interactive:false});S.pl=L.polyline([],{pane:'pD',weight:3,dashArray:'7 6',interactive:false});S.rb=L.polyline([],{pane:'pD',weight:2,dashArray:'3 6',color:'#FACC15',interactive:false});S.lab=L.layerGroup();S.rl=null;
+    dg.addTo(zmap);[S.pg,S.pl,S.rb,S.lab].forEach(l=>l.addTo(dg));
+    $('zw').classList.add('zdraw');if(innerWidth<700){$('zlb').hidden=true;$('zlc').textContent='▸'}
+    $('zomira').hidden=!mira;buildV();redraw();bar()}
+  function editZone(z){if(!IS_ED||!on)return;if(S)cancel(true);$('zcard').hidden=true;
+    S={id:z.id,shape:z.s==='r'&&z.r.length===4?'rect':'poly',pts:z.r.map(p=>p.slice()),closed:true,name:z.n,c:z.c,o:z.o,vm:[]};
+    S.pg=L.polygon([],{pane:'pD',weight:2.5,interactive:false});S.pl=L.polyline([],{pane:'pD',weight:3,interactive:false});S.rb=L.polyline([],{pane:'pD',interactive:false});S.lab=L.layerGroup();S.rl=null;
+    dg.addTo(zmap);[S.pg,S.pl,S.rb,S.lab].forEach(l=>l.addTo(dg));zonesDraw();
+    $('zw').classList.add('zdraw');if(innerWidth<700){$('zlb').hidden=true;$('zlc').textContent='▸'}
+    $('zomira').hidden=true;fitZ(z);buildV();redraw();bar()}
+  function cancel(silent){if(!S)return;const eid=S.id;S.vm.forEach(m=>zmap.removeLayer(m));dg.clearLayers();zmap.removeLayer(dg);S=null;$('zodraw').hidden=true;$('zomira').hidden=true;$('zw').classList.remove('zdraw');zonesDraw();if(!silent){list();const z=eid&&zones.find(q=>q.id===eid);if(z)info(z)}}
+  function rectPts(a,b){return [[a[0],a[1]],[a[0],b[1]],[b[0],b[1]],[b[0],a[1]]]}
+  function addPoint(ll){if(!S||S.closed)return;const p=[ll.lat,ll.lng];
+    if(S.shape==='rect'){if(!S.pts.length){S.pts=[p]}else{if(hav(S.pts[0],p)<1)return;S.pts=rectPts(S.pts[0],p);closeShape();return}}
+    else{const l=S.pts[S.pts.length-1];if(l&&hav(l,p)<0.5)return;S.pts.push(p)}
+    buildV();redraw();bar()}
+  function undo(){if(!S||S.closed||!S.pts.length)return;S.pts.pop();buildV();redraw();bar()}
+  function closeShape(){if(!S||S.pts.length<3){toast('Marque pelo menos 3 pontos para fechar a zona.');return}S.closed=true;if(S.rl){dg.removeLayer(S.rl);S.rl=null}S.rb.setLatLngs([]);$('zomira').hidden=true;buildV();redraw();bar()}
+  function buildV(){S.vm.forEach(m=>zmap.removeLayer(m));S.vm=S.pts.map((p,i)=>{
+    const m=L.marker(p,{draggable:true,zIndexOffset:1000,keyboard:false,icon:L.divIcon({className:'zvx'+(i===0&&!S.closed&&S.shape==='poly'?' first':''),iconSize:[0,0]})});
+    m.on('drag',e=>drag(i,e.latlng));m.on('dragend',()=>{redraw();if(S.closed)stats()});
+    m.on('click',()=>{if(i===0&&!S.closed&&S.shape==='poly'&&S.pts.length>=3)closeShape()});
+    m.addTo(zmap);const el=m.getElement();if(el)el.style.setProperty('--vc',S.c);return m})}
+  function drag(i,ll){const p=[ll.lat,ll.lng];
+    if(S.closed&&S.shape==='rect'&&S.pts.length===4){const o=S.pts[(i+2)%4],a=[p[0],o[1]],b=[o[0],p[1]],n=[S.pts[i],null,o,null];
+      const n1=(i%2===0)?[p[0],o[1]]:[o[0],p[1]],n3=(i%2===0)?[o[0],p[1]]:[p[0],o[1]];
+      S.pts[i]=p;S.pts[(i+1)%4]=n1;S.pts[(i+3)%4]=n3;S.vm.forEach((m,k)=>{if(k!==i)m.setLatLng(S.pts[k])})}
+    else S.pts[i]=p;
+    redraw();if(S.closed)stats()}
+  function redraw(){if(!S)return;const p=S.pts;
+    S.pg.setStyle({color:S.c,fillColor:S.c,fillOpacity:S.o});S.pl.setStyle({color:S.c});S.vm.forEach(m=>{const el=m.getElement();if(el)el.style.setProperty('--vc',S.c)});
+    if(S.closed){S.pg.setLatLngs(p);S.pl.setLatLngs([])}else{S.pg.setLatLngs([]);S.pl.setLatLngs(p)}
+    S.lab.clearLayers();const n=S.closed?p.length:p.length-1;for(let i=0;i<n;i++){const a=p[i],b=p[(i+1)%p.length];S.lab.addLayer(L.marker([(a[0]+b[0])/2,(a[1]+b[1])/2],{interactive:false,keyboard:false,icon:L.divIcon({className:'zol',html:'<span>'+fmtD(hav(a,b))+'</span>',iconSize:[0,0]})}))}
+    if(!S.closed)rubber(null);totals()}
+  function total(){let t=0;for(let i=0;i+1<S.pts.length;i++)t+=hav(S.pts[i],S.pts[i+1]);return t}
+  function rubber(ll){if(!S||S.closed)return;const p=S.pts;if(!p.length){S.rb.setLatLngs([]);if(S.rl){dg.removeLayer(S.rl);S.rl=null}return}
+    if(!ll){if(S.last)ll=S.last;else{S.rb.setLatLngs([]);return}}
+    S.last=ll;const c=Array.isArray(ll)?ll:[ll.lat,ll.lng],a=p[p.length-1];S.rb.setLatLngs([a,c]);
+    const ic=L.divIcon({className:'zol',html:'<span style="border-color:#FACC15">'+fmtD(hav(a,c))+'</span>',iconSize:[0,0]}),mid=[(a[0]+c[0])/2,(a[1]+c[1])/2];
+    if(S.rl)S.rl.setLatLng(mid).setIcon(ic);else{S.rl=L.marker(mid,{interactive:false,keyboard:false,icon:ic});S.rl.addTo(dg)}
+    const t=$('zod-s');if(t&&S.shape==='poly')t.textContent='Próximo trecho: '+fmtD(hav(a,c))+' · com ele: '+fmtD(total()+hav(a,c))}
+  function totals(){const t=$('zod-t');if(t&&S&&!S.closed)t.textContent='Total: '+fmtD(total())}
+  function stats(){const el=$('zof-s');if(!el||!S)return;const cs=ocr().filter(c=>pip(S.pts,c.lat,c.lon));el.innerHTML='Perímetro <b>'+fmtD(peri(S.pts))+'</b> · Área <b>'+fmtA(area(S.pts))+'</b><br>Câmeras OCR dentro: <b>'+cs.length+'</b>'+(cs.length?' ('+cs.map(c=>pad(c.id)).join(', ')+')':'')}
+  function bar(){const b=$('zodraw');b.hidden=false;let h;
+    if(!S.closed){const n=S.pts.length,r=S.shape==='rect';
+      h='<div class="rw"><span class="big" id="zod-t">Total: '+fmtD(total())+'</span></div><div class="sm" id="zod-s">'+(r?(n?'Agora marque o canto oposto.':'Marque dois cantos opostos do retângulo.'):(n?n+' ponto'+(n>1?'s':'')+(mira?'.':'. Toque no mapa para continuar, ou no ponto amarelo (1º) para fechar.'):(mira?'Nenhum ponto ainda.':'Toque no mapa para colocar o 1º ponto.')))+(mira?' Mova o mapa até a cruz e toque em “Adicionar ponto”.':'')+'</div>';
+      h+='<div class="rw">'+(mira?'<button class="zob p" data-zo="addc">＋ Adicionar ponto</button>':'')+'<button class="zob" data-zo="undo"'+(n?'':' disabled')+'>↶ Desfazer</button>'+(r?'':'<button class="zob" data-zo="close"'+(n>=3?'':' disabled')+'>Fechar zona</button>')+'<button class="zob" data-zo="mira">Mira: '+(mira?'ligada':'desligada')+'</button><button class="zob" data-zo="unit">Unidade: '+unit+'</button><button class="zob d" data-zo="cancel">Cancelar</button></div>'}
+    else{h='<div class="rw"><input type="text" id="zon-n" maxlength="60" placeholder="Nome da zona (ex.: Zona Centro)" aria-label="Nome da zona" value="'+esc2(S.name||'')+'"></div>';
+      h+='<div class="rw">'+COLORS.map(c=>'<button class="zsq'+(c===S.c?' on':'')+'" data-c="'+c+'" style="--c:'+c+'" aria-label="Cor '+c+'"></button>').join('')+'<input type="color" id="zocol" value="'+S.c+'" aria-label="Outra cor"></div>';
+      h+='<div class="rw"><span class="sm">Transparência</span><input type="range" id="zoop" min="10" max="80" step="5" value="'+Math.round(S.o*100)+'"><span class="sm" id="zoopv">'+Math.round(S.o*100)+'%</span></div><div class="sm" id="zof-s"></div>';
+      h+='<div class="rw"><button class="zob p" data-zo="ok">OK · salvar zona</button><button class="zob" data-zo="unit">Unidade: '+unit+'</button><button class="zob d" data-zo="cancel">Cancelar</button></div>'}
+    b.innerHTML=h;if(S.closed)stats();else if(S.last&&S.pts.length)rubber(S.last)}
+  function save(){if(!IS_ED||!S||!S.closed)return;const nmv=(($('zon-n')||{}).value||S.name||'').trim()||('Zona '+(zones.length+1));
+    const id=S.id||('zocr-'+Date.now().toString(36)),flat=[];S.pts.forEach(p=>flat.push(+p[0].toFixed(7),+p[1].toFixed(7)));
+    const d={n:nmv.slice(0,60),c:S.c,o:S.o,s:S.shape==='rect'?'r':'p',p:flat,at:firebase.firestore.FieldValue.serverTimestamp(),by:(auth.currentUser&&auth.currentUser.email)||''};
+    pendSel=id;cancel(true);
+    track(db.collection('config').doc(id).set(d)).then(()=>toast('Zona “'+d.n+'” salva.')).catch(e=>{pendSel=null;toast('Não foi possível salvar a zona: '+e.message)})}
+  let delT=0;
+  function act(a,id,btn){
+    if(a==='new-poly')startDraw('poly');else if(a==='new-rect')startDraw('rect');
+    else if(a==='undo')undo();else if(a==='close')closeShape();else if(a==='cancel')cancel();else if(a==='ok')save();
+    else if(a==='addc'&&S&&!S.closed)addPoint(zmap.getCenter());
+    else if(a==='mira'){mira=!mira;$('zomira').hidden=!(mira&&S&&!S.closed);if(S&&!S.closed){bar();if(mira)rubber(zmap.getCenter())}}
+    else if(a==='unit'){unit=unit==='auto'?'m':unit==='m'?'km':'auto';if(S){const keep=S.closed?($('zon-n')||{}).value:null;if(keep!=null)S.name=keep;redraw();bar()}}
+    else if(a==='cclose'){$('zcard').hidden=true;selId=null;if(pin){zmap.removeLayer(pin);pin=null}}
+    else if(a==='edit'){const z=zones.find(q=>q.id===id);if(z)editZone(z)}
+    else if(a==='del'&&IS_ED){if(btn&&!btn.dataset.sure){btn.dataset.sure=1;btn.textContent='Confirmar apagar?';clearTimeout(delT);delT=setTimeout(()=>{if(btn.isConnected){btn.textContent='Apagar';delete btn.dataset.sure}},4000);return}
+      const z=zones.find(q=>q.id===id);track(db.collection('config').doc(id).delete()).then(()=>toast('Zona apagada.')).catch(e=>toast('Não foi possível apagar: '+e.message));$('zcard').hidden=true;selId=null;if(z&&z.id===selId)selId=null}
+  }
+  return{init,start,stop,enter,leave,click,get on(){return on},camsDraw:()=>{if(on)camsDraw()}}
+})();
 
 go(location.hash.slice(1));netUI();
 if('serviceWorker' in navigator)window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{})});
