@@ -276,6 +276,7 @@ details#imp{margin:0 0 14px;padding:0}details#imp summary{cursor:pointer;padding
 @keyframes bping{to{box-shadow:0 0 0 10px rgba(52,211,153,0)}}
 .lg-ban{display:flex;align-items:center}.lg-ban svg{flex:1;min-width:0}
 @media(prefers-reduced-motion:reduce){.brz,.brz *,.brz-d::after{animation:none!important}}
+.viewer #fotosmes,.viewer #csv,.viewer #fmcard,.viewer #fmbg,.viewer #imp,.viewer #ed,.viewer [data-edit],.viewer #clrbar{display:none!important}.viewer .sw2,.viewer .sw{pointer-events:none}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}.lensx .ring,.lensx .eye,.lensx .blink{animation:none}}
 </style>
 
@@ -455,8 +456,8 @@ function renderPanel(){
   g.appendChild(fr);$('lcount').textContent='Mostrando '+list.length+' de '+cams.length+' câmeras';
 }
 document.addEventListener('click',e=>{
-  const t=e.target.closest('[data-tog]');if(t){const c=byId(t.dataset.tog);if(c){c.on=!c.on;setStatus(c);renderPanel();if(sel===c)sheet();draw()}return}
-  const ed=e.target.closest('[data-edit]');if(ed){openEd(byId(ed.dataset.edit));return}
+  const t=e.target.closest('[data-tog]');if(t){const c=byId(t.dataset.tog);if(c&&IS_ED){c.on=!c.on;setStatus(c);renderPanel();if(sel===c)sheet();draw()}return}
+  const ed=e.target.closest('[data-edit]');if(ed){if(IS_ED)openEd(byId(ed.dataset.edit));return}
   const m=e.target.closest('[data-map]');if(m){go('mapa');select(byId(m.dataset.map),true)}
 });
 $('q').addEventListener('input',renderPanel);
@@ -466,6 +467,7 @@ $('f-status').addEventListener('click',e=>{const b=e.target.closest('.chip');if(
 (function(){const f=()=>{$('clk').textContent=new Date().toLocaleString('pt-BR',{weekday:'short',day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit',second:'2-digit',timeZone:'America/Sao_Paulo'}).replace(/\./g,'')};f();setInterval(f,1000);
   const im=new Image();im.onload=()=>$('hero').style.setProperty('--hero-img','url(banner.jpg)');im.src='banner.jpg'})();
 /* ---------- fotos do mês (guardadas no banco até gerar o relatório) ---------- */
+const EDITORS=['gabrielvspm1@gmail.com','secmobilidadeurbana@gmail.com'];let IS_ED=false;
 const DBR=()=>{try{return db}catch(e){return null}};
 const FM={ldb:null,rows:[],ready:null,unsub:null,tm:0,
   lopen(){return this.ldb||(this.ldb=new Promise((res,rej)=>{const q=indexedDB.open('cam-fotos-mes',1);q.onupgradeneeded=()=>q.result.createObjectStore('f',{keyPath:'id',autoIncrement:true});q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)}))},
@@ -612,7 +614,7 @@ function sheet(){
   s.querySelector('h3').textContent=cn(c);
   getPhoto(c.id).then(d=>{const w=s.querySelector('#fw');if(d&&w&&sel===c){const i=new Image();i.src=d;i.alt='Foto da câmera';i.title='Toque para ampliar';i.onclick=()=>{$('lb').querySelector('img').src=d;$('lb').hidden=false};w.textContent='';w.appendChild(i)}});
   s.querySelector('.x').onclick=()=>{sel=null;sheet();draw()};
-  s.querySelector('.sw').onclick=()=>{c.on=!c.on;setStatus(c);sheet();draw()};
+  s.querySelector('.sw').onclick=()=>{if(!IS_ED)return;c.on=!c.on;setStatus(c);sheet();draw()};
   s.querySelector('#ed').onclick=()=>openEd(c);
   s.querySelector('#cp').onclick=e=>{const b=e.currentTarget,txt=lat+', '+lon;const ok=()=>{b.textContent='Copiado ✓';setTimeout(()=>b.textContent='Copiar coordenadas',1500)};
     (navigator.clipboard?navigator.clipboard.writeText(txt):Promise.reject()).then(ok).catch(()=>{const r=document.createRange();r.selectNodeContents(s.querySelector('.coord'));const sl=getSelection();sl.removeAllRanges();sl.addRange(r);b.textContent='Selecionado'})};
@@ -625,9 +627,9 @@ $('ms').addEventListener('input',e=>{const q=norm(e.target.value.trim()),r=$('re
 
 /* ---------- Firebase ---------- */
 let db=null,auth=null,statLoaded=false;
-function setStatus(c){if(!c.on)beep();if(!db)return;const p=track(db.collection('cameras').doc(String(c.id)).set({on:c.on,at:firebase.firestore.FieldValue.serverTimestamp(),by:(auth.currentUser&&auth.currentUser.email)||''},{merge:true}));p.catch(e=>toast('Não foi possível salvar: '+e.message))}
+function setStatus(c){if(!IS_ED)return;if(!c.on)beep();if(!db)return;const p=track(db.collection('cameras').doc(String(c.id)).set({on:c.on,at:firebase.firestore.FieldValue.serverTimestamp(),by:(auth.currentUser&&auth.currentUser.email)||''},{merge:true}));p.catch(e=>toast('Não foi possível salvar: '+e.message))}
 let migTry=false;
-async function fotosMig(){if(MIG||migTry||!db||!cams.length||!auth.currentUser)return;migTry=true;
+async function fotosMig(){if(!IS_ED||MIG||migTry||!db||!cams.length||!auth.currentUser)return;migTry=true;
   try{const ids=Object.keys(FIXAS).map(Number),orf=[];
     for(const id of ids){if(!byId(id)){orf.push(id);continue}
       const d=await Promise.race([fotoRef(id).get(),new Promise((_,r)=>setTimeout(()=>r(new Error('t')),8000))]);
@@ -651,7 +653,8 @@ function refresh(){kpis();if(typeof fotosMig==='function')setTimeout(fotosMig,15
     $('login').hidden=!!u;$('out').hidden=!u;$('usrw').hidden=!u;$('usr').textContent=u?u.email:'';
     if(unsub){unsub();unsub=null}
     if(unsub2){unsub2();unsub2=null}
-    if(u)FM.start();else FM.stop();
+    IS_ED=!!u&&EDITORS.indexOf((u.email||'').toLowerCase())>=0;document.body.classList.toggle('viewer',!!u&&!IS_ED);
+    if(u&&IS_ED)FM.start();else FM.stop();
     if(u)unsub2=db.collection('config').doc('cameras').onSnapshot({includeMetadataChanges:true},d=>{pCfg=d.metadata.hasPendingWrites;netUI();if(d.metadata.fromCache&&!d.exists)return;loadList(d.exists&&Array.isArray(d.data().list)?d.data().list:[]);if(!cams.length)$('imp').open=true},e=>{$('fbwarn').hidden=false;$('fbwarn').textContent='Erro ao ler a lista de câmeras: '+e.message});
     if(u)unsub=db.collection('cameras').onSnapshot({includeMetadataChanges:true},s=>{pCam=s.metadata.hasPendingWrites;netUI();let wentOff=false;s.forEach(d=>{STAT[+d.id]=d.data().on!==false;{const t=d.data().at;ATS[+d.id]=t&&t.toDate?t.toDate():null}const c=byId(d.id);if(c){if(statLoaded&&c.on&&!STAT[+d.id])wentOff=true;c.on=STAT[+d.id]}});statLoaded=true;if(wentOff)beep();refresh()},e=>{$('fbwarn').hidden=false;$('fbwarn').textContent='Erro ao ler o status: '+e.message});
   });
@@ -711,7 +714,7 @@ function saveList(){
   const list=cams.map(c=>({i:c.id,a:c.lat,o:c.lon,t:c.t,n:c.name}));
   return db.collection('config').doc('cameras').set({list,updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
 }
-function openEd(c,pos){
+function openEd(c,pos){if(!IS_ED){toast('Seu acesso é somente para visualização.');return}
   edCam=c;edPhoto=undefined;showPh(null);$('ed-err').textContent='';if(c)getPhoto(c.id).then(d=>{if(edCam===c&&edPhoto===undefined)showPh(d)});
   const sl=$('ed-t');if(!sl.options.length)TYPES.forEach((t,i)=>sl.add(new Option(t[0],i)));
   if(c){$('edt').textContent='Editar câmera';$('ed-n').value=c.id;sl.value=c.t;$('ed-name').value=c.name.indexOf('Sem nome')===0?'':c.name;$('ed-xy').value=c.lat.toFixed(6)+', '+c.lon.toFixed(6);$('ed-on').value=c.on?'1':'0';$('ed-del').hidden=false}
