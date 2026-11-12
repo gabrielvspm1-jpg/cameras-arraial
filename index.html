@@ -388,7 +388,7 @@ details#imp{margin:0 0 14px;padding:0}details#imp summary{cursor:pointer;padding
     <div class="ov search"><input type="search" id="ms" placeholder="Buscar câmera no mapa…" aria-label="Buscar no mapa"><div class="res" id="res" hidden></div></div>
     <div class="ov chips" id="tchips"></div>
     <div class="ov zoom"><button id="zi" aria-label="Aproximar">+</button><button id="zo" aria-label="Afastar">−</button><button id="zf" aria-label="Enquadrar todas" style="font-size:15px">⤢</button><button id="zl" aria-label="Trocar camada do mapa" style="font-size:11px;font-weight:600">Mapa</button></div>
-    <div class="ov nbar zedit" id="nbar"><div class="nm" id="nmsg" hidden></div><div class="row"><button class="btn" id="nbtn" type="button">Numerar por bairro</button><button class="btn" id="nap" type="button" hidden>Aplicar</button><button class="btn" id="ncx" type="button" hidden>Cancelar</button><button class="btn" id="nrm" type="button" hidden>Voltar ao normal</button></div></div>
+    <div class="ov nbar zedit" id="nbar"><div class="nm" id="nmsg" hidden></div><div class="row"><button class="btn" id="nbtn" type="button">Numerar por bairro</button><button class="btn" id="ncx" type="button" hidden>Cancelar</button><button class="btn" id="nrm" type="button" hidden>Voltar ao normal</button></div></div>
     <div class="ov sheet" id="sheet" hidden></div>
   </div>
 </section>
@@ -1144,8 +1144,8 @@ L.addEventListener('pointermove',function(e){t(e.clientX,e.clientY)},{passive:tr
   const $$=id=>document.getElementById(id);let arm={};
   function redraw(){try{rebuildMarkers();refresh()}catch(e){}}
   function ui(){const pv=!!NPLAN,has=cams.some(c=>c.cod);
-    $$('nbtn').hidden=pv;$$('nap').hidden=!pv;$$('ncx').hidden=!pv;$$('nrm').hidden=pv||!has;
-    $$('nap').textContent='Aplicar';$$('ncx').textContent='Cancelar';$$('nrm').textContent='Voltar ao normal';arm={}}
+    $$('nbtn').hidden=pv;$$('ncx').hidden=!pv;$$('nrm').hidden=pv||!has;
+    $$('ncx').textContent='Cancelar';$$('nrm').textContent='Voltar ao normal';arm={}}
   function say(t){const m=$$('nmsg');m.hidden=!t;m.textContent=t||''}
   async function preview(){
     if(!cams.length){say('A lista de câmeras ainda não carregou.');return}
@@ -1159,17 +1159,13 @@ L.addEventListener('pointermove',function(e){t(e.clientX,e.clientY)},{passive:tr
     const fora=FR.length;FR.map(c=>({c,m:hav(a.lat,a.lon,c.lat,c.lon)})).sort((x,y)=>x.m-y.m||x.c.id-y.c.id).forEach(e=>{k++;P.set(e.c.id,'S/N-'+String(k).padStart(w,'0'))});
     NPLAN=P;ui();redraw();
     say('Prévia: '+P.size+' câmeras em '+names.length+' bairros'+(fora?' · '+fora+' sem bairro (S/N)':'')+'. Nada foi gravado.')}
-  async function applyIt(){
-    if(!arm.a){ui();arm.a=1;$$('nap').textContent='Confirmar';setTimeout(()=>{if(arm.a&&NPLAN)ui()},8000);return}
-    const P=NPLAN;cams.forEach(c=>{c.cod=P.get(c.id)||''});NPLAN=null;
-    try{await saveList();ui();redraw();say('Pronto: códigos gravados. Os nomes não foram alterados.')}catch(x){say('Não foi possível gravar: '+x.message)}}
   function cancel(){NPLAN=null;ui();redraw();say('')}
   async function remove(){
     if(!arm.r){ui();arm.r=1;$$('nrm').textContent='Confirmar: voltar a 001, 002…';setTimeout(()=>{if(arm.r)ui()},8000);return}
     cams.forEach(c=>{c.cod=''});
     try{await saveList();ui();redraw();say('Voltou ao normal.')}catch(x){say('Erro: '+x.message)}}
   document.addEventListener('click',e=>{const i=e.target&&e.target.id;
-    if(i==='nbtn')preview().catch(x=>say('Erro: '+x.message));else if(i==='nap')applyIt();else if(i==='ncx')cancel();else if(i==='nrm')remove()});
+    if(i==='nbtn')preview().catch(x=>say('Erro: '+x.message));else if(i==='ncx')cancel();else if(i==='nrm')remove()});
   setInterval(()=>{if(!NPLAN&&$$('nrm')){const has=cams.some(c=>c.cod);if($$('nrm').hidden===has)ui()}},1500);
 })();
 </script>
