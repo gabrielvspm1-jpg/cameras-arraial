@@ -387,7 +387,7 @@ details#imp{margin:0 0 14px;padding:0}details#imp summary{cursor:pointer;padding
     <div id="map" aria-label="Mapa com a posição das câmeras"></div>
     <div class="ov search"><input type="search" id="ms" placeholder="Buscar câmera no mapa…" aria-label="Buscar no mapa"><div class="res" id="res" hidden></div></div>
     <div class="ov chips" id="tchips"></div>
-    <div class="ov zoom"><button id="zi" aria-label="Aproximar">+</button><button id="zo" aria-label="Afastar">−</button><button id="zf" aria-label="Enquadrar todas" style="font-size:15px">⤢</button><button id="zl" aria-label="Trocar camada do mapa" style="font-size:11px;font-weight:600">Mapa</button></div>
+    <div class="ov zoom"><button id="zi" aria-label="Aproximar">+</button><button id="zo" aria-label="Afastar">−</button><button id="zf" aria-label="Enquadrar todas" style="font-size:15px">⤢</button><button id="zl" aria-label="Trocar camada do mapa" style="font-size:11px;font-weight:600">Mapa</button><button id="zb" aria-label="Mostrar ou ocultar bairros" aria-pressed="false" style="font-size:10px;font-weight:600">Bairros</button></div>
     <div class="ov sheet" id="sheet" hidden></div>
   </div>
 </section>
@@ -1154,6 +1154,22 @@ function autoNum(){
   FR.map(c=>({c,m:hav(a.lat,a.lon,c.lat,c.lon)})).sort((x,y)=>x.m-y.m||x.c.id-y.c.id).forEach(e=>{k++;P.set(e.c.id,'S/N-'+String(k).padStart(w,'0'))});
   NPLAN=P;try{rebuildMarkers()}catch(e){}
 }
+
+/* ---------- bairros coloridos no mapa (liga/desliga, nome ao passar o mouse) ---------- */
+let BL=null,BON=false;
+async function bairrosToggle(){
+  if(!map)return;
+  const b=document.getElementById('zb');
+  if(BON){BON=false;if(BL)map.removeLayer(BL);b.setAttribute('aria-pressed','false');b.style.background='';b.style.color='';return}
+  const d=await loadZon();if(!d){toast('Não consegui carregar os bairros.');return}
+  if(!BL){
+    if(!map.getPane('pBm')){map.createPane('pBm');map.getPane('pBm').style.zIndex=380}
+    BL=L.featureGroup();
+    d.bairros.forEach((f,i)=>f.g.forEach(g=>{const p=L.polygon(toLL(g),{pane:'pBm',color:'#fff',weight:1.2,fillColor:hue(i),fillOpacity:.38});
+      p.bindTooltip(esc2(f.n.replace(/\s*\(.*?\)/g,'')),{sticky:true,direction:'top'});
+      p.on('mouseover',()=>p.setStyle({fillOpacity:.6,weight:2.2}));p.on('mouseout',()=>p.setStyle({fillOpacity:.38,weight:1.2}));BL.addLayer(p)}))}
+  BL.addTo(map);BON=true;b.setAttribute('aria-pressed','true');b.style.background='#22D3EE';b.style.color='#0B1220'}
+document.addEventListener('click',e=>{if(e.target&&e.target.id==='zb')bairrosToggle().catch(x=>toast('Erro: '+x.message))});
 </script>
 
 </body></html>
