@@ -583,7 +583,16 @@ function askClear(n){let b=$('clrbar');if(b)b.remove();b=document.createElement(
   b.innerHTML='<div style="flex:1 1 220px;font-size:14px"><b>Relatório gerado.</b> Confira o PDF e depois apague as '+n+(n>1?' fotos':' foto')+' do mês (em todos os aparelhos).</div><button type="button" class="btn" id="clrno">Manter</button><button type="button" class="btn pri" id="clryes">Apagar fotos</button>';
   document.body.appendChild(b);$('clrno').onclick=()=>b.remove();
   $('clryes').onclick=async()=>{b.remove();await FM.clear();fmRender();toast('Fotos do mês apagadas.')}}
-function fmOpen(){$('fmbg').hidden=false;fmRender().catch(()=>{})}
+let fmRescanned=false;
+async function fmRescan(){if(fmRescanned)return;fmRescanned=true;
+  try{const all=await FM.all();let ch=0;
+    for(const rec of all){if(rec.gps||(rec.cam&&!rec.auto))continue;
+      const vis=await visualCands(rec.d,all.filter(x=>x.id!==rec.id));
+      let cam=null,auto=false;if(vis.length&&vis[0].v>=.8&&(!vis[1]||vis[0].v-vis[1].v>=.1)){cam=vis[0].id;auto=true}
+      const cand=vis.map(x=>x.id).filter(id=>id!==cam).slice(0,4);
+      if(cam!==rec.cam||auto!==!!rec.auto||cand.join()!==(rec.cand||[]).join()){rec.cam=cam;rec.auto=auto;rec.cand=cand;await FM.put(rec);ch++}}
+    if(ch)fmRender()}catch(e){}}
+function fmOpen(){$('fmbg').hidden=false;fmRender().then(()=>fmRescan()).catch(()=>{})}
 (function(){const b=$('csv'),fb=$('fotosmes');b.hidden=false;fb.hidden=false;
   try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist()}catch(e){}
   if(!window.indexedDB){fb.hidden=true}else{FM.all().then(()=>fmRender()).catch(()=>{})}
