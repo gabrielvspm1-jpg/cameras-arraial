@@ -388,7 +388,6 @@ details#imp{margin:0 0 14px;padding:0}details#imp summary{cursor:pointer;padding
     <div class="ov search"><input type="search" id="ms" placeholder="Buscar câmera no mapa…" aria-label="Buscar no mapa"><div class="res" id="res" hidden></div></div>
     <div class="ov chips" id="tchips"></div>
     <div class="ov zoom"><button id="zi" aria-label="Aproximar">+</button><button id="zo" aria-label="Afastar">−</button><button id="zf" aria-label="Enquadrar todas" style="font-size:15px">⤢</button><button id="zl" aria-label="Trocar camada do mapa" style="font-size:11px;font-weight:600">Mapa</button></div>
-    <div class="ov nbar zedit" id="nbar"><div class="nm" id="nmsg" hidden></div><div class="row"><button class="btn" id="nbtn" type="button">Numerar por bairro</button><button class="btn" id="nap" type="button" hidden>Aplicar</button><button class="btn" id="ncx" type="button" hidden>Cancelar</button><button class="btn" id="nrm" type="button" hidden>Voltar ao normal</button></div></div>
     <div class="ov sheet" id="sheet" hidden></div>
   </div>
 </section>
@@ -630,7 +629,7 @@ let map=null,cluster=null,mk={},sel=null,hidden=new Set(),offOnly=false,layerI=0
 const vis=()=>cams.filter(c=>!hidden.has(c.t)&&(!offOnly||!c.on));
 function pinIcon(c,big){
   const col=c.on?TYPES[c.t][1]:'#FB7185',w=big?44:34,h=big?56:44;
-  return L.divIcon({className:c.on?'cp':'cp cpo',iconSize:[w,h],iconAnchor:[w/2,h-1],html:(c.on?'':'<i class="pr"></i>')+((NPLAN||cams.some(x=>x.cod))?'<span class="pnum">'+esc2(pad(c.id))+'</span>':'')+
+  return L.divIcon({className:c.on?'cp':'cp cpo',iconSize:[w,h],iconAnchor:[w/2,h-1],html:(c.on?'':'<i class="pr"></i>')+(NPLAN?'<span class="pnum">'+esc2(pad(c.id))+'</span>':'')+
    '<svg width="'+w+'" height="'+h+'" viewBox="0 0 34 44"><path d="M17 43C17 43 3 27 3 16a14 14 0 0 1 28 0c0 11-14 27-14 27z" fill="#0B1220" stroke="'+(big?'#fff':col)+'" stroke-width="'+(big?3:2.2)+'"/><g transform="translate(8.5 7.5) scale(.7)" fill="none" stroke="'+col+'" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3.5"/></g><circle cx="27" cy="8" r="4.5" fill="'+(c.on?'#34D399':'#FB7185')+'" stroke="#0B1220" stroke-width="1.5"/></svg>'});
 }
 function ensureMap(){
@@ -710,7 +709,7 @@ async function fotosMig(){if(!IS_ED||MIG||migTry||!db||!cams.length||!auth.curre
     try{localStorage.setItem('migFotos10','1')}catch(e){}MIG=true;
     if(orf.length)toast('Atenção: as fotos fixas das câmeras '+orf.map(pad).join(', ')+' ficaram sem câmera, porque esses números não existem mais. Reenvie pelo app se precisar.')
   }catch(e){setTimeout(()=>{migTry=false},60000)}}
-function refresh(){kpis();if(typeof fotosMig==='function')setTimeout(fotosMig,1500);if(typeof fmStatus==='function')fmStatus();if(!$('v-painel').hidden)renderPanel();if(sel)sheet();draw()}
+function refresh(){try{autoNum()}catch(e){}kpis();if(typeof fotosMig==='function')setTimeout(fotosMig,1500);if(typeof fmStatus==='function')fmStatus();if(!$('v-painel').hidden)renderPanel();if(sel)sheet();draw()}
 (function(){
   const cfg=window.FIREBASE_CONFIG;
   if(typeof firebase==='undefined'||!cfg||!cfg.apiKey||cfg.apiKey.indexOf('COLE')===0){
@@ -1131,47 +1130,30 @@ function t(x,y){var r=m.getBoundingClientRect(),dx=(x-r.left-r.width/2)/innerWid
 L.addEventListener('pointermove',function(e){t(e.clientX,e.clientY)},{passive:true});L.addEventListener('pointerleave',function(){m.style.transform=''})})();
 
 
-/* ---------- numeração por bairro no mapa (prévia; só grava ao aplicar) ---------- */
-(function(){
-  const SIG={'PONTAL DO ATALAIA':'PA','PRAIA DOS ANJOS':'PDA','PRAIA GRANDE':'PG'};
+/* ---------- numeração automática por bairro (PA-01, PG-11…, S/N-31): calculada sempre, nada é gravado ---------- */
+let NSIG='';
+const NSG={'PONTAL DO ATALAIA':'PA','PRAIA DOS ANJOS':'PDA','PRAIA GRANDE':'PG'};
+function autoNum(){
+  if(!cams.length)return;
+  const sig=cams.map(c=>c.id+':'+c.lat+','+c.lon).join('|');if(sig===NSIG)return;
+  if(!ZD){loadZon().then(d=>{if(d)autoNum()});return}
+  NSIG=sig;
   const norm2=n=>n.replace(/\(.*?\)/g,'').replace(/\s+/g,' ').trim(),STOP=new Set(['DA','DE','DO','DAS','DOS','E']);
   const hav=(a,b,c,d)=>{const R=6371000,r=Math.PI/180,x=(c-a)*r,y=(d-b)*r*Math.cos((a+c)/2*r);return R*Math.sqrt(x*x+y*y)};
-  function sigs(names){const out={},used=new Set(Object.values(SIG));names.forEach(n=>{if(SIG[n])out[n]=SIG[n]});
-    names.filter(n=>!SIG[n]).forEach(n=>{const w=n.split(' ').filter(x=>!STOP.has(x)&&x!=='-');let c=[];
-      if(w.length>1){c.push(w.map(x=>x[0]).join(''));c.push(w.map(x=>x.slice(0,2)).join(''))}
-      for(let k=2;k<=Math.max(4,n.length);k++)c.push(n.replace(/[^A-ZÀ-Ý]/g,'').slice(0,k));
-      c=c.map(x=>x.normalize('NFD').replace(/[̀-ͯ]/g,''));const z=c.find(x=>x.length>=2&&!used.has(x))||c[c.length-1];used.add(z);out[n]=z});return out}
-  const $$=id=>document.getElementById(id);let arm={};
-  function redraw(){try{rebuildMarkers();refresh()}catch(e){}}
-  function ui(){const pv=!!NPLAN,has=cams.some(c=>c.cod);
-    $$('nbtn').hidden=pv;$$('nap').hidden=!pv;$$('ncx').hidden=!pv;$$('nrm').hidden=pv||!has;
-    $$('nap').textContent='Aplicar';$$('ncx').textContent='Cancelar';$$('nrm').textContent='Voltar ao normal';arm={}}
-  function say(t){const m=$$('nmsg');m.hidden=!t;m.textContent=t||''}
-  async function preview(){
-    if(!cams.length){say('A lista de câmeras ainda não carregou.');return}
-    say('Calculando…');const d=await loadZon();if(!d){say('Não consegui carregar o zoneamento.');return}
-    const a=cams.find(c=>c.id===1)||cams[0],g={},FR=[];
-    cams.forEach(c=>{const f=d.bairros.find(f=>inFeat(f,c.lat,c.lon));if(!f){FR.push(c);return}const n=norm2(f.n);(g[n]=g[n]||[]).push(c)});
-    const L2={};Object.keys(g).forEach(n=>{L2[n]=g[n].map(c=>({c,m:hav(a.lat,a.lon,c.lat,c.lon)})).sort((x,y)=>x.m-y.m||x.c.id-y.c.id)});
-    const names=Object.keys(g).sort((x,y)=>L2[x][0].m-L2[y][0].m||x.localeCompare(y,'pt-BR')),S=sigs(names),P=new Map();
-    const tot=names.reduce((q,n)=>q+L2[n].length,0)+FR.length,w=Math.max(2,String(tot).length);let k=0;
-    names.forEach(n=>L2[n].forEach(e=>{k++;P.set(e.c.id,S[n]+'-'+String(k).padStart(w,'0'))}));
-    const fora=FR.length;FR.map(c=>({c,m:hav(a.lat,a.lon,c.lat,c.lon)})).sort((x,y)=>x.m-y.m||x.c.id-y.c.id).forEach(e=>{k++;P.set(e.c.id,'S/N-'+String(k).padStart(w,'0'))});
-    NPLAN=P;ui();redraw();
-    say('Prévia: '+P.size+' câmeras em '+names.length+' bairros'+(fora?' · '+fora+' sem bairro (S/N)':'')+'. Nada foi gravado.')}
-  async function applyIt(){
-    if(!arm.a){ui();arm.a=1;$$('nap').textContent='Confirmar';setTimeout(()=>{if(arm.a&&NPLAN)ui()},8000);return}
-    const P=NPLAN;cams.forEach(c=>{c.cod=P.get(c.id)||''});NPLAN=null;
-    try{await saveList();ui();redraw();say('Pronto: códigos gravados. Os nomes não foram alterados.')}catch(x){say('Não foi possível gravar: '+x.message)}}
-  function cancel(){NPLAN=null;ui();redraw();say('')}
-  async function remove(){
-    if(!arm.r){ui();arm.r=1;$$('nrm').textContent='Confirmar: voltar a 001, 002…';setTimeout(()=>{if(arm.r)ui()},8000);return}
-    cams.forEach(c=>{c.cod=''});
-    try{await saveList();ui();redraw();say('Voltou ao normal.')}catch(x){say('Erro: '+x.message)}}
-  document.addEventListener('click',e=>{const i=e.target&&e.target.id;
-    if(i==='nbtn')preview().catch(x=>say('Erro: '+x.message));else if(i==='nap')applyIt();else if(i==='ncx')cancel();else if(i==='nrm')remove()});
-  setInterval(()=>{if(!NPLAN&&$$('nrm')){const has=cams.some(c=>c.cod);if($$('nrm').hidden===has)ui()}},1500);
-})();
+  const a=cams.find(c=>c.id===1)||cams[0],g={},FR=[];
+  cams.forEach(c=>{const f=ZD.bairros.find(f=>inFeat(f,c.lat,c.lon));if(!f){FR.push(c);return}const n=norm2(f.n);(g[n]=g[n]||[]).push(c)});
+  const L2={};Object.keys(g).forEach(n=>{L2[n]=g[n].map(c=>({c,m:hav(a.lat,a.lon,c.lat,c.lon)})).sort((x,y)=>x.m-y.m||x.c.id-y.c.id)});
+  const names=Object.keys(g).sort((x,y)=>L2[x][0].m-L2[y][0].m||x.localeCompare(y,'pt-BR'));
+  const S={},used=new Set(Object.values(NSG));names.forEach(n=>{if(NSG[n])S[n]=NSG[n]});
+  names.filter(n=>!NSG[n]).forEach(n=>{const w=n.split(' ').filter(x=>!STOP.has(x)&&x!=='-');let c=[];
+    if(w.length>1){c.push(w.map(x=>x[0]).join(''));c.push(w.map(x=>x.slice(0,2)).join(''))}
+    for(let k=2;k<=Math.max(4,n.length);k++)c.push(n.replace(/[^A-ZÀ-Ý]/g,'').slice(0,k));
+    c=c.map(x=>x.normalize('NFD').replace(/[̀-ͯ]/g,''));const z=c.find(x=>x.length>=2&&!used.has(x))||c[c.length-1];used.add(z);S[n]=z});
+  const tot=cams.length,w=Math.max(2,String(tot).length),P=new Map();let k=0;
+  names.forEach(n=>L2[n].forEach(e=>{k++;P.set(e.c.id,S[n]+'-'+String(k).padStart(w,'0'))}));
+  FR.map(c=>({c,m:hav(a.lat,a.lon,c.lat,c.lon)})).sort((x,y)=>x.m-y.m||x.c.id-y.c.id).forEach(e=>{k++;P.set(e.c.id,'S/N-'+String(k).padStart(w,'0'))});
+  NPLAN=P;try{rebuildMarkers()}catch(e){}
+}
 </script>
 
 </body></html>
