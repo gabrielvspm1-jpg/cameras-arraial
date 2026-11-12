@@ -19,7 +19,7 @@ O QUE TEM NA PASTA (cada arquivo)
   configurar.bat ................. Pergunta o e-mail e a senha do login do programa e cria o config.json.
   iniciar-monitor.bat ............ Liga o monitor de verdade (grava no app).
   iniciar-automatico-com-windows.bat  Faz o monitor abrir sozinho quando o computador liga.
-  cameras.exemplo.csv ............ Modelo da lista de cameras (numero e IP). Voce copia e edita.
+  cameras.exemplo.csv ............ Modelo da lista de cameras (numero, IP, sigla e nome). Voce copia e edita.
   config.exemplo.json ............ Modelo de configuracao. (O configurar.bat cria o config.json certo.)
   monitor.ps1 / configurar.ps1 ... O programa em si. Nao precisa abrir.
   LEIA-ME.txt .................... Este guia.
@@ -38,29 +38,50 @@ PASSO 1 - Colocar a pasta no computador
   c) Mova a pasta "monitor" para um lugar facil, como C:\monitor  (disco C, pasta "monitor").
 
 PASSO 2 - Criar a lista de cameras (cameras.csv)
-  a) Dentro da pasta monitor, copie o arquivo "cameras.exemplo.csv" e cole no mesmo lugar.
-     Vai criar "cameras.exemplo - Copia.csv". Renomeie para exatamente:  cameras.csv
+  A lista usa a SIGLA de cada camera (ex.: PA-01, PG-11), a mesma que aparece no mapa do app.
+
+  ENTENDA AS COLUNAS (isso evita o erro mais comum):
+      numero ..... numero interno da camera. E ESTE que o programa usa. NAO apague e NAO mude.
+      ip ......... o IP da camera. E o unico campo que voce preenche.
+      codigo ..... a sigla (PA-01...). So para voce saber qual e qual. O programa ignora.
+      nome ....... o nome da camera. So para voce. O programa ignora.
+
+  CAMINHO 1 - Lista real, ja pronta (o mais facil, use no computador do servidor)
+  a) No app (logado como editor), aba Painel > "Administracao · lista de cameras" >
+     botao "Baixar cameras.csv para o robo (com siglas)".
+  b) Coloque o arquivo baixado dentro da pasta monitor, com o nome exato:  cameras.csv
+     (se ja existir um cameras.csv, substitua).
+  c) Abra com o Bloco de Notas (botao direito > Abrir com > Bloco de Notas) e preencha o IP de
+     cada camera, na coluna do meio, sem espacos. Exemplo de uma linha:
+         12;192.168.0.45;PA-12;Trevo da onca
+     Camera sem IP: deixe em branco. O programa ignora essa linha e a camera continua no status manual.
+  d) Salve (Ctrl+S) e feche.
+
+  CAMINHO 2 - So para TESTAR em qualquer computador, sem baixar nada do app
+  a) Dentro da pasta monitor, copie o "cameras.exemplo.csv" e cole no mesmo lugar. Renomeie a copia
+     para exatamente:  cameras.csv
      (Se nao aparecer ".csv" no nome, ative em Exibir > Mostrar > Extensoes de nomes de arquivos.)
-  ATENCAO (novo): o jeito mais facil e baixar a lista pronta no aplicativo, na aba Painel > Administracao >
-     "Baixar cameras.csv para o robo (com siglas)". Ela ja vem com o numero, a SIGLA (ex.: PA-01) e o nome de
-     cada camera; voce so preenche a coluna ip. A coluna numero e a que o robo usa: nao apague nem mude.
-     Linhas com o ip em branco sao ignoradas.
-  b) Abra o cameras.csv com o Bloco de Notas (botao direito > Abrir com > Bloco de Notas).
-  c) Ele vem assim:
-         numero,ip
-         1,192.168.0.1
-         2,192.168.0.2
-         3,192.168.0.99
-     - A primeira linha (numero,ip) NAO pode ser apagada.
-     - Cada linha: numero da camera, virgula, IP da camera. Sem espacos extras.
+  b) Abra com o Bloco de Notas. Ele vem assim:
+         numero;ip;codigo;nome
+         1;192.168.0.1;PA-01;Exemplo de camera
+         2;192.168.0.2;PA-02;Outro exemplo
+         3;;PG-03;Camera ainda sem IP (linha ignorada)
+     - A primeira linha (numero;ip;codigo;nome) NAO pode ser apagada.
+     - Os campos sao separados por ponto e virgula (;). Virgula tambem funciona se a primeira linha
+       for  numero,ip  e as linhas forem  numero,ip.
      - Para o teste, troque os IPs por IPs que existam na rede desse computador:
+         * o IP do proprio computador (ou 127.0.0.1, que sempre responde);
          * o IP do roteador/modem (descubra no passo abaixo);
          * o IP de outro aparelho ligado (um celular no wi-fi, por exemplo);
          * e deixe um IP inventado (como 192.168.0.99) para ver uma camera "SEM RESPOSTA".
-  d) Salve (Ctrl+S) e feche.
+  c) Salve (Ctrl+S) e feche.
 
   Como descobrir o IP do roteador: aperte Win+R, digite  cmd  e Enter. Na janela preta digite
   ipconfig  e Enter. Procure "Gateway Padrao": o numero ao lado (ex.: 192.168.0.1) e o IP do roteador.
+
+  ATENCAO: as siglas mudam se o app for reorganizado, mas o "numero" nao muda nunca. Por isso o
+  programa usa o numero. Se entrar camera nova no app, baixe o cameras.csv de novo e passe os IPs
+  que voce ja tinha para o arquivo novo (as linhas antigas continuam com o mesmo numero).
 
 PASSO 3 - Rodar o teste
   a) De dois cliques em  testar-ping.bat
@@ -82,11 +103,12 @@ So faca depois de testar na Parte A e com o aval do chefe.
 Use o computador que vai ficar ligado o tempo todo, dentro da rede das cameras.
 
 PASSO 4 - Lista real de cameras
-  Monte o cameras.csv com TODAS as cameras que tem IP (numero e IP). O numero e o mesmo que
-  aparece no app. Quem esta no app e nao esta na lista continua com status manual.
-  Dica para montar no Excel: coluna A = numero, coluna B = IP, com os titulos "numero" e "ip" na
-  primeira linha. Depois: Arquivo > Salvar como > escolha "CSV (separado por virgulas)" ou
-  "CSV UTF-8" > nome: cameras.csv  > salvar na pasta monitor. (CSV com ponto e virgula tambem funciona.)
+  Use o CAMINHO 1 do Passo 2: baixe o cameras.csv no app (com as siglas) e preencha o IP de TODAS
+  as cameras que tem IP. Quem esta no app e nao tem IP na lista continua com status manual.
+  Confira com o testar-ping.bat antes de ligar o monitor de verdade.
+  Dica: se preferir preencher no Excel, abra o cameras.csv, preencha a coluna ip e salve de novo como
+  "CSV (separado por virgulas)" ou "CSV UTF-8", com o nome cameras.csv, na pasta monitor.
+  (Se o Excel guardar com ponto e virgula, tudo bem: o programa entende os dois.)
 
 PASSO 5 - Criar o login do programa no Firebase (uma vez so)
   a) Abra: https://console.firebase.google.com  e entre com a conta dona do projeto.
@@ -119,7 +141,9 @@ PASSO 8 - Para abrir sozinho quando o computador ligar (recomendado)
 SE ALGO DER ERRADO
 =====================================================================
 "Nao achei o arquivo cameras.csv"  -> o nome precisa ser exatamente cameras.csv, na mesma pasta do monitor.ps1.
-"cameras.csv esta vazio ou fora do formato" -> confira se a primeira linha e  numero,ip  e as outras tem numero,IP.
+"cameras.csv esta vazio ou fora do formato" -> confira se a primeira linha e  numero;ip;codigo;nome  (ou numero,ip)
+   e se as outras linhas tem o numero e o IP preenchidos.
+"Linha X do cameras.csv ignorada" -> aquela camera esta sem IP (ou sem numero). Normal para camera sem IP.
 Muitas cameras "SEM RESPOSTA" no teste, mas elas estao funcionando -> o computador pode estar
    em outra rede (wi-fi diferente) ou alguma camera bloqueia ping. Me mande o resultado-teste.txt.
 "E-mail ou senha incorretos" -> rode configurar.bat de novo e confira o e-mail/senha criados no Firebase.
