@@ -93,6 +93,7 @@ input.zq{width:100%;height:36px;min-height:0;max-height:36px;flex:0 0 36px;box-s
 .zcard .bk{margin:8px 0 4px;font-size:13px}.zcard .bk b{color:#E6FBFF}.zcard .zi{display:flex;gap:10px;padding:8px 0;border-top:1px solid var(--line)}.zcard .zi .zdot{margin-top:3px}.zcard .zi b{font:600 13px 'Chakra Petch',Inter,sans-serif;display:block}.zcard .zi span{display:block;font-size:12px;color:var(--fg2);line-height:1.4}.zcard .none{font-size:12.5px;color:var(--fg2);padding:8px 0;border-top:1px solid var(--line)}
 .zb{cursor:pointer}.zb .zdot{width:9px;height:9px;background:transparent;border:1.5px dashed #cfe8ff;box-shadow:none}
 @media(max-width:700px){.zcard{right:10px;left:10px;width:auto}}
+
 .zseg{grid-template-columns:1fr 1fr 1fr}.zseg button{padding:0 2px;font-size:12px}
 .zmo{display:flex;flex-direction:column;gap:8px;min-height:0;overflow:auto}.zmo[hidden]{display:none}
 .zob{height:36px;padding:0 12px;border-radius:10px;border:1px solid rgba(34,211,238,.45);background:rgba(34,211,238,.12);color:#E6FBFF;font:600 12.5px Inter,sans-serif;cursor:pointer}.zob.p{background:rgba(34,211,238,.32)}.zob.d{border-color:rgba(251,113,133,.55);background:rgba(251,113,133,.14);color:#FFD5DB}.zob:disabled{opacity:.4;cursor:default}
@@ -613,8 +614,9 @@ function fmOpen(){$('fmbg').hidden=false;fmRender().catch(()=>{})}
     if(bad.length){alert(bad.length+(bad.length>1?' fotos do mês estão sem número de câmera válido.':' foto do mês está sem número de câmera válido.')+' Preencha o número de cada uma antes de gerar o relatório.');fmOpen();return}
     rows.sort((a,b)=>a.cam-b.cam||a.at-b.at);const dt=t=>new Date(t).toLocaleDateString('pt-BR',{timeZone:'America/Sao_Paulo'});
     const fotos=rows.map(r=>{const c=byId(r.cam),nm=cn(c);return {w:r.w,h:r.h,data:atob(r.d.split(',')[1]),t:nm.indexOf('Câmera '+pad(c.id))===0?nm:'Nº '+pad(c.id)+' · '+nm,s:'Foto de '+dt(r.at)}});
+    const ro={fiscalizacao:true,ident:{processo:'6866/2025',contrato:'nº 060/2026',unidade:'Central Operacional SEMMU'}};
     b.disabled=true;
-    try{const u8=await gerarRelatorioPDF(cams,TYPES,ATS,'',pad,cn,fotos);
+    try{const u8=await gerarRelatorioPDF(cams,TYPES,ATS,'',pad,cn,fotos,ro);
       const u=URL.createObjectURL(new Blob([u8],{type:'application/pdf'}));const a=document.createElement('a');a.href=u;a.download='relatorio-cameras-arraial-do-cabo-'+new Date().toLocaleDateString('en-CA',{timeZone:'America/Sao_Paulo'})+'.pdf';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);
       if(fotos.length)askClear(fotos.length)
     }catch(e){alert('Erro ao gerar o relatório: '+e.message)}finally{b.disabled=false}}})();

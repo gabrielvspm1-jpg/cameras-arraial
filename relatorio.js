@@ -58,7 +58,7 @@ Doc.prototype.build=function(meta,bg){
   const u=new Uint8Array(out.length);for(let i=0;i<out.length;i++)u[i]=out.charCodeAt(i)&255;return u;
 };
 
-window.gerarRelatorioPDF=async function(cams,TYPES,ATS,usuario,pad,cn,fotos){
+window.gerarRelatorioPDF=async function(cams,TYPES,ATS,usuario,pad,cn,fotos,opt){opt=opt||{};let secN=5;
   let bg=null;try{const r=await fetch('papel-timbrado.jpg');if(r.ok){const u=new Uint8Array(await r.arrayBuffer());let b='';for(let i=0;i<u.length;i+=8192)b+=String.fromCharCode.apply(null,u.subarray(i,i+8192));
     let w=0,h=0;for(let i=2;i<u.length;){if(u[i]!==255){i++;continue}const m=u[i+1];if(m>=192&&m<=207&&m!==196&&m!==200&&m!==204){h=u[i+5]*256+u[i+6];w=u[i+7]*256+u[i+8];break}i+=2+u[i+2]*256+u[i+3]}
     if(w&&h)bg={w,h,data:b}}}catch(e){}
@@ -98,15 +98,52 @@ window.gerarRelatorioPDF=async function(cams,TYPES,ATS,usuario,pad,cn,fotos){
 
   d.need(40);
   d.para('Observação: a situação de cada câmera (online ou offline) é registrada pelo operador do sistema. A coluna "Última atualização" indica quando esse registro foi feito pela última vez; "—" significa que a situação não foi alterada desde o cadastro da câmera.',{size:9,color:'#555555'});
+  if(opt.fiscalizacao){
+    const I=opt.ident||{},C=(x)=>x||'________________________';
+    const lin=(a,b)=>{d.need(16);d.text(MX,d.y+11,a,{size:9.5,bold:true,color:'#333333'});d.text(MX+160,d.y+11,C(b),{size:9.5,color:b?'#111111':'#8899A3'});d.y+=15};
+    d.h((secN++)+'. Identificação da fiscalização');
+    lin('Processo Administrativo:',I.processo);lin('Contrato Administrativo:',I.contrato);lin('Unidade fiscalizada:',I.unidade);lin('Data da fiscalização:',I.data);lin('Fiscal Técnico:',I.fiscalTec);lin('Fiscal Administrativo:',I.fiscalAdm);lin('Representante da Contratada:',I.rep);
+    d.h((secN++)+'. Indicadores de desempenho (ANS/SLA)');
+    const ifc=tot?Math.round(on/tot*10000)/100:0,ido=opt.ido||{},iao=opt.iao||{},iig=opt.iig||{};
+    d.para('Os indicadores abaixo seguem o Acordo de Nível de Serviço do contrato (disponibilidade operacional mínima de 98,5% ao mês). O IFC é calculado automaticamente com a situação das câmeras registrada no painel; os demais são preenchidos pelo fiscal.',{size:10});
+    d.table([{t:'Indicador',w:150},{t:'Como se calcula',w:171},{t:'Apurado',w:90,al:'r'}],[
+      {cells:['IFC · Funcionamento das câmeras','operacionais ÷ total × 100 ('+on+' ÷ '+tot+')',pc(ifc)+' %'],styles:{2:{bold:true,color:ifc>=98.5?'#0E8F63':'#C62A47'}}},
+      {cells:['IDO · Disponibilidade operacional','horas disponíveis ÷ horas totais × 100',ido.val||'_______ %']},
+      {cells:['IAO · Atendimento operacional','chamados atendidos ÷ registrados × 100',iao.val||'_______ %']},
+      {cells:['IIG · Integridade das gravações','dias gravados ÷ dias exigidos × 100',iig.val||'_______ %']}],{rh:19,size:8.5});
+    d.h((secN++)+'. Verificações operacionais');
+    const cols=[{t:'Verificação',w:190},{t:'Conforme',w:52},{t:'Não conforme',w:62},{t:'Observações',w:147}],k0=(W-2*MX)/451,cw=cols.map(c=>c.w*k0),tw0=cw.reduce((a,b)=>a+b,0),rh=16;
+    const head=()=>{d.need(rh*3);d.rect(MX,d.y,tw0,rh,'#0B3D5C');let x=MX;cols.forEach((c,j)=>{d.text(j===1||j===2?x+cw[j]/2:x+6,d.y+rh-5,c.t,{size:8,bold:true,color:'#FFFFFF',align:j===1||j===2?'center':'left'});x+=cw[j]});d.y+=rh};
+    const grupo=(nome,itens)=>{d.need(rh*3);d.rect(MX,d.y,tw0,rh,'#DDE9EF');d.text(MX+6,d.y+rh-5,nome,{size:8.5,bold:true,color:'#0B3D5C'});d.y+=rh;
+      itens.forEach((it,i)=>{if(d.y+rh>H-BOT){d.newPage();head()}let x=MX;d.text(x+6,d.y+rh-5,fit(it,cw[0]-10,8.5,false),{size:8.5,color:'#222222'});x+=cw[0];
+        [1,2].forEach(j=>{d.rect(x+cw[j]/2-4,d.y+rh/2-4,8,8,'#FFFFFF','#6B7C86');x+=cw[j]});d.line(MX,d.y+rh,MX+tw0,d.y+rh,'#E1E8EC',.5);d.y+=rh})};
+    head();
+    grupo('Central operacional',['Central operacional ativa','Videowall e servidores operacionais','Sistema VMS funcional','Backups e redundância ativos']);
+    grupo('Câmeras',['Qualidade da imagem e visão noturna','Zoom/PTZ funcional','Equipamentos íntegros, sem avarias']);
+    grupo('Atendimento e gravações',['Chamados registrados, atendidos e encerrados','Gravações disponíveis e recuperáveis','Período de retenção adequado']);
+    grupo('Rede, segurança e documentos',['Estabilidade da conexão e latência compatível','Controle de acesso, perfis e logs','Relatório mensal da contratada']);
+    d.y+=10;
+    d.h((secN++)+'. Conclusão e manifestação quanto à medição');
+    d.para('Não conformidades: as câmeras fora de operação estão relacionadas na seção 3. Demais irregularidades e providências recomendadas:',{size:10,after:2});
+    for(let i=0;i<3;i++){d.need(20);d.line(MX,d.y+14,W-MX,d.y+14,'#9FB0BA',.6);d.y+=20}
+    d.y+=6;
+    const op=(t)=>{d.need(16);d.rect(MX+4,d.y+3,9,9,'#FFFFFF','#6B7C86');d.text(MX+22,d.y+11,t,{size:10});d.y+=16};
+    d.text(MX,d.y+10,'Conclusão',{size:9.5,bold:true,color:'#0B3D5C'});d.y+=16;
+    op('A execução encontra-se plenamente conforme');op('A execução encontra-se conforme com ressalvas');op('A execução apresenta não conformidades relevantes');
+    d.y+=6;d.need(20);d.text(MX,d.y+10,'Manifestação quanto à medição',{size:9.5,bold:true,color:'#0B3D5C'});d.y+=16;
+    op('Favorável à medição integral');op('Favorável à medição com ressalvas');op('Necessária análise complementar');op('Necessária aplicação de glosa');
+    d.y+=8;
+  }
   d.need(120);d.y+=14;
   d.para('Arraial do Cabo, '+dLonga.replace(/^[^,]+, /,'')+'.',{size:10.5});
   d.y+=34;d.line(MX,d.y,MX+230,d.y,'#444444',.8);d.y+=13;
   d.text(MX,d.y,'Responsável pelas informações',{size:9.5,bold:true});d.y+=13;
   d.text(MX,d.y,'Secretaria de Mobilidade Urbana · Prefeitura de Arraial do Cabo',{size:9,color:'#555555'});
+  if(opt.fiscalizacao){d.y+=40;d.need(60);const gw=(W-2*MX-20)/3;[['Gestor do contrato'],['Fiscal Técnico'],['Fiscal Administrativo']].forEach((g,i)=>{const x=MX+i*(gw+10);d.line(x,d.y,x+gw,d.y,'#444444',.8);d.text(x+gw/2,d.y+12,g[0],{size:8.5,bold:true,align:'center'});d.text(x+gw/2,d.y+23,'Nome · Matrícula',{size:7.5,color:'#777777',align:'center'})})}
 
   if(fotos&&fotos.length){
     const mes=now.toLocaleDateString('pt-BR',Object.assign({month:'long',year:'numeric'},tz));
-    d.newPage();d.h('5. Registro fotográfico — '+mes);
+    d.newPage();d.h((opt.fiscalizacao?secN:5)+'. Registro fotográfico — '+mes);
     const gap=12,cw=(W-2*MX-gap)/2;let i=0;
     while(i<fotos.length){
       if(i>0)d.newPage();
