@@ -376,7 +376,7 @@ details#imp{margin:0 0 14px;padding:0}details#imp summary{cursor:pointer;padding
     <div id="grid"></div>
     <div class="lf" id="lcount"></div>
   </div>
-  <details class="card" id="imp"><summary>Administração · lista de câmeras</summary><p class="tag" style="margin:4px 0 10px" id="impmsg">Para cadastrar ou atualizar a lista, escolha o arquivo <code>cameras.json</code>. A lista fica guardada no Firebase e só aparece para quem estiver logado.</p><input type="file" id="impf" accept=".json,application/json"></details>
+  <details class="card" id="imp"><summary>Administração · lista de câmeras</summary><p class="tag" style="margin:4px 0 10px" id="impmsg">Para cadastrar ou atualizar a lista, escolha o arquivo <code>cameras.json</code>. A lista fica guardada no Firebase e só aparece para quem estiver logado.</p><input type="file" id="impf" accept=".json,application/json"><div class="zedit" style="margin-top:12px"><button class="btn" id="numprev" type="button">Numeração por bairro · prévia</button><p class="tag" id="nummsg" style="margin:8px 0 0"></p><pre id="numout" hidden style="white-space:pre-wrap;font:12px/1.5 ui-monospace,monospace;max-height:50vh;overflow:auto;margin:8px 0 0"></pre></div></details>
   <p class="note">Status marcado manualmente e sincronizado entre todos os aparelhos. Fotos e fichas em PDF entram na próxima etapa.</p>
 </section>
 
@@ -1125,6 +1125,42 @@ if('serviceWorker' in navigator)window.addEventListener('load',()=>{navigator.se
 (function(){var L=document.getElementById('login'),m=L&&L.querySelector('.brz.big');if(!m||matchMedia('(prefers-reduced-motion:reduce)').matches)return;
 function t(x,y){var r=m.getBoundingClientRect(),dx=(x-r.left-r.width/2)/innerWidth,dy=(y-r.top-r.height/2)/innerHeight;m.style.transform='perspective(500px) rotateY('+(dx*40)+'deg) rotateX('+(-dy*40)+'deg)'}
 L.addEventListener('pointermove',function(e){t(e.clientX,e.clientY)},{passive:true});L.addEventListener('pointerleave',function(){m.style.transform=''})})();
+
+/* ---------- numeração por bairro (prévia, não grava nada) ---------- */
+(function(){
+  const SIG={'PONTAL DO ATALAIA':'PA','PRAIA DOS ANJOS':'PDA','PRAIA GRANDE':'PG'};
+  const norm=n=>n.replace(/\(.*?\)/g,'').replace(/\s+/g,' ').trim();
+  const STOP=new Set(['DA','DE','DO','DAS','DOS','E']);
+  function hav(a,b,c,d){const R=6371000,r=Math.PI/180,x=(c-a)*r,y=(d-b)*r*Math.cos((a+c)/2*r);return R*Math.sqrt(x*x+y*y)}
+  function sigs(names){
+    const out={},used=new Set(Object.values(SIG));
+    names.forEach(n=>{if(SIG[n])out[n]=SIG[n]});
+    names.filter(n=>!SIG[n]).forEach(n=>{
+      const w=n.split(' ').filter(x=>!STOP.has(x)&&x!=='-');let cand=[];
+      if(w.length>1){cand.push(w.map(x=>x[0]).join(''));cand.push(w.map(x=>x.slice(0,2)).join(''))}
+      for(let k=2;k<=Math.max(4,n.length);k++)cand.push(n.replace(/[^A-ZÀ-Ý]/g,'').slice(0,k));
+      cand=cand.map(x=>x.normalize('NFD').replace(/[̀-ͯ]/g,''));
+      const c=cand.find(x=>x.length>=2&&!used.has(x))||cand[cand.length-1];used.add(c);out[n]=c});
+    return out}
+  async function run(){
+    const msg=$('nummsg'),out=$('numout');
+    if(!cams.length){msg.textContent='A lista de câmeras ainda não carregou.';return}
+    msg.textContent='Calculando…';const d=await loadZon();
+    if(!d){msg.textContent='Não consegui carregar o zoneamento.';return}
+    const a=cams.find(c=>c.id===1)||cams[0];
+    const g={},fora=[];
+    cams.forEach(c=>{const f=d.bairros.find(f=>inFeat(f,c.lat,c.lon));if(!f){fora.push(c);return}const n=norm(f.n);(g[n]=g[n]||[]).push(c)});
+    const names=Object.keys(g).sort((x,y)=>x.localeCompare(y,'pt-BR')),S=sigs(names);
+    let t='Ponto de partida: câmera '+pad(a.id)+' ('+cn(a)+')\n';
+    names.forEach(n=>{
+      const l=g[n].map(c=>({c,m:hav(a.lat,a.lon,c.lat,c.lon)})).sort((x,y)=>x.m-y.m||x.c.id-y.c.id);
+      t+='\n'+n+' ('+S[n]+') · '+l.length+' câmera'+(l.length>1?'s':'')+'\n';
+      l.forEach((e,i)=>{t+='  '+S[n]+'-'+String(i+1).padStart(2,'0')+'  ← cam '+pad(e.c.id)+' · '+cn(e.c)+' · '+(e.m<1000?Math.round(e.m)+' m':(e.m/1000).toFixed(1)+' km')+'\n'})});
+    if(fora.length){t+='\nFORA DE QUALQUER BAIRRO ('+fora.length+')\n';fora.forEach(c=>{t+='  cam '+pad(c.id)+' · '+cn(c)+'\n'})}
+    out.textContent=t;out.hidden=false;
+    msg.textContent=cams.length-fora.length+' câmeras em '+names.length+' bairros'+(fora.length?' · '+fora.length+' fora de bairro':'')+' · prévia, nada foi gravado.'}
+  document.addEventListener('click',e=>{if(e.target&&e.target.id==='numprev')run().catch(x=>{$('nummsg').textContent='Erro: '+x.message})});
+})();
 </script>
 
 </body></html>
