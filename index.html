@@ -1150,14 +1150,15 @@ L.addEventListener('pointermove',function(e){t(e.clientX,e.clientY)},{passive:tr
   async function preview(){
     if(!cams.length){say('A lista de câmeras ainda não carregou.');return}
     say('Calculando…');const d=await loadZon();if(!d){say('Não consegui carregar o zoneamento.');return}
-    const a=cams.find(c=>c.id===1)||cams[0],g={};let fora=0;
-    cams.forEach(c=>{const f=d.bairros.find(f=>inFeat(f,c.lat,c.lon));if(!f){fora++;return}const n=norm2(f.n);(g[n]=g[n]||[]).push(c)});
+    const a=cams.find(c=>c.id===1)||cams[0],g={},FR=[];
+    cams.forEach(c=>{const f=d.bairros.find(f=>inFeat(f,c.lat,c.lon));if(!f){FR.push(c);return}const n=norm2(f.n);(g[n]=g[n]||[]).push(c)});
     const L2={};Object.keys(g).forEach(n=>{L2[n]=g[n].map(c=>({c,m:hav(a.lat,a.lon,c.lat,c.lon)})).sort((x,y)=>x.m-y.m||x.c.id-y.c.id)});
     const names=Object.keys(g).sort((x,y)=>L2[x][0].m-L2[y][0].m||x.localeCompare(y,'pt-BR')),S=sigs(names),P=new Map();
-    const tot=names.reduce((q,n)=>q+L2[n].length,0),w=Math.max(2,String(tot).length);let k=0;
+    const tot=names.reduce((q,n)=>q+L2[n].length,0)+FR.length,w=Math.max(2,String(tot).length);let k=0;
     names.forEach(n=>L2[n].forEach(e=>{k++;P.set(e.c.id,S[n]+'-'+String(k).padStart(w,'0'))}));
+    const fora=FR.length;FR.map(c=>({c,m:hav(a.lat,a.lon,c.lat,c.lon)})).sort((x,y)=>x.m-y.m||x.c.id-y.c.id).forEach(e=>{k++;P.set(e.c.id,'S/N-'+String(k).padStart(w,'0'))});
     NPLAN=P;ui();redraw();
-    say('Prévia: '+P.size+' câmeras em '+names.length+' bairros'+(fora?' · '+fora+' fora de bairro (ficam com o número antigo)':'')+'. Nada foi gravado.')}
+    say('Prévia: '+P.size+' câmeras em '+names.length+' bairros'+(fora?' · '+fora+' sem bairro (S/N)':'')+'. Nada foi gravado.')}
   async function applyIt(){
     if(!arm.a){ui();arm.a=1;$$('nap').textContent='Confirmar';setTimeout(()=>{if(arm.a&&NPLAN)ui()},8000);return}
     const P=NPLAN;cams.forEach(c=>{c.cod=P.get(c.id)||''});NPLAN=null;
