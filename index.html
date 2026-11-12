@@ -379,7 +379,7 @@ details#imp{margin:0 0 14px;padding:0}details#imp summary{cursor:pointer;padding
     <div id="grid"></div>
     <div class="lf" id="lcount"></div>
   </div>
-  <details class="card" id="imp"><summary>Administração · lista de câmeras</summary><p class="tag" style="margin:4px 0 10px" id="impmsg">Para cadastrar ou atualizar a lista, escolha o arquivo <code>cameras.json</code>. A lista fica guardada no Firebase e só aparece para quem estiver logado.</p><input type="file" id="impf" accept=".json,application/json"></details>
+  <details class="card" id="imp"><summary>Administração · lista de câmeras</summary><p class="tag" style="margin:4px 0 10px" id="impmsg">Para cadastrar ou atualizar a lista, escolha o arquivo <code>cameras.json</code>. A lista fica guardada no Firebase e só aparece para quem estiver logado.</p><input type="file" id="impf" accept=".json,application/json"><div class="zedit" style="margin-top:12px"><button class="btn" id="expjson" type="button">Baixar cameras.json (cópia da lista atual)</button><p class="tag" style="margin:6px 0 0">Só baixa uma cópia. Não altera nenhuma câmera.</p></div></details>
   <p class="note">Status marcado manualmente e sincronizado entre todos os aparelhos. Fotos e fichas em PDF entram na próxima etapa.</p>
 </section>
 
@@ -1225,6 +1225,11 @@ async function bairrosToggle(){
   BL.addTo(map);BON=true;b.setAttribute('aria-pressed','true');b.style.background='#22D3EE';b.style.color='#0B1220'}
 document.addEventListener('click',e=>{if(e.target&&e.target.id==='zb')bairrosToggle().catch(x=>toast('Erro: '+x.message))});
 
+
+/* ---------- baixar cópia da lista de câmeras (somente leitura) ---------- */
+document.addEventListener('click',e=>{if(!e.target||e.target.id!=='expjson')return;
+  const a=cams.slice().sort((x,y)=>x.id-y.id).map(c=>({i:c.id,a:c.lat,o:c.lon,t:c.t,n:c.name}));
+  try{const u=URL.createObjectURL(new Blob([JSON.stringify(a)],{type:'application/json'})),l=document.createElement('a');l.href=u;l.download='cameras.json';document.body.appendChild(l);l.click();l.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);toast('cameras.json baixado com '+a.length+' câmeras.')}catch(x){toast('Erro ao baixar: '+x.message)}});
 </script>
 
 </body></html>
