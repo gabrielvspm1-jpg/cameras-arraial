@@ -378,7 +378,7 @@ details#imp{margin:0 0 14px;padding:0}details#imp summary{cursor:pointer;padding
     <div id="grid"></div>
     <div class="lf" id="lcount"></div>
   </div>
-  <details class="card" id="imp"><summary>Administração · lista de câmeras</summary><p class="tag" style="margin:4px 0 10px" id="impmsg">Para cadastrar ou atualizar a lista, escolha o arquivo <code>cameras.json</code>. A lista fica guardada no Firebase e só aparece para quem estiver logado.</p><input type="file" id="impf" accept=".json,application/json"><div class="zedit" style="margin-top:12px"><button class="btn" id="csvmon" type="button">Baixar cameras.csv para o robô (com siglas)</button><p class="tag" style="margin:6px 0 0">Planilha com o código de cada câmera e uma coluna de IP em branco para você preencher.</p></div></details>
+  <details class="card" id="imp"><summary>Administração · lista de câmeras</summary><p class="tag" style="margin:4px 0 10px" id="impmsg">Para cadastrar ou atualizar a lista, escolha o arquivo <code>cameras.json</code>. A lista fica guardada no Firebase e só aparece para quem estiver logado.</p><input type="file" id="impf" accept=".json,application/json"></details>
   <p class="note">Status marcado manualmente e sincronizado entre todos os aparelhos. Fotos e fichas em PDF entram na próxima etapa.</p>
 </section>
 
@@ -387,7 +387,7 @@ details#imp{margin:0 0 14px;padding:0}details#imp summary{cursor:pointer;padding
     <div id="map" aria-label="Mapa com a posição das câmeras"></div>
     <div class="ov search"><input type="search" id="ms" placeholder="Buscar câmera no mapa…" aria-label="Buscar no mapa"><div class="res" id="res" hidden></div></div>
     <div class="ov chips" id="tchips"></div>
-    <div class="ov zoom"><button id="zi" aria-label="Aproximar">+</button><button id="zo" aria-label="Afastar">−</button><button id="zf" aria-label="Enquadrar todas" style="font-size:15px">⤢</button><button id="zl" aria-label="Trocar camada do mapa" style="font-size:11px;font-weight:600">Mapa</button><button id="csvmon2" class="zedit" aria-label="Baixar cameras.csv para o robô" style="font-size:10px;font-weight:600">CSV</button><button id="zb" aria-label="Mostrar ou ocultar bairros" aria-pressed="false" style="font-size:10px;font-weight:600">Bairros</button></div>
+    <div class="ov zoom"><button id="zi" aria-label="Aproximar">+</button><button id="zo" aria-label="Afastar">−</button><button id="zf" aria-label="Enquadrar todas" style="font-size:15px">⤢</button><button id="zl" aria-label="Trocar camada do mapa" style="font-size:11px;font-weight:600">Mapa</button><button id="zb" aria-label="Mostrar ou ocultar bairros" aria-pressed="false" style="font-size:10px;font-weight:600">Bairros</button></div>
     <div class="ov sheet" id="sheet" hidden></div>
   </div>
 </section>
@@ -1185,13 +1185,6 @@ async function bairrosToggle(){
   BL.addTo(map);BON=true;b.setAttribute('aria-pressed','true');b.style.background='#22D3EE';b.style.color='#0B1220'}
 document.addEventListener('click',e=>{if(e.target&&e.target.id==='zb')bairrosToggle().catch(x=>toast('Erro: '+x.message))});
 
-/* ---------- cameras.csv para o robô do monitor ---------- */
-document.addEventListener('click',e=>{if(!e.target||(e.target.id!=='csvmon'&&e.target.id!=='csvmon2'))return;
-  const kOf=c=>{const m=/-(\d+)$/.exec(pad(c.id));return m?+m[1]:1e6+c.id};
-  const q=t=>'"'+String(t).replace(/"/g,'""')+'"';
-  const rows=cams.slice().sort((a,b)=>kOf(a)-kOf(b));
-  const t='﻿numero;ip;codigo;nome\r\n'+rows.map(c=>[c.id,'',pad(c.id),q(c.name.indexOf('Sem nome')===0?'':c.name)].join(';')).join('\r\n')+'\r\n';
-  try{const u=URL.createObjectURL(new Blob([t],{type:'text/csv;charset=utf-8'})),a=document.createElement('a');a.href=u;a.download='cameras.csv';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);toast('cameras.csv gerado com '+rows.length+' câmeras.')}catch(x){toast('Erro ao gerar: '+x.message)}});
 </script>
 
 </body></html>
