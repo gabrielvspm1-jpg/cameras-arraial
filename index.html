@@ -387,7 +387,7 @@ details#imp{margin:0 0 14px;padding:0}details#imp summary{cursor:pointer;padding
     <div id="map" aria-label="Mapa com a posição das câmeras"></div>
     <div class="ov search"><input type="search" id="ms" placeholder="Buscar câmera no mapa…" aria-label="Buscar no mapa"><div class="res" id="res" hidden></div></div>
     <div class="ov chips" id="tchips"></div>
-    <div class="ov zoom"><button id="zi" aria-label="Aproximar">+</button><button id="zo" aria-label="Afastar">−</button><button id="zf" aria-label="Enquadrar todas" style="font-size:15px">⤢</button><button id="zl" aria-label="Trocar camada do mapa" style="font-size:11px;font-weight:600">Mapa</button><button id="zb" aria-label="Mostrar ou ocultar bairros" aria-pressed="false" style="font-size:10px;font-weight:600">Bairros</button></div>
+    <div class="ov zoom"><button id="zi" aria-label="Aproximar">+</button><button id="zo" aria-label="Afastar">−</button><button id="zf" aria-label="Enquadrar todas" style="font-size:15px">⤢</button><button id="zl" aria-label="Trocar camada do mapa" style="font-size:11px;font-weight:600">Mapa</button><button id="csvmon2" class="zedit" aria-label="Baixar cameras.csv para o robô" style="font-size:10px;font-weight:600">CSV</button><button id="zb" aria-label="Mostrar ou ocultar bairros" aria-pressed="false" style="font-size:10px;font-weight:600">Bairros</button></div>
     <div class="ov sheet" id="sheet" hidden></div>
   </div>
 </section>
@@ -1186,7 +1186,7 @@ async function bairrosToggle(){
 document.addEventListener('click',e=>{if(e.target&&e.target.id==='zb')bairrosToggle().catch(x=>toast('Erro: '+x.message))});
 
 /* ---------- cameras.csv para o robô do monitor ---------- */
-document.addEventListener('click',e=>{if(!e.target||e.target.id!=='csvmon')return;
+document.addEventListener('click',e=>{if(!e.target||(e.target.id!=='csvmon'&&e.target.id!=='csvmon2'))return;
   const kOf=c=>{const m=/-(\d+)$/.exec(pad(c.id));return m?+m[1]:1e6+c.id};
   const q=t=>'"'+String(t).replace(/"/g,'""')+'"';
   const rows=cams.slice().sort((a,b)=>kOf(a)-kOf(b));
