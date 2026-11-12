@@ -19,6 +19,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="firebase-config.js"></script>
 <script src="relatorio.js"></script>
+<script src="costa.js"></script>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Chakra+Petch:wght@500;600;700&display=swap">
 <style>
 :root{--bg:#070B14;--panel:#0B1220;--panel2:#0F1A2E;--line:#1B2A44;--fg:#E6EDF7;--fg2:#8FA0B8;--cy:#22D3EE;--on:#34D399;--off:#FB7185;--amber:#F5B84B;--vio:#A78BFA;--pink:#F472B6;color-scheme:dark}
@@ -952,7 +953,7 @@ function ensureZMap(){
     h+='</div><div class="zmb"><div class="zst" style="grid-template-columns:repeat(2,1fr)"><div><b>'+d.bairros.length+'</b><span>bairros</span></div><div><b>'+fmtHa(d.bairros.reduce((a,f)=>a+f.ha,0))+'</b><span>área total</span></div></div><div class="zgw"><div class="zg">Bairros ('+d.bairros.length+')</div>';
     d.bairros.map((f,i)=>[f,i]).sort((a,b)=>a[0].n.localeCompare(b[0].n,'pt-BR')).forEach(([f,i])=>{h+='<div class="zr zb" data-b="'+i+'" data-s="'+esc2((f.n+' '+(f.d||'')).toLowerCase())+'"><span class="zdot" style="--c:'+hue(i)+';background:var(--c);border:0"></span><div class="zt"><b>'+esc2(f.n)+'</b><small>'+(f.d?'Distrito '+esc2(f.d)+' · ':'')+fmtHa(f.ha)+'</small></div></div>'});h+='</div>';
     h+='</div></div><div class="zsw zmz"><label><input type="checkbox" id="zbx"><i></i>Contornos dos bairros</label></div>';
-    h+='<div class="zmo" id="zmo" hidden><div class="zmo-h zedit"><button class="zob p" data-zo="new-poly">＋ Polígono</button><button class="zob" data-zo="new-rect">▭ Retângulo</button></div><p class="zmo-n" id="zomsg"></p><input class="zq" id="zoq" type="search" placeholder="Buscar câmera OCR (nº ou nome)…" autocomplete="off" aria-label="Buscar câmera OCR"><div id="zores"></div><div class="zg" id="zoh">Zonas</div><div id="zolist"></div><div class="zsw"><label><input type="checkbox" id="zbx2"><i></i>Contornos dos bairros</label></div></div>';
+    h+='<div class="zmo" id="zmo" hidden><div class="zmo-h zedit"><button class="zob p" data-zo="new-poly">＋ Polígono</button><button class="zob" data-zo="new-rect">▭ Retângulo</button><button class="zob" data-zo="rf-go">✨ Ajustar à costa</button></div><div class="zmo-h zedit" id="zorf" hidden><button class="zob p" data-zo="rf-ok">Aplicar ajuste</button><button class="zob d" data-zo="rf-no">Cancelar</button></div><div class="zmo-h zedit" id="zoun" hidden><button class="zob" data-zo="rf-undo">↩ Desfazer ajuste à costa</button></div><p class="zmo-n" id="zomsg"></p><input class="zq" id="zoq" type="search" placeholder="Buscar câmera OCR (nº ou nome)…" autocomplete="off" aria-label="Buscar câmera OCR"><div id="zores"></div><div class="zg" id="zoh">Zonas</div><div id="zolist"></div><div class="zsw"><label><input type="checkbox" id="zbx2"><i></i>Contornos dos bairros</label></div></div>';
     $('zlb').innerHTML=h;ZO.init();
     const setZ=(k,on)=>{const r=$('zlb').querySelector('[data-zk="'+k+'"]');if(r)r.classList.toggle('on',on);on?zGroups[k].addTo(zmap):zmap.removeLayer(zGroups[k])};
     const base={weight:1.6,fillOpacity:.38},hi={weight:3.2,fillOpacity:.68};
@@ -1000,10 +1001,44 @@ const ZO=(()=>{
 
   function start(){if(unsub||typeof db==='undefined'||!db)return;const P=firebase.firestore.FieldPath.documentId();
     unsub=db.collection('config').where(P,'>=','zocr-').where(P,'<','zocr.').onSnapshot(s=>{
-      zones=s.docs.map(d=>{const x=d.data(),r=[];if(Array.isArray(x.p))for(let i=0;i+1<x.p.length;i+=2)r.push([+x.p[i],+x.p[i+1]]);return{id:d.id,n:x.n||'Zona',c:x.c||'#22D3EE',o:typeof x.o==='number'?x.o:.35,s:x.s==='r'?'r':'p',r}}).filter(z=>z.r.length>=3).sort((a,b)=>a.n.localeCompare(b.n,'pt-BR',{numeric:true}));
-      if(on){zonesDraw();list();if(pendSel){const z=zones.find(q=>q.id===pendSel);pendSel=null;if(z&&!S)info(z)}else if(selId&&!S){const z=zones.find(q=>q.id===selId);if(z&&!$('zcard').hidden)info(z,true);else if(!z){selId=null}}}
+      zones=s.docs.map(d=>{const x=d.data(),r=[];if(Array.isArray(x.p))for(let i=0;i+1<x.p.length;i+=2)r.push([+x.p[i],+x.p[i+1]]);return{id:d.id,n:x.n||'Zona',c:x.c||'#22D3EE',o:typeof x.o==='number'?x.o:.35,s:x.s==='r'?'r':'p',r,po:Array.isArray(x.po)?x.po:null,so:x.so||null}}).filter(z=>z.r.length>=3).sort((a,b)=>a.n.localeCompare(b.n,'pt-BR',{numeric:true}));
+      if(on){zonesDraw();list();try{rfUI()}catch(e){}if(pendSel){const z=zones.find(q=>q.id===pendSel);pendSel=null;if(z&&!S)info(z)}else if(selId&&!S){const z=zones.find(q=>q.id===selId);if(z&&!$('zcard').hidden)info(z,true);else if(!z){selId=null}}}
     },e=>{if(typeof toast==='function')toast('Não consegui ler as zonas: '+e.message)})}
-  function stop(){if(unsub){unsub();unsub=null}zones=[];if(on){zonesDraw();list()}}
+  /* ---- ajuste das zonas à linha da costa (prévia, depois aplicar; guarda o original para desfazer) ---- */
+  let RF=null,rfLay=null;
+  const flat=r=>{const a=[];r.forEach(p=>a.push(+p[0].toFixed(7),+p[1].toFixed(7)));return a};
+  function rfClear(){if(rfLay&&zmap)zmap.removeLayer(rfLay);rfLay=null;RF=null;try{rfUI()}catch(e){}}
+  function rfUI(){const a=$('zorf'),b=$('zoun');if(a)a.hidden=!RF;if(b)b.hidden=!!RF||!zones.some(z=>z.po)}
+  function say(t){const m=$('zomsg');if(m)m.textContent=t}
+  async function coast(bb){
+    const q='[out:json][timeout:30];way["natural"="coastline"]('+bb.join(',')+');out geom;',eps=['https://overpass-api.de/api/interpreter','https://overpass.kumi.systems/api/interpreter'];
+    let err=null;for(const u of eps){try{const c=new AbortController(),t=setTimeout(()=>c.abort(),35000);
+      const r=await fetch(u,{method:'POST',body:'data='+encodeURIComponent(q),headers:{'Content-Type':'application/x-www-form-urlencoded'},signal:c.signal});clearTimeout(t);
+      if(!r.ok)throw new Error('http '+r.status);const j=await r.json();
+      return (j.elements||[]).filter(e=>e.type==='way'&&e.geometry&&e.geometry.length>1).map(e=>e.geometry.map(g=>[g.lat,g.lon]))}catch(e){err=e}}
+    throw err||new Error('sem resposta')}
+  async function rfGo(){
+    if(!IS_ED||S)return;if(typeof Costa==='undefined'){say('Módulo da costa não carregou. Atualize o app.');return}
+    if(!zones.length){say('Ainda não há zonas para ajustar.');return}
+    rfClear();say('Buscando a linha da costa no OpenStreetMap…');
+    let la=[],lo=[];zones.forEach(z=>z.r.forEach(p=>{la.push(p[0]);lo.push(p[1])}));
+    const m=.01,bb=[Math.min(...la)-m,Math.min(...lo)-m,Math.max(...la)+m,Math.max(...lo)+m];
+    let ways;try{ways=await coast(bb)}catch(e){say('Não consegui buscar a costa agora ('+e.message+'). Tente de novo em instantes.');return}
+    if(!ways.length){say('Não encontrei linha de costa nessa região.');return}
+    const items=[];zones.forEach(z=>{const r=Costa.refine(z.r,ways);if(r.moved>0&&r.ring.length>=3)items.push({z,ring:r.ring})});
+    if(!items.length){say('Nenhuma zona invade o mar. Nada a ajustar.');return}
+    RF=items;rfLay=L.layerGroup(items.map(i=>L.polygon(i.ring,{pane:'pD',color:'#fff',weight:2.5,dashArray:'7 5',fillColor:i.z.c,fillOpacity:.25,interactive:false}))).addTo(zmap);
+    say(items.length+' de '+zones.length+' zonas encostam no mar. A linha branca tracejada mostra como ficam, rente à costa. Confira no mapa e toque em Aplicar ajuste.');rfUI()}
+  async function rfOk(){
+    if(!RF||!IS_ED)return;const items=RF;rfClear();say('Gravando…');
+    try{const b=db.batch(),ts=firebase.firestore.FieldValue.serverTimestamp(),by=(auth.currentUser&&auth.currentUser.email)||'';
+      items.forEach(i=>{const d={p:flat(i.ring),s:'p',at:ts,by};if(!i.z.po){d.po=flat(i.z.r);d.so=i.z.s}b.update(db.collection('config').doc(i.z.id),d)});
+      await b.commit();say(items.length+' zonas ajustadas à costa. Para voltar ao desenho original, use “Desfazer ajuste à costa”.')}catch(e){say('Não foi possível gravar: '+e.message)}}
+  async function rfUndo(){
+    if(!IS_ED)return;const zs=zones.filter(z=>z.po);if(!zs.length)return;
+    try{const b=db.batch(),ts=firebase.firestore.FieldValue.serverTimestamp(),by=(auth.currentUser&&auth.currentUser.email)||'',D=firebase.firestore.FieldValue.delete();
+      zs.forEach(z=>b.update(db.collection('config').doc(z.id),{p:z.po,s:z.so||'p',po:D,so:D,at:ts,by}));await b.commit();say('Desenho original de '+zs.length+' zonas restaurado.')}catch(e){say('Não foi possível desfazer: '+e.message)}}
+  function stop(){rfClear();if(unsub){unsub();unsub=null}zones=[];if(on){zonesDraw();list()}}
 
   function init(){
     if(lg)return;zmap.createPane('pO');zmap.getPane('pO').style.zIndex=430;zmap.createPane('pD');zmap.getPane('pD').style.zIndex=445;
@@ -1019,7 +1054,7 @@ const ZO=(()=>{
   }
   function enter(fit){if(!lg)return;on=true;lg.addTo(zmap);cg.addTo(zmap);zonesDraw();camsDraw();list();msg();if(fit)fitAll();setTimeout(()=>zmap.invalidateSize(),0)}
   function leave(){if(!on)return;on=false;if(S)cancel(true);if(lg){zmap.removeLayer(lg);zmap.removeLayer(cg)}if(pin&&zmap){zmap.removeLayer(pin);pin=null}$('zcard').hidden=true}
-  function msg(){const m=$('zomsg');if(!m)return;m.textContent=IS_ED?'Escolha Polígono ou Retângulo para desenhar uma zona. Toque numa zona ou num ponto do mapa para ver as câmeras OCR.':'Modo visualização: toque numa zona ou num ponto do mapa para ver as câmeras OCR. Só editores desenham.'}
+  function msg(){const m=$('zomsg');if(!m)return;try{rfUI()}catch(e){}m.textContent=IS_ED?'Escolha Polígono ou Retângulo para desenhar uma zona. Toque numa zona ou num ponto do mapa para ver as câmeras OCR.':'Modo visualização: toque numa zona ou num ponto do mapa para ver as câmeras OCR. Só editores desenham.'}
   function fitAll(){const pts=[];ocr().forEach(c=>pts.push([c.lat,c.lon]));zones.forEach(z=>z.r.forEach(p=>pts.push(p)));if(pts.length)try{zmap.fitBounds(L.latLngBounds(pts),{padding:[50,50],maxZoom:16})}catch(_){}}
   function fitZ(z){try{zmap.fitBounds(L.latLngBounds(z.r),{padding:[60,60],maxZoom:17})}catch(_){}}
 
@@ -1124,6 +1159,7 @@ const ZO=(()=>{
   let delT=0;
   function act(a,id,btn){
     if(a==='new-poly')startDraw('poly');else if(a==='new-rect')startDraw('rect');
+    else if(a==='rf-go')rfGo();else if(a==='rf-ok')rfOk();else if(a==='rf-no'){rfClear();msg()}else if(a==='rf-undo')rfUndo();
     else if(a==='undo')undo();else if(a==='close')closeShape();else if(a==='cancel')cancel();else if(a==='ok')save();
     else if(a==='addc'&&S&&!S.closed)addPoint(zmap.getCenter());
     else if(a==='mira'){mira=!mira;$('zomira').hidden=!(mira&&S&&!S.closed);if(S&&!S.closed){bar();if(mira)rubber(zmap.getCenter())}}
