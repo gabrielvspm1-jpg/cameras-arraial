@@ -62,7 +62,7 @@ window.gerarRelatorioPDF=async function(cams,TYPES,ATS,usuario,pad,cn,fotos,opt)
   let bg=null;try{const r=await fetch('papel-timbrado.jpg');if(r.ok){const u=new Uint8Array(await r.arrayBuffer());let b='';for(let i=0;i<u.length;i+=8192)b+=String.fromCharCode.apply(null,u.subarray(i,i+8192));
     let w=0,h=0;for(let i=2;i<u.length;){if(u[i]!==255){i++;continue}const m=u[i+1];if(m>=192&&m<=207&&m!==196&&m!==200&&m!==204){h=u[i+5]*256+u[i+6];w=u[i+7]*256+u[i+8];break}i+=2+u[i+2]*256+u[i+3]}
     if(w&&h)bg={w,h,data:b}}}catch(e){}
-  const now=new Date(),tz={timeZone:'America/Sao_Paulo'};
+  const now=opt.refDate||new Date(),tz={timeZone:'America/Sao_Paulo'};
   const dCurta=now.toLocaleDateString('pt-BR',Object.assign({day:'2-digit',month:'2-digit',year:'numeric'},tz));
   const hora=now.toLocaleTimeString('pt-BR',Object.assign({hour:'2-digit',minute:'2-digit'},tz));
   const dLonga=now.toLocaleDateString('pt-BR',Object.assign({weekday:'long',day:'numeric',month:'long',year:'numeric'},tz));

@@ -367,7 +367,7 @@ details#imp{margin:0 0 14px;padding:0}details#imp summary{cursor:pointer;padding
     <select class="in" id="sso" aria-label="Ordenar"><option value="n">Ordenar: nº</option><option value="name">Ordenar: nome</option><option value="off">Offline primeiro</option></select>
     <button class="btn pri" data-go="mapa">Abrir mapa</button>
     <button class="btn pri" id="fotosmes" hidden>📷 Tirar foto da câmera</button>
-    <button class="btn" id="csv" hidden>Gerar relatório</button>
+    <label style="font-size:11px;opacity:.75;display:inline-flex;gap:6px;align-items:center;margin-right:6px">Data do relatório (vazio = hoje) <input type="date" id="rdt" style="background:transparent;color:inherit;border:1px solid rgba(255,255,255,.25);border-radius:6px;padding:3px 6px"></label><button class="btn" id="csv" hidden>Gerar relatório</button>
   </div>
   <div class="bar" id="f-status">
     <button class="chip" data-st="all" aria-pressed="true">Todas</button>
@@ -627,7 +627,7 @@ function fmOpen(){$('fmbg').hidden=false;fmRender().then(()=>fmRescan()).catch((
     if(bad.length){alert(bad.length+(bad.length>1?' fotos do mês estão sem número de câmera válido.':' foto do mês está sem número de câmera válido.')+' Preencha o número de cada uma antes de gerar o relatório.');fmOpen();return}
     rows.sort((a,b)=>a.cam-b.cam||a.at-b.at);const dt=t=>new Date(t).toLocaleDateString('pt-BR',{timeZone:'America/Sao_Paulo'});
     const fotos=rows.map(r=>{const c=byId(r.cam),nm=cn(c);return {w:r.w,h:r.h,data:atob(r.d.split(',')[1]),t:nm.indexOf('Câmera '+pad(c.id))===0?nm:'Nº '+pad(c.id)+' · '+nm,s:'Foto de '+dt(r.at)}});
-    const ro={fiscalizacao:true,ident:{processo:'6866/2025',contrato:'nº 060/2026',unidade:'Central Operacional SEMMU'}};
+    const ro={refDate:($('rdt')&&$('rdt').value)?new Date($('rdt').value+'T12:00:00-03:00'):null,fiscalizacao:true,ident:{processo:'6866/2025',contrato:'nº 060/2026',unidade:'Central Operacional SEMMU'}};
     b.disabled=true;
     try{const u8=await gerarRelatorioPDF(cams,TYPES,ATS,'',pad,cn,fotos,ro);
       const u=URL.createObjectURL(new Blob([u8],{type:'application/pdf'}));const a=document.createElement('a');a.href=u;a.download='relatorio-cameras-arraial-do-cabo-'+new Date().toLocaleDateString('en-CA',{timeZone:'America/Sao_Paulo'})+'.pdf';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);
