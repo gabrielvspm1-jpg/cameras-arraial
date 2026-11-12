@@ -376,7 +376,7 @@ details#imp{margin:0 0 14px;padding:0}details#imp summary{cursor:pointer;padding
     <div id="grid"></div>
     <div class="lf" id="lcount"></div>
   </div>
-  <details class="card" id="imp"><summary>Administração · lista de câmeras</summary><p class="tag" style="margin:4px 0 10px" id="impmsg">Para cadastrar ou atualizar a lista, escolha o arquivo <code>cameras.json</code>. A lista fica guardada no Firebase e só aparece para quem estiver logado.</p><input type="file" id="impf" accept=".json,application/json"><div class="zedit" style="margin-top:12px"><button class="btn" id="numprev" type="button">Numeração por bairro · prévia</button><p class="tag" id="nummsg" style="margin:8px 0 0"></p><pre id="numout" hidden style="white-space:pre-wrap;font:12px/1.5 ui-monospace,monospace;max-height:50vh;overflow:auto;margin:8px 0 0"></pre></div></details>
+  <details class="card" id="imp"><summary>Administração · lista de câmeras</summary><p class="tag" style="margin:4px 0 10px" id="impmsg">Para cadastrar ou atualizar a lista, escolha o arquivo <code>cameras.json</code>. A lista fica guardada no Firebase e só aparece para quem estiver logado.</p><input type="file" id="impf" accept=".json,application/json"><div class="zedit" style="margin-top:12px"><button class="btn" id="numprev" type="button">Numeração por bairro · prévia</button><button class="btn" id="numapp" type="button" hidden style="margin-top:8px"></button> <button class="btn" id="numclr" type="button" style="margin-top:8px">Remover códigos (voltar a 001, 002…)</button><p class="tag" id="nummsg" style="margin:8px 0 0"></p><pre id="numout" hidden style="white-space:pre-wrap;font:12px/1.5 ui-monospace,monospace;max-height:50vh;overflow:auto;margin:8px 0 0"></pre></div></details>
   <p class="note">Status marcado manualmente e sincronizado entre todos os aparelhos. Fotos e fichas em PDF entram na próxima etapa.</p>
 </section>
 
@@ -435,13 +435,13 @@ const TYPES=[["OCR","#22D3EE"],["Facial","#A78BFA"],["360°","#F5B84B"],["Comum"
 const LATM=110900,LONM=102500,LAT0=-22.97,LON0=-42.026;
 const cams=[],STAT={},ATS={};
 function loadList(arr){
-  cams.length=0;const used=new Set();arr.forEach((r,i)=>{let id=+r.i||i+1;while(used.has(id))id++;used.add(id);cams.push({id,lat:+r.a,lon:+r.o,t:+r.t,name:String(r.n),on:STAT[id]!==false})});cams.sort((a,b)=>a.id-b.id);
+  cams.length=0;const used=new Set();arr.forEach((r,i)=>{let id=+r.i||i+1;while(used.has(id))id++;used.add(id);cams.push({id,lat:+r.a,lon:+r.o,t:+r.t,name:String(r.n),cod:r.k?String(r.k):'',on:STAT[id]!==false})});cams.sort((a,b)=>a.id-b.id);
   if(typeof rebuildMarkers==='function')rebuildMarkers();
   if(map&&!mapReady&&cams.length&&!$('v-mapa').hidden){mapReady=true;fit(cams,true)}
   refresh();
 }
-const cn=c=>c.name.indexOf('Sem nome')===0?'Câmera '+String(c.id).padStart(3,'0'):c.name;
-const pad=n=>String(n).padStart(3,'0');
+const pad=n=>{const c=cams.find(x=>x.id===+n);return c&&c.cod?c.cod:String(n).padStart(3,'0')};
+const cn=c=>c.name.indexOf('Sem nome')===0?'Câmera '+pad(c.id):c.name;
 const byId=id=>cams.find(c=>c.id===+id);
 const norm=s=>s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
 const $=id=>document.getElementById(id);
@@ -479,7 +479,7 @@ function kpis(){
 }
 function renderPanel(){
   kpis();const q=norm($('q').value.trim());
-  const list=cams.filter(c=>!(stF==='on'&&!c.on||stF==='off'&&c.on)&&(tyF==='all'||c.t===+tyF)&&(!q||norm(cn(c)).indexOf(q)>=0||pad(c.id).indexOf(q)>=0));
+  const list=cams.filter(c=>!(stF==='on'&&!c.on||stF==='off'&&c.on)&&(tyF==='all'||c.t===+tyF)&&(!q||norm(cn(c)).indexOf(q)>=0||norm(pad(c.id)).indexOf(q)>=0));
   if(soF==='name')list.sort((a,b)=>cn(a).localeCompare(cn(b),'pt-BR',{numeric:true}));
   else if(soF==='off')list.sort((a,b)=>(a.on-b.on)||(a.id-b.id));
   const g=$('grid');g.textContent='';
@@ -688,7 +688,7 @@ function sheet(){
 (function(){const w=$('tchips');TYPES.forEach((t,i)=>{const b=document.createElement('button');b.className='chip';b.setAttribute('aria-pressed','true');b.innerHTML='<i style="background:'+t[1]+'"></i>'+t[0];b.onclick=()=>{hidden.has(i)?hidden.delete(i):hidden.add(i);b.setAttribute('aria-pressed',!hidden.has(i));draw()};w.appendChild(b)});
   const o=document.createElement('button');o.className='chip';o.setAttribute('aria-pressed','false');o.innerHTML='<i style="background:#FB7185"></i>Só offline';o.onclick=()=>{offOnly=!offOnly;o.setAttribute('aria-pressed',offOnly);draw()};w.appendChild(o);const ad=document.createElement('button');ad.className='chip';ad.innerHTML='＋ Adicionar câmera';ad.onclick=()=>openEd(null,map?map.getCenter():null);w.appendChild(ad)})();
 $('ms').addEventListener('input',e=>{const q=norm(e.target.value.trim()),r=$('res');r.textContent='';if(!q){r.hidden=true;return}
-  const m=cams.filter(c=>c.name.indexOf('Sem nome')!==0&&norm(c.name).indexOf(q)>=0||pad(c.id)===q.padStart(3,'0')&&/^\d+$/.test(q)).slice(0,8);
+  const m=cams.filter(c=>c.name.indexOf('Sem nome')!==0&&norm(c.name).indexOf(q)>=0||norm(pad(c.id))===q||pad(c.id)===q.padStart(3,'0')&&/^\d+$/.test(q)).slice(0,8);
   r.hidden=!m.length;m.forEach(c=>{const b=document.createElement('button');b.textContent=pad(c.id)+' · '+cn(c);b.onclick=()=>{r.hidden=true;$('ms').value='';select(c,false)};r.appendChild(b)})});
 
 /* ---------- Firebase ---------- */
@@ -782,7 +782,7 @@ function showPh(d){const i=$('ph-img');if(d){i.src=d;i.hidden=false;$('ph-empty'
 let edCam=null;
 function saveList(){
   if(!db)return Promise.reject(new Error('sem conexão com o banco'));
-  const list=cams.map(c=>({i:c.id,a:c.lat,o:c.lon,t:c.t,n:c.name}));
+  const list=cams.map(c=>{const r={i:c.id,a:c.lat,o:c.lon,t:c.t,n:c.name};if(c.cod)r.k=c.cod;return r});
   return db.collection('config').doc('cameras').set({list,updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
 }
 function openEd(c,pos){if(!IS_ED){toast('Seu acesso é somente para visualização.');return}
@@ -1013,7 +1013,7 @@ const ZO=(()=>{
   function list(){const el=$('zolist');if(!el)return;$('zoh').textContent='Zonas ('+zones.length+')';
     el.innerHTML=zones.length?zones.map(z=>'<div class="zr on" data-zid="'+z.id+'"><span class="zdot" style="--c:'+z.c+'"></span><div class="zt"><b>'+esc2(z.n)+'</b><small>'+inside(z).length+' câm. OCR · '+fmtA(area(z.r))+'</small></div></div>').join(''):'<p class="zmo-n">Nenhuma zona ainda.'+(IS_ED?' Use os botões acima para desenhar a primeira.':'')+'</p>'}
   function search(){const el=$('zores');const q=lastQ.toLowerCase();if(!q){el.innerHTML='';return}
-    const r=ocr().filter(c=>pad(c.id).indexOf(q)>=0||String(c.id)===q||cn(c).toLowerCase().indexOf(q)>=0).slice(0,6);
+    const r=ocr().filter(c=>pad(c.id).toLowerCase().indexOf(q)>=0||String(c.id)===q||cn(c).toLowerCase().indexOf(q)>=0).slice(0,6);
     el.innerHTML=r.length?r.map(c=>{const zs=zonesOf(c.lat,c.lon);return '<div class="zr on" data-cid="'+c.id+'"><span class="zdot" style="--c:'+col(c)+'"></span><div class="zt"><b>'+esc2(nm(c))+'</b><small>'+(zs.length?'Zona: '+zs.map(z=>esc2(z.n)).join(', '):'Fora de qualquer zona')+'</small></div></div>'}).join(''):'<p class="zmo-n">Nenhuma câmera OCR com esse número ou nome.</p>'}
   function goCam(id){const c=ocr().find(x=>x.id===id);if(!c)return;zmap.setView([c.lat,c.lon],Math.max(zmap.getZoom(),17));camInfo(c);if(innerWidth<700){$('zlb').hidden=true;$('zlc').textContent='▸'}}
 
@@ -1131,6 +1131,7 @@ L.addEventListener('pointermove',function(e){t(e.clientX,e.clientY)},{passive:tr
   const SIG={'PONTAL DO ATALAIA':'PA','PRAIA DOS ANJOS':'PDA','PRAIA GRANDE':'PG'};
   const norm=n=>n.replace(/\(.*?\)/g,'').replace(/\s+/g,' ').trim();
   const STOP=new Set(['DA','DE','DO','DAS','DOS','E']);
+  const raw=n=>String(n).padStart(3,'0');let PLAN=null;
   function hav(a,b,c,d){const R=6371000,r=Math.PI/180,x=(c-a)*r,y=(d-b)*r*Math.cos((a+c)/2*r);return R*Math.sqrt(x*x+y*y)}
   function sigs(names){
     const out={},used=new Set(Object.values(SIG));
@@ -1151,14 +1152,27 @@ L.addEventListener('pointermove',function(e){t(e.clientX,e.clientY)},{passive:tr
     const g={},fora=[];
     cams.forEach(c=>{const f=d.bairros.find(f=>inFeat(f,c.lat,c.lon));if(!f){fora.push(c);return}const n=norm(f.n);(g[n]=g[n]||[]).push(c)});
     const names=Object.keys(g).sort((x,y)=>x.localeCompare(y,'pt-BR')),S=sigs(names);
-    let t='Ponto de partida: câmera '+pad(a.id)+' ('+cn(a)+')\n';
+    let t='Ponto de partida: câmera '+raw(a.id)+' ('+cn(a)+')\n';
     names.forEach(n=>{
       const l=g[n].map(c=>({c,m:hav(a.lat,a.lon,c.lat,c.lon)})).sort((x,y)=>x.m-y.m||x.c.id-y.c.id);
       t+='\n'+n+' ('+S[n]+') · '+l.length+' câmera'+(l.length>1?'s':'')+'\n';
-      l.forEach((e,i)=>{t+='  '+S[n]+'-'+String(i+1).padStart(2,'0')+'  ← cam '+pad(e.c.id)+' · '+cn(e.c)+' · '+(e.m<1000?Math.round(e.m)+' m':(e.m/1000).toFixed(1)+' km')+'\n'})});
-    if(fora.length){t+='\nFORA DE QUALQUER BAIRRO ('+fora.length+')\n';fora.forEach(c=>{t+='  cam '+pad(c.id)+' · '+cn(c)+'\n'})}
-    out.textContent=t;out.hidden=false;
+      l.forEach((e,i)=>{t+='  '+S[n]+'-'+String(i+1).padStart(2,'0')+'  ← cam '+raw(e.c.id)+' · '+cn(e.c)+' · '+(e.m<1000?Math.round(e.m)+' m':(e.m/1000).toFixed(1)+' km')+'\n'})});
+    if(fora.length){t+='\nFORA DE QUALQUER BAIRRO ('+fora.length+')\n';fora.forEach(c=>{t+='  cam '+raw(c.id)+' · '+cn(c)+'\n'})}
+    PLAN=new Map();names.forEach(n=>g[n].map(c=>({c,m:hav(a.lat,a.lon,c.lat,c.lon)})).sort((x,y)=>x.m-y.m||x.c.id-y.c.id).forEach((e,i)=>PLAN.set(e.c.id,S[n]+'-'+String(i+1).padStart(2,'0'))));
+    $('numapp').hidden=false;$('numapp').textContent='Aplicar numeração ('+PLAN.size+' câmeras)';out.textContent=t;out.hidden=false;
     msg.textContent=cams.length-fora.length+' câmeras em '+names.length+' bairros'+(fora.length?' · '+fora.length+' fora de bairro':'')+' · prévia, nada foi gravado.'}
+  let armed=0;
+  async function apply(){
+    const b=$('numapp'),m=$('nummsg');
+    if(!PLAN)return;
+    if(!armed){armed=1;b.textContent='Confirmar: gravar os códigos (os nomes não mudam)';setTimeout(()=>{armed=0;if(PLAN)b.textContent='Aplicar numeração ('+PLAN.size+' câmeras)'},8000);return}
+    armed=0;cams.forEach(c=>{c.cod=PLAN.get(c.id)||''});
+    try{await saveList();m.textContent='Códigos gravados em '+PLAN.size+' câmeras. Nomes intactos.';rebuildMarkers();refresh();$('numapp').hidden=true}catch(x){m.textContent='Não foi possível gravar: '+x.message}}
+  async function clearAll(){
+    const b=$('numclr');if(!b.dataset.a){b.dataset.a='1';b.textContent='Confirmar: voltar para 001, 002…';setTimeout(()=>{delete b.dataset.a;b.textContent='Remover códigos (voltar a 001, 002…)'},8000);return}
+    delete b.dataset.a;b.textContent='Remover códigos (voltar a 001, 002…)';cams.forEach(c=>{c.cod=''});
+    try{await saveList();$('nummsg').textContent='Códigos removidos. Voltou ao número antigo.';rebuildMarkers();refresh()}catch(x){$('nummsg').textContent='Erro: '+x.message}}
+  document.addEventListener('click',e=>{const i=e.target&&e.target.id;if(i==='numapp')apply();if(i==='numclr')clearAll()});
   document.addEventListener('click',e=>{if(e.target&&e.target.id==='numprev')run().catch(x=>{$('nummsg').textContent='Erro: '+x.message})});
 })();
 </script>
