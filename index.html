@@ -421,7 +421,7 @@ details#imp{margin:0 0 14px;padding:0}details#imp summary{cursor:pointer;padding
 </div></div>
 <div class="ed-bg" id="edbg" hidden><form class="ed" id="edf" novalidate>
   <h3 id="edt">Editar câmera</h3>
-  <div class="row2"><label class="ef">Número<input id="ed-n" type="number" min="1" step="1" inputmode="numeric"></label>
+  <div class="row2"><div class="tag" id="ed-cod" style="margin:2px 0 8px"></div><label class="ef" style="display:none">Número<input id="ed-n" type="number" min="1" step="1" inputmode="numeric"></label>
   <label class="ef">Tipo<select id="ed-t"></select></label></div>
   <label class="ef">Nome<input id="ed-name" type="text" autocomplete="off" placeholder="Ex.: Pontal do Atalaia 1"></label>
   <div class="ef">Foto da câmera<div class="ph"><img id="ph-img" alt="Foto da câmera" hidden><span id="ph-empty">Sem foto</span></div>
@@ -563,7 +563,7 @@ async function visualCands(d,monthRows){try{const q=await loadImg(d);if(!q)retur
   return l.filter(x=>x.v>=.6).slice(0,2)}catch(e){return[]}}
 function imgDims(d){return new Promise(res=>{const i=new Image();i.onload=()=>res([i.naturalWidth,i.naturalHeight]);i.onerror=()=>res([0,0]);i.src=d})}
 const chips=r=>{let l=(r.cand||[]).filter(id=>id!==r.cam&&byId(id));if(!r.cam&&r.seq&&byId(r.seq)&&!l.includes(r.seq))l.push(r.seq);if(r.cam&&!r.gps&&!r.auto)l=[];return l.length?'<div class="fmch">'+(r.cam?'Ou: ':'Parece: ')+l.slice(0,4).map(id=>'<button type="button" class="fmb" data-cam="'+id+'">'+pad(id)+'</button>').join('')+'</div>':''};
-async function fmRender(){const L=$('fml'),rows=await FM.all();rows.sort((a,b)=>a.at-b.at);let last=0;rows.forEach(r=>{r.seq=(!r.cam&&last)?last+1:0;if(r.cam)last=r.cam});rows.sort((a,b)=>(a.cam||1e9)-(b.cam||1e9)||a.at-b.at);
+async function fmRender(){const L=$('fml'),rows=await FM.all();rows.sort((a,b)=>a.at-b.at);let last=0;const kOf=id=>{const m=/-(\d+)$/.exec(pad(id));return m?+m[1]:+id},byK=k=>{const c=cams.find(x=>kOf(x.id)===k);return c?c.id:0};rows.forEach(r=>{r.seq=(!r.cam&&last)?byK(kOf(last)+1):0;if(r.cam)last=r.cam});rows.sort((a,b)=>(a.cam?kOf(a.cam):1e9)-(b.cam?kOf(b.cam):1e9)||a.at-b.at);
   const seen={};const cc=new Set(rows.filter(r=>r.cam).map(r=>r.cam));
   L.innerHTML=rows.map(r=>{const c=r.cam&&byId(r.cam);const n=r.cam?(seen[r.cam]=(seen[r.cam]||0)+1):0;
     return '<div class="fmi" data-id="'+r.id+'"><img alt="" src="'+r.d+'"><div><div class="fmn"><input type="text" inputmode="text" autocapitalize="characters" placeholder="Código" value="'+(r.cam?esc2(pad(r.cam)):'')+'" aria-label="Código da câmera"></div><div class="fmc '+(c?'ok':'bad')+'">'+(c?esc2(cn(c))+(n>1?' · foto '+n:''):(r.cam?'Câmera não encontrada':'Informe o número'))+'</div>'+(r.gps?'<small>número sugerido pelo GPS</small>':'')+(r.auto?'<small style="color:#F5B84B">preenchido pela semelhança com a foto da câmera · confira</small>':'')+chips(r)+(!r.cam&&r.pos?'<div class="fmch"><button type="button" class="fmb fmnc" style="width:auto;padding:0 12px">＋ Câmera nova neste local</button></div>':'')+'</div><button type="button" class="fmx" aria-label="Remover foto">×</button></div>'}).join('')||'<p class="fmh">Nenhuma foto ainda. Toque em "Tirar foto" ou "Da galeria".</p>';
@@ -603,7 +603,7 @@ function fmOpen(){$('fmbg').hidden=false;fmRender().catch(()=>{})}
     P.hidden=true;await fmRender();if(ok)toast(ok+(ok>1?' fotos adicionadas.':' foto adicionada.')+(sem?' Sem localização: informe o número.':''))};
   $('fmfile').onchange=async e=>{const fs=[...e.target.files];e.target.value='';ingest(fs,false)};
   $('fmcam').onchange=async e=>{const fs=[...e.target.files];e.target.value='';ingest(fs,true)};
-  $('fml').addEventListener('change',async e=>{const row=e.target.closest('.fmi');if(!row||e.target.tagName!=='INPUT')return;const id=row.dataset.id,rec=(await FM.all()).find(r=>r.id===id);if(!rec)return;const t0=e.target.value.trim().toUpperCase().replace(/[\s\-_.]/g,''),nn=t0.replace(/\D/g,'');let hit=null;if(t0){hit=cams.find(c=>pad(c.id).toUpperCase().replace(/[\s\-_.]/g,'')===t0);if(!hit&&/^\d+$/.test(t0)){hit=cams.find(c=>/-\d+$/.test(pad(c.id))&&parseInt(pad(c.id).split('-').pop(),10)===+t0)||byId(+t0)}}const v=hit?hit.id:(/^\d+$/.test(t0)?+t0:0);rec.cam=v>0?v:null;rec.gps=false;rec.auto=false;await FM.put(rec);fmRender()});
+  $('fml').addEventListener('change',async e=>{const row=e.target.closest('.fmi');if(!row||e.target.tagName!=='INPUT')return;const id=row.dataset.id,rec=(await FM.all()).find(r=>r.id===id);if(!rec)return;const t0=e.target.value.trim().toUpperCase().replace(/[\s\-_.]/g,''),nn=t0.replace(/\D/g,'');let hit=null;if(t0){hit=cams.find(c=>pad(c.id).toUpperCase().replace(/[\s\-_.]/g,'')===t0);if(!hit&&/^\d+$/.test(t0)){hit=cams.find(c=>/-\d+$/.test(pad(c.id))&&parseInt(pad(c.id).split('-').pop(),10)===+t0)}}const v=hit?hit.id:0;rec.cam=v>0?v:null;rec.gps=false;rec.auto=false;await FM.put(rec);fmRender()});
   $('fml').addEventListener('click',async e=>{const nc=e.target.closest('.fmnc');if(nc){const id0=nc.closest('.fmi').dataset.id,rec=(await FM.all()).find(r=>r.id===id0);if(!rec||!rec.pos)return;
       const id=cams.reduce((m,x)=>Math.max(m,x.id),0)+1,c={id,name:'Sem nome '+pad(id),t:3,lat:rec.pos.lat,lon:rec.pos.lon,on:true};cams.push(c);cams.sort((x,y)=>x.id-y.id);STAT[id]=true;PH[id]=rec.d;
       const ops=[saveList()];if(db){const ts=firebase.firestore.FieldValue.serverTimestamp();ops.push(fotoRef(id).set({d:rec.d,at:ts}));ops.push(db.collection('cameras').doc(String(id)).set({on:true,at:ts,by:(auth.currentUser&&auth.currentUser.email)||''},{merge:true}))}
@@ -691,7 +691,7 @@ function sheet(){
 (function(){const w=$('tchips');TYPES.forEach((t,i)=>{const b=document.createElement('button');b.className='chip';b.setAttribute('aria-pressed','true');b.innerHTML='<i style="background:'+t[1]+'"></i>'+t[0];b.onclick=()=>{hidden.has(i)?hidden.delete(i):hidden.add(i);b.setAttribute('aria-pressed',!hidden.has(i));draw()};w.appendChild(b)});
   const o=document.createElement('button');o.className='chip';o.setAttribute('aria-pressed','false');o.innerHTML='<i style="background:#FB7185"></i>Só offline';o.onclick=()=>{offOnly=!offOnly;o.setAttribute('aria-pressed',offOnly);draw()};w.appendChild(o);const ad=document.createElement('button');ad.className='chip';ad.innerHTML='＋ Adicionar câmera';ad.onclick=()=>openEd(null,map?map.getCenter():null);w.appendChild(ad)})();
 $('ms').addEventListener('input',e=>{const q=norm(e.target.value.trim()),r=$('res');r.textContent='';if(!q){r.hidden=true;return}
-  const m=cams.filter(c=>c.name.indexOf('Sem nome')!==0&&norm(c.name).indexOf(q)>=0||norm(pad(c.id))===q||pad(c.id)===q.padStart(3,'0')&&/^\d+$/.test(q)).slice(0,8);
+  const m=cams.filter(c=>c.name.indexOf('Sem nome')!==0&&norm(c.name).indexOf(q)>=0||norm(pad(c.id))===q||/^\d+$/.test(q)&&parseInt(pad(c.id).split('-').pop(),10)===+q).slice(0,8);
   r.hidden=!m.length;m.forEach(c=>{const b=document.createElement('button');b.textContent=pad(c.id)+' · '+cn(c);b.onclick=()=>{r.hidden=true;$('ms').value='';select(c,false)};r.appendChild(b)})});
 
 /* ---------- Firebase ---------- */
@@ -791,8 +791,8 @@ function saveList(){
 function openEd(c,pos){if(!IS_ED){toast('Seu acesso é somente para visualização.');return}
   edCam=c;edPhoto=undefined;showPh(null);$('ed-err').textContent='';if(c)getPhoto(c.id).then(d=>{if(edCam===c&&edPhoto===undefined)showPh(d)});
   const sl=$('ed-t');if(!sl.options.length)TYPES.forEach((t,i)=>sl.add(new Option(t[0],i)));
-  if(c){$('edt').textContent='Editar câmera';$('ed-n').value=c.id;sl.value=c.t;$('ed-name').value=c.name.indexOf('Sem nome')===0?'':c.name;$('ed-xy').value=c.lat.toFixed(6)+', '+c.lon.toFixed(6);$('ed-on').value=c.on?'1':'0';$('ed-del').hidden=false}
-  else{const mx=cams.reduce((m,x)=>Math.max(m,x.id),0)+1;$('edt').textContent='Nova câmera';$('ed-n').value=mx;sl.value=3;$('ed-name').value='';
+  if(c){$('edt').textContent='Editar câmera';$('ed-n').value=c.id;$('ed-cod').textContent='Código: '+pad(c.id);sl.value=c.t;$('ed-name').value=c.name.indexOf('Sem nome')===0?'':c.name;$('ed-xy').value=c.lat.toFixed(6)+', '+c.lon.toFixed(6);$('ed-on').value=c.on?'1':'0';$('ed-del').hidden=false}
+  else{const mx=cams.reduce((m,x)=>Math.max(m,x.id),0)+1;$('edt').textContent='Nova câmera';$('ed-n').value=mx;$('ed-cod').textContent='Código: automático, pelo bairro';sl.value=3;$('ed-name').value='';
     const p=pos||{lat:-22.9667,lng:-42.0278};$('ed-xy').value=p.lat.toFixed(6)+', '+p.lng.toFixed(6);$('ed-on').value='1';$('ed-del').hidden=true;
     if(!pos){const def=$('ed-xy').value;livePos().then(g=>{if(g&&!$('edbg').hidden&&$('ed-xy').value===def&&!edCam){$('ed-xy').value=g.lat.toFixed(6)+', '+g.lon.toFixed(6);const er=$('ed-err');er.textContent='Localização preenchida com o GPS do celular.';setTimeout(()=>{if(er.textContent.indexOf('GPS do celular')>0)er.textContent=''},4000)}})}}
   $('edbg').hidden=false;setTimeout(()=>$('ed-name').focus(),50);
@@ -1016,7 +1016,7 @@ const ZO=(()=>{
   function list(){const el=$('zolist');if(!el)return;$('zoh').textContent='Zonas ('+zones.length+')';
     el.innerHTML=zones.length?zones.map(z=>'<div class="zr on" data-zid="'+z.id+'"><span class="zdot" style="--c:'+z.c+'"></span><div class="zt"><b>'+esc2(z.n)+'</b><small>'+inside(z).length+' câm. OCR · '+fmtA(area(z.r))+'</small></div></div>').join(''):'<p class="zmo-n">Nenhuma zona ainda.'+(IS_ED?' Use os botões acima para desenhar a primeira.':'')+'</p>'}
   function search(){const el=$('zores');const q=lastQ.toLowerCase();if(!q){el.innerHTML='';return}
-    const r=ocr().filter(c=>pad(c.id).toLowerCase().indexOf(q)>=0||String(c.id)===q||cn(c).toLowerCase().indexOf(q)>=0).slice(0,6);
+    const r=ocr().filter(c=>pad(c.id).toLowerCase().indexOf(q)>=0||cn(c).toLowerCase().indexOf(q)>=0).slice(0,6);
     el.innerHTML=r.length?r.map(c=>{const zs=zonesOf(c.lat,c.lon);return '<div class="zr on" data-cid="'+c.id+'"><span class="zdot" style="--c:'+col(c)+'"></span><div class="zt"><b>'+esc2(nm(c))+'</b><small>'+(zs.length?'Zona: '+zs.map(z=>esc2(z.n)).join(', '):'Fora de qualquer zona')+'</small></div></div>'}).join(''):'<p class="zmo-n">Nenhuma câmera OCR com esse número ou nome.</p>'}
   function goCam(id){const c=ocr().find(x=>x.id===id);if(!c)return;zmap.setView([c.lat,c.lon],Math.max(zmap.getZoom(),17));camInfo(c);if(innerWidth<700){$('zlb').hidden=true;$('zlc').textContent='▸'}}
 
