@@ -41,6 +41,10 @@ PASSO 2 - Criar a lista de cameras (cameras.csv)
   a) Dentro da pasta monitor, copie o arquivo "cameras.exemplo.csv" e cole no mesmo lugar.
      Vai criar "cameras.exemplo - Copia.csv". Renomeie para exatamente:  cameras.csv
      (Se nao aparecer ".csv" no nome, ative em Exibir > Mostrar > Extensoes de nomes de arquivos.)
+  ATENCAO (novo): o jeito mais facil e baixar a lista pronta no aplicativo, na aba Painel > Administracao >
+     "Baixar cameras.csv para o robo (com siglas)". Ela ja vem com o numero, a SIGLA (ex.: PA-01) e o nome de
+     cada camera; voce so preenche a coluna ip. A coluna numero e a que o robo usa: nao apague nem mude.
+     Linhas com o ip em branco sao ignoradas.
   b) Abra o cameras.csv com o Bloco de Notas (botao direito > Abrir com > Bloco de Notas).
   c) Ele vem assim:
          numero,ip

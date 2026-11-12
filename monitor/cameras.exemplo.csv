@@ -1,4 +1,4 @@
-numero,ip
-1,192.168.0.1
-2,192.168.0.2
-3,192.168.0.99
+numero;ip;codigo;nome
+1;192.168.0.1;PA-01;Exemplo de camera
+2;192.168.0.2;PA-02;Outro exemplo
+3;;PG-03;Camera ainda sem IP (linha ignorada)
