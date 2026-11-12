@@ -1001,7 +1001,7 @@ const ZO=(()=>{
 
   function start(){if(unsub||typeof db==='undefined'||!db)return;const P=firebase.firestore.FieldPath.documentId();
     unsub=db.collection('config').where(P,'>=','zocr-').where(P,'<','zocr.').onSnapshot(s=>{
-      zones=s.docs.map(d=>{const x=d.data(),r=[];if(Array.isArray(x.p))for(let i=0;i+1<x.p.length;i+=2)r.push([+x.p[i],+x.p[i+1]]);return{id:d.id,n:x.n||'Zona',c:x.c||'#22D3EE',o:typeof x.o==='number'?x.o:.35,s:x.s==='r'?'r':'p',r,po:Array.isArray(x.po)?x.po:null,so:x.so||null}}).filter(z=>z.r.length>=3).sort((a,b)=>a.n.localeCompare(b.n,'pt-BR',{numeric:true}));
+      zones=s.docs.map(d=>{const x=d.data(),r=[];if(Array.isArray(x.p))for(let i=0;i+1<x.p.length;i+=2)r.push([+x.p[i],+x.p[i+1]]);return{id:d.id,n:x.n||'Zona',c:x.c||'#22D3EE',o:typeof x.o==='number'?x.o:.35,s:x.s==='r'?'r':'p',r,po:Array.isArray(x.po)?x.po:null,so:x.so||null,pf:x.pf||null}}).filter(z=>z.r.length>=3).sort((a,b)=>a.n.localeCompare(b.n,'pt-BR',{numeric:true}));
       if(on){zonesDraw();list();try{rfUI()}catch(e){}if(pendSel){const z=zones.find(q=>q.id===pendSel);pendSel=null;if(z&&!S)info(z)}else if(selId&&!S){const z=zones.find(q=>q.id===selId);if(z&&!$('zcard').hidden)info(z,true);else if(!z){selId=null}}}
     },e=>{if(typeof toast==='function')toast('Não consegui ler as zonas: '+e.message)})}
   /* ---- ajuste das zonas à linha da costa (prévia, depois aplicar; guarda o original para desfazer) ---- */
@@ -1025,19 +1025,23 @@ const ZO=(()=>{
     const m=.01,bb=[Math.min(...la)-m,Math.min(...lo)-m,Math.max(...la)+m,Math.max(...lo)+m];
     let ways;try{ways=await coast(bb)}catch(e){say('Não consegui buscar a costa agora ('+e.message+'). Tente de novo em instantes.');return}
     if(!ways.length){say('Não encontrei linha de costa nessa região.');return}
-    const items=[];zones.forEach(z=>{const r=Costa.refine(z.r,ways);if(r.moved>0&&r.ring.length>=3)items.push({z,ring:r.ring})});
+    const la0=la.reduce((q,v)=>q+v,0)/la.length,lo0=lo.reduce((q,v)=>q+v,0)/lo.length,CS=Costa.prepare(ways,la0,lo0),items=[];
+    say('Calculando o recorte pela costa…');await new Promise(r=>setTimeout(r,30));
+    zones.filter(z=>!z.pf).forEach(z=>{try{const r=Costa.clip(z.r,CS);if(r.changed&&r.pieces.length)items.push({z,pieces:r.pieces})}catch(e){}});
     if(!items.length){say('Nenhuma zona invade o mar. Nada a ajustar.');return}
-    RF=items;rfLay=L.layerGroup(items.map(i=>L.polygon(i.ring,{pane:'pD',color:'#fff',weight:2.5,dashArray:'7 5',fillColor:i.z.c,fillOpacity:.25,interactive:false}))).addTo(zmap);
-    say(items.length+' de '+zones.length+' zonas encostam no mar. A linha branca tracejada mostra como ficam, rente à costa. Confira no mapa e toque em Aplicar ajuste.');rfUI()}
+    RF=items;rfLay=L.layerGroup(items.flatMap(i=>i.pieces.map(pc=>L.polygon(pc,{pane:'pD',color:'#fff',weight:2.5,dashArray:'7 5',fillColor:i.z.c,fillOpacity:.3,interactive:false})))).addTo(zmap);
+    const extra=items.reduce((q,i)=>q+i.pieces.length-1,0);
+    say(items.length+' de '+zones.length+' zonas invadiam o mar. A linha branca tracejada mostra como ficam: só a parte em terra, rente à costa.'+(extra?' '+extra+' pedaço(s) separado(s) pela água viram zona própria (“parte 2”…).':'')+' Confira no mapa e toque em Aplicar ajuste.');rfUI()}
   async function rfOk(){
     if(!RF||!IS_ED)return;const items=RF;rfClear();say('Gravando…');
     try{const b=db.batch(),ts=firebase.firestore.FieldValue.serverTimestamp(),by=(auth.currentUser&&auth.currentUser.email)||'';
-      items.forEach(i=>{const d={p:flat(i.ring),s:'p',at:ts,by};if(!i.z.po){d.po=flat(i.z.r);d.so=i.z.s}b.update(db.collection('config').doc(i.z.id),d)});
+      items.forEach(i=>{const d={p:flat(i.pieces[0]),s:'p',at:ts,by};if(!i.z.po){d.po=flat(i.z.r);d.so=i.z.s}b.update(db.collection('config').doc(i.z.id),d);
+        i.pieces.slice(1).forEach((pc,k)=>b.set(db.collection('config').doc(i.z.id+'-p'+(k+2)),{n:(i.z.n+' · parte '+(k+2)).slice(0,60),c:i.z.c,o:i.z.o,s:'p',p:flat(pc),pf:i.z.id,at:ts,by}))});
       await b.commit();say(items.length+' zonas ajustadas à costa. Para voltar ao desenho original, use “Desfazer ajuste à costa”.')}catch(e){say('Não foi possível gravar: '+e.message)}}
   async function rfUndo(){
     if(!IS_ED)return;const zs=zones.filter(z=>z.po);if(!zs.length)return;
     try{const b=db.batch(),ts=firebase.firestore.FieldValue.serverTimestamp(),by=(auth.currentUser&&auth.currentUser.email)||'',D=firebase.firestore.FieldValue.delete();
-      zs.forEach(z=>b.update(db.collection('config').doc(z.id),{p:z.po,s:z.so||'p',po:D,so:D,at:ts,by}));await b.commit();say('Desenho original de '+zs.length+' zonas restaurado.')}catch(e){say('Não foi possível desfazer: '+e.message)}}
+      zs.forEach(z=>b.update(db.collection('config').doc(z.id),{p:z.po,s:z.so||'p',po:D,so:D,at:ts,by}));zones.filter(z=>z.pf&&zs.some(q=>q.id===z.pf)).forEach(z=>b.delete(db.collection('config').doc(z.id)));await b.commit();say('Desenho original de '+zs.length+' zonas restaurado.')}catch(e){say('Não foi possível desfazer: '+e.message)}}
   function stop(){rfClear();if(unsub){unsub();unsub=null}zones=[];if(on){zonesDraw();list()}}
 
   function init(){
