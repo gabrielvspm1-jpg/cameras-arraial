@@ -626,7 +626,7 @@ function fmOpen(){$('fmbg').hidden=false;fmRender().then(()=>fmRescan()).catch((
     const bad=rows.filter(r=>!r.cam||!byId(r.cam));
     if(bad.length){alert(bad.length+(bad.length>1?' fotos do mês estão sem número de câmera válido.':' foto do mês está sem número de câmera válido.')+' Preencha o número de cada uma antes de gerar o relatório.');fmOpen();return}
     rows.sort((a,b)=>a.cam-b.cam||a.at-b.at);const dt=t=>new Date(t).toLocaleDateString('pt-BR',{timeZone:'America/Sao_Paulo'});
-    const fotos=rows.map(r=>{const c=byId(r.cam),nm=cn(c);return {w:r.w,h:r.h,data:atob(r.d.split(',')[1]),t:nm.indexOf('Câmera '+pad(c.id))===0?nm:'Nº '+pad(c.id)+' · '+nm,s:'Foto de '+dt(r.at)}});
+    const fotos=rows.map(r=>{const c=byId(r.cam),nm=cn(c);return {w:r.w,h:r.h,data:atob(r.d.split(',')[1]),t:nm.indexOf('Câmera '+pad(c.id))===0?nm:'Nº '+pad(c.id)+' · '+nm,s:(($('rdt')&&$('rdt').value)?'':'Foto de '+dt(r.at))}});
     const ro={refDate:($('rdt')&&$('rdt').value)?new Date($('rdt').value+'T12:00:00-03:00'):null,fiscalizacao:true,ident:{processo:'6866/2025',contrato:'nº 060/2026',unidade:'Central Operacional SEMMU'}};
     b.disabled=true;
     try{const u8=await gerarRelatorioPDF(cams,TYPES,ATS,'',pad,cn,fotos,ro);

@@ -154,7 +154,7 @@ window.gerarRelatorioPDF=async function(cams,TYPES,ATS,usuario,pad,cn,fotos,opt)
         d.rect(x,y,cw,bh,'#F3F6F8','#C9D3DA');
         d.pic(x+(cw-pw)/2,y+(bh-ph)/2,pw,ph,k);
         d.text(x,y+bh+11,fit(f.t,cw,9,true),{size:9,bold:true,color:'#0B3D5C'});
-        d.text(x,y+bh+22,fit(f.s,cw,8,false),{size:8,color:'#555555'});
+        d.text(x,y+bh+22,fit(f.s||'',cw,8,false),{size:8,color:'#555555'});
       }
     }
   }
