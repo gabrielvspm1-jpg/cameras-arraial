@@ -304,7 +304,7 @@ details#imp{margin:0 0 14px;padding:0}details#imp summary{cursor:pointer;padding
 .lg-ban{display:flex;align-items:center}.lg-ban svg{flex:1;min-width:0}
 @media(prefers-reduced-motion:reduce){.brz,.brz *,.brz-d::after{animation:none!important}}
 .mon{margin-top:10px;font-size:12px;letter-spacing:.04em;display:flex;align-items:center;gap:7px;color:#8aa0c0}.mon i{width:8px;height:8px;border-radius:50%;background:#34D399;box-shadow:0 0 8px #34D399;animation:bping 2s ease-out infinite}.mon.old{color:#F5B84B}.mon.old i{background:#F5B84B;box-shadow:none;animation:none}
-.viewer .zedit,.viewer #fotosmes,.viewer #csv,.viewer #fmcard,.viewer #fmbg,.viewer #imp,.viewer #ed,.viewer [data-edit],.viewer #clrbar{display:none!important}.viewer .sw2,.viewer .sw{pointer-events:none}
+.viewer #zp,.viewer .zedit,.viewer #fotosmes,.viewer #csv,.viewer #fmcard,.viewer #fmbg,.viewer #imp,.viewer #ed,.viewer [data-edit],.viewer #clrbar{display:none!important}.viewer .sw2,.viewer .sw{pointer-events:none}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}.lensx .ring,.lensx .eye,.lensx .blink{animation:none}}
 </style>
 
@@ -388,7 +388,7 @@ details#imp{margin:0 0 14px;padding:0}details#imp summary{cursor:pointer;padding
     <div id="map" aria-label="Mapa com a posição das câmeras"></div>
     <div class="ov search"><input type="search" id="ms" placeholder="Buscar câmera no mapa…" aria-label="Buscar no mapa"><div class="res" id="res" hidden></div></div>
     <div class="ov chips" id="tchips"></div>
-    <div class="ov zoom"><button id="zi" aria-label="Aproximar">+</button><button id="zo" aria-label="Afastar">−</button><button id="zf" aria-label="Enquadrar todas" style="font-size:15px">⤢</button><button id="zl" aria-label="Trocar camada do mapa" style="font-size:11px;font-weight:600">Mapa</button><button id="zb" aria-label="Mostrar ou ocultar bairros" aria-pressed="false" style="font-size:10px;font-weight:600">Bairros</button></div>
+    <div class="ov zoom"><button id="zi" aria-label="Aproximar">+</button><button id="zo" aria-label="Afastar">−</button><button id="zf" aria-label="Enquadrar todas" style="font-size:15px">⤢</button><button id="zl" aria-label="Trocar camada do mapa" style="font-size:11px;font-weight:600">Mapa</button><button id="zb" aria-label="Mostrar ou ocultar bairros" aria-pressed="false" style="font-size:10px;font-weight:600">Bairros</button><button id="zp" aria-label="Clicar no mapa para pegar coordenadas" aria-pressed="false" style="font-size:10px;font-weight:600">📍 Pegar</button></div>
     <div class="ov sheet" id="sheet" hidden></div>
   </div>
 </section>
@@ -684,6 +684,22 @@ function select(c,instant){
 }
 $('zi').onclick=()=>map&&map.zoomIn();$('zo').onclick=()=>map&&map.zoomOut();
 $('zf').onclick=()=>{sel=null;sheet();draw();fit(vis(),false)};
+/* Pegar coordenadas clicando no mapa (editor) */
+(function(){let on=false,pop=null;const b=$('zp');if(!b)return;
+  function set(v){on=v;b.setAttribute('aria-pressed',v);b.style.outline=v?'2px solid #22D3EE':'';if(map)map.getContainer().style.cursor=v?'crosshair':'';if(!v&&pop&&map){map.closePopup(pop);pop=null}if(v)toast('Clique no mapa no local da câmera.')}
+  b.onclick=()=>{if(!IS_ED){toast('Seu acesso é somente para visualização.');return}if(!map)return;set(!on)};
+  document.addEventListener('DOMContentLoaded',hook);setTimeout(hook,0);
+  let hooked=false;function hook(){if(hooked||!map)return;hooked=true;
+    map.on('click',e=>{if(!on)return;const lat=e.latlng.lat,lng=e.latlng.lng,txt=lat.toFixed(6)+', '+lng.toFixed(6);
+      const d=document.createElement('div');d.style.cssText='font:12px Inter,system-ui,sans-serif;min-width:170px';
+      d.innerHTML='<div style="font-weight:600;margin-bottom:6px">'+txt+'</div><div style="display:flex;gap:6px"><button type="button" class="btn" data-a="c" style="padding:5px 8px;font-size:12px">Copiar</button><button type="button" class="btn" data-a="n" style="padding:5px 8px;font-size:12px">➕ Adicionar câmera</button></div>';
+      d.querySelector('[data-a=c]').onclick=()=>{(navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(txt):Promise.reject()).then(()=>toast('Coordenadas copiadas: '+txt),()=>toast('Coordenadas: '+txt))};
+      d.querySelector('[data-a=n]').onclick=()=>{map.closePopup(pop);pop=null;openEd(null,{lat,lng})};
+      if(pop)map.closePopup(pop);pop=L.popup({closeButton:true}).setLatLng(e.latlng).setContent(d).openOn(map);
+      try{navigator.clipboard&&navigator.clipboard.writeText(txt)}catch(x){}});
+  }
+  const iv=setInterval(()=>{if(map){hook();clearInterval(iv)}},500);
+})();
 $('zl').onclick=()=>{if(!map)return;map.removeLayer(baseLayers[layerI][1]);layerI=(layerI+1)%baseLayers.length;baseLayers[layerI][1].addTo(map);baseLayers[layerI][1].bringToBack&&baseLayers[layerI][1].bringToBack();$('zl').textContent=baseLayers[layerI][0]};
 function sheet(){
   const s=$('sheet');if(!sel){s.hidden=true;return}
