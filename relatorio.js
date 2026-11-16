@@ -127,7 +127,6 @@ window.gerarRelatorioPDF=async function(cams,TYPES,ATS,usuario,pad,cn,fotos,opt)
     grupo('Câmeras',['Qualidade da imagem e visão noturna','Zoom/PTZ funcional','Equipamentos íntegros, sem avarias']);
     grupo('Atendimento e gravações',['Chamados registrados, atendidos e encerrados','Gravações disponíveis e recuperáveis','Período de retenção adequado']);
     grupo('Rede, segurança e documentos',['Estabilidade da conexão e latência compatível','Controle de acesso, perfis e logs','Relatório mensal da contratada']);
-    d.y+=8;d.para('Marcações preenchidas automaticamente a partir dos dados do sistema (situação das câmeras e ocorrências registradas). Os itens que dependem de verificação no local ou na central devem ser conferidos pelo fiscal antes da assinatura.',{size:8.5,color:'#555555'});
     d.y+=4;
     d.h((secN++)+'. Conclusão e manifestação quanto à medição');
     d.para('Não conformidades: as câmeras fora de operação estão relacionadas na seção 3. Demais irregularidades e providências recomendadas:',{size:10,after:2});
