@@ -125,7 +125,7 @@ input.zq{width:100%;height:36px;min-height:0;max-height:36px;flex:0 0 36px;box-s
 .brand small{display:block;font:500 10px Inter;letter-spacing:.18em;color:var(--fg2);text-transform:uppercase}
 .tabs{display:flex;gap:4px;margin-left:auto;background:var(--panel);border:1px solid var(--line);padding:4px;border-radius:12px}
 .tabs button{border:0;background:none;padding:8px 16px;border-radius:9px;color:var(--fg2);font-weight:500}
-.tabs button[aria-selected=true]{background:var(--panel2);color:var(--cy);box-shadow:inset 0 0 0 1px var(--line)}
+.tabs #t-ocorr{color:var(--off);font-weight:600}.tabs #t-ocorr[aria-selected=true]{color:var(--off)}.tabs #t-ocorr .ocn{display:inline-block;min-width:18px;padding:0 5px;margin-left:6px;border-radius:999px;background:var(--off);color:#1a0509;font-size:11px;font-weight:700;line-height:18px;text-align:center}.tabs button[aria-selected=true]{background:var(--panel2);color:var(--cy);box-shadow:inset 0 0 0 1px var(--line)}
 .view[hidden]{display:none!important}
 .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:6px 0 14px}
 .card{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:16px;padding:16px;min-width:0}
@@ -724,10 +724,11 @@ async function ocTick(){if(!IS_ED||!db||!OCL||!statLoaded)return;
 }
 let OCAUTO=true;
 function ocInit(){if(ocUnsub||!db||!auth||!auth.currentUser)return;
-  ocUnsub=OC_REF().onSnapshot(d=>{const x=d.exists?d.data():{};OC=x.list||[];OCAUTO=x.auto!==false;OCL=true;if(!$('v-ocorr').hidden)ocRender();ocTick()},e=>{OCL=false;if(!$('v-ocorr').hidden)$('oc-list').innerHTML='<div class="card oc-empty">Não foi possível ler as ocorrências: '+e.message+'</div>'});
+  ocUnsub=OC_REF().onSnapshot(d=>{const x=d.exists?d.data():{};OC=x.list||[];OCAUTO=x.auto!==false;OCL=true;ocBadge();if(!$('v-ocorr').hidden)ocRender();ocTick()},e=>{OCL=false;if(!$('v-ocorr').hidden)$('oc-list').innerHTML='<div class="card oc-empty">Não foi possível ler as ocorrências: '+e.message+'</div>'});
 }
-setInterval(()=>{ocInit();if(auth&&!auth.currentUser&&ocUnsub){ocUnsub();ocUnsub=null;OCL=false}ocTick();if(!$('v-ocorr').hidden)ocRender(true)},30000);setTimeout(ocInit,2500);setTimeout(ocInit,6000);
-function ocRender(soft){if(!$('v-ocorr'))return;ocInit();
+setInterval(()=>{ocBadge();ocInit();if(auth&&!auth.currentUser&&ocUnsub){ocUnsub();ocUnsub=null;OCL=false}ocTick();if(!$('v-ocorr').hidden)ocRender(true)},30000);setTimeout(ocInit,2500);setTimeout(ocInit,6000);
+function ocBadge(){const b=$('t-ocorr');if(!b)return;const n=OCL?OC.filter(ocOpen).length+ocPending().length:0;b.innerHTML='Ocorrências'+(n?'<span class="ocn">'+n+'</span>':'')}
+function ocRender(soft){ocBadge();if(!$('v-ocorr'))return;ocInit();
   if(soft&&document.activeElement&&/^(TEXTAREA|SELECT|INPUT)$/.test(document.activeElement.tagName)&&$('oc-list').contains(document.activeElement))return;
   const bar=$('oc-bar'),pe=$('oc-pend'),li=$('oc-list');
   if(!OCL){li.innerHTML='<div class="card oc-empty">Carregando…</div>';return}
