@@ -313,7 +313,7 @@ details#imp{margin:0 0 14px;padding:0}details#imp summary{cursor:pointer;padding
   <div class="brand"><div class="logo2"><span class="brz" aria-hidden="true"><i class="brz-o"></i><i class="brz-r"></i><span class="brz-d"><img src="brasao.png" alt="" draggable="false"></span></span></div>
     <div>Central de câmeras<small>Mobilidade Urbana · Arraial do Cabo</small></div></div>
   <div class="hd-r"><div class="clock" id="clk"></div><div class="usr" id="usrw" hidden><i></i><span id="usr"></span></div><button class="btn sm" id="snd" title="Alerta sonoro quando uma câmera ficar offline">Som: ligado</button><button class="btn sm" id="out" hidden>Sair</button></div>
-  <div class="tabs" role="tablist"><button role="tab" id="t-painel" aria-selected="true" data-go="painel">Painel</button><button role="tab" id="t-mapa" aria-selected="false" data-go="mapa">Mapa</button><button role="tab" id="t-zona" aria-selected="false" data-go="zona">Zoneamento</button></div>
+  <div class="tabs" role="tablist"><button role="tab" id="t-painel" aria-selected="true" data-go="painel">Painel</button><button role="tab" id="t-mapa" aria-selected="false" data-go="mapa">Mapa</button><button role="tab" id="t-zona" aria-selected="false" data-go="zona">Zoneamento</button><button role="tab" id="t-ocorr" aria-selected="false" data-go="ocorr">Ocorrências</button></div>
 </div>
 
 <div id="login" hidden><div class="lg-bg"></div>
@@ -393,6 +393,24 @@ details#imp{margin:0 0 14px;padding:0}details#imp summary{cursor:pointer;padding
   </div>
 </section>
 
+<section class="view" id="v-ocorr" hidden>
+  <style>
+  #v-ocorr{padding:18px 0 90px}#v-ocorr h2{margin:0 0 4px;font-size:20px}#v-ocorr .sub{color:var(--fg2);font-size:13px;margin:0 0 14px}
+  .oc-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 14px}
+  .oc-list{display:grid;gap:10px}.oc{display:grid;gap:8px}.oc-h{display:flex;gap:8px;flex-wrap:wrap;align-items:baseline;justify-content:space-between}
+  .oc-h b{font-family:'Chakra Petch',Inter,sans-serif;font-size:15px}.oc-m{color:var(--fg2);font-size:12.5px}
+  .oc-t{font-size:11px;font-weight:600;padding:2px 8px;border-radius:999px;border:1px solid var(--line)}
+  .oc-t.a{color:var(--off);border-color:var(--off)}.oc-t.r{color:var(--on);border-color:var(--on)}.oc-t.w{color:var(--amber);border-color:var(--amber)}
+  .oc-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.oc select,.oc textarea,.oc input{background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:10px;padding:7px 10px;font:inherit;font-size:13px;min-width:0}
+  .oc textarea{width:100%;min-height:54px;resize:vertical}.oc .btn{padding:7px 12px;font-size:13px}
+  .oc-pend{border-color:var(--amber)}.oc-empty{color:var(--fg2);padding:18px;text-align:center}
+  </style>
+  <h2>Ocorrências</h2>
+  <p class="sub">Uma câmera fora do ar por mais de <b>15 minutos</b> gera uma ocorrência (Cláusula Nona do contrato). Cada ocorrência tem prazos de resposta e de solução pelo nível de severidade, e pode virar uma <b>Ordem de Serviço</b> em PDF.</p>
+  <div class="oc-bar" id="oc-bar"></div>
+  <div id="oc-pend"></div>
+  <div class="oc-list" id="oc-list"></div>
+</section>
 <section class="view" id="v-zona" hidden>
   <div class="mapwrap" id="zw">
     <div id="zmap" aria-label="Mapa de zoneamento do município"></div>
@@ -455,11 +473,11 @@ const LENS=new Path2D();LENS.arc(12,13,3.5,0,Math.PI*2);
 /* ---------- navegação ---------- */
 let mapReady=false;
 function go(v){
-  if(v!=='mapa'&&v!=='zona')v='painel';
-  $('v-painel').hidden=v!=='painel';$('v-mapa').hidden=v!=='mapa';$('v-zona').hidden=v!=='zona';
-  ['painel','mapa','zona'].forEach(x=>$('t-'+x).setAttribute('aria-selected',x===v));
+  if(v!=='mapa'&&v!=='zona'&&v!=='ocorr')v='painel';
+  $('v-painel').hidden=v!=='painel';$('v-mapa').hidden=v!=='mapa';$('v-zona').hidden=v!=='zona';$('v-ocorr').hidden=v!=='ocorr';
+  ['painel','mapa','zona','ocorr'].forEach(x=>$('t-'+x).setAttribute('aria-selected',x===v));
   if(location.hash!=='#'+v)history.replaceState(null,'','#'+v);
-  if(v==='mapa'){if(ensureMap()){map.invalidateSize();if(!mapReady&&cams.length){mapReady=true;fit(cams,true)}draw()}} else if(v==='zona')ensureZMap(); else renderPanel();
+  if(v==='mapa'){if(ensureMap()){map.invalidateSize();if(!mapReady&&cams.length){mapReady=true;fit(cams,true)}draw()}} else if(v==='zona')ensureZMap(); else if(v==='ocorr')ocRender(); else renderPanel();
 }
 document.addEventListener('click',e=>{const g=e.target.closest('[data-go]');if(g)go(g.dataset.go)});
 addEventListener('hashchange',()=>go(location.hash.slice(1)));
@@ -684,6 +702,73 @@ function select(c,instant){
 }
 $('zi').onclick=()=>map&&map.zoomIn();$('zo').onclick=()=>map&&map.zoomOut();
 $('zf').onclick=()=>{sel=null;sheet();draw();fit(vis(),false)};
+
+/* ---------- Ocorrências (config/ocorrencias) ---------- */
+const OC_LV={N1:{k:'N1',nome:'Crítico',resp:'30 minutos',sol:'4 horas corridas',respMs:30*6e4,solMs:4*36e5},N2:{k:'N2',nome:'Alto',resp:'2 horas',sol:'12 horas corridas',respMs:2*36e5,solMs:12*36e5},N3:{k:'N3',nome:'Médio',resp:'4 horas',sol:'24 horas corridas',respMs:4*36e5,solMs:24*36e5},N4:{k:'N4',nome:'Baixo',resp:'8 horas',sol:'48 horas úteis',respMs:8*36e5,solMs:48*36e5}};
+let OC=[],OCL=false,ocUnsub=null,ocFilter='abertas',ocBusy=false;
+const OC_REF=()=>db.collection('config').doc('ocorrencias');
+const ocDur=ms=>{if(ms==null||ms<0)return '—';const m=Math.floor(ms/6e4),h=Math.floor(m/60),d=Math.floor(h/24);return (d?d+' d ':'')+(h%24?h%24+' h ':'')+(m%60)+' min'};
+const ocFmt=t=>t?new Date(t).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',timeZone:'America/Sao_Paulo'}):'—';
+function ocBairro(c){try{if(ZD){const f=ZD.bairros.find(f=>inFeat(f,c.lat,c.lon));if(f)return f.n.replace(/\(.*?\)/g,'').trim()}}catch(e){}return ''}
+function ocPending(){const now=Date.now();return cams.filter(c=>!c.on&&ATS[c.id]&&now-ATS[c.id].getTime()>15*6e4&&!OC.some(o=>o.cam===c.id&&!o.fim)).map(c=>({c,ini:ATS[c.id].getTime()}))}
+async function ocMutate(fn){if(!db||!IS_ED)return null;let out=null;await db.runTransaction(async t=>{const d=await t.get(OC_REF());const data=d.exists?d.data():{};const list=(data.list||[]).slice();out=fn(list,data);t.set(OC_REF(),{list,auto:data.auto!==false,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true})});return out}
+function ocNext(list,kind){const y=new Date().getFullYear();const n=list.filter(o=>kind==='os'?(o.os&&o.os.num&&o.os.num.indexOf('OS-'+y)===0):(o.numero||'').indexOf('OC-'+y)===0).length+1;return (kind==='os'?'OS-':'OC-')+y+'-'+String(n).padStart(3,'0')}
+async function ocCreate(items){if(ocBusy||!items.length)return;ocBusy=true;try{const n=await ocMutate(list=>{let k=0;items.forEach(it=>{if(list.some(o=>o.cam===it.c.id&&!o.fim))return;list.push({id:'o'+it.c.id+'-'+it.ini,numero:ocNext(list,'oc'),cam:it.c.id,ini:it.ini,det:Date.now(),fim:null,nivel:'N3',status:'Aberta',obs:'',por:(auth.currentUser&&auth.currentUser.email)||''});k++});return k});if(n)toast(n+(n>1?' ocorrências geradas.':' ocorrência gerada.'))}catch(e){toast('Não foi possível gerar a ocorrência: '+e.message)}ocBusy=false}
+async function ocTick(){if(!IS_ED||!db||!OCL||!statLoaded)return;
+  // restabelecidas: câmera voltou e há ocorrência aberta
+  const back=OC.filter(o=>!o.fim&&byId(o.cam)&&byId(o.cam).on);
+  if(back.length&&!ocBusy){ocBusy=true;try{await ocMutate(list=>{list.forEach(o=>{const c=byId(o.cam);if(!o.fim&&c&&c.on){o.fim=(ATS[o.cam]&&ATS[o.cam].getTime()>o.ini)?ATS[o.cam].getTime():Date.now();if(o.status==='Aberta'||o.status==='Em atendimento')o.status='Restabelecida'}})})}catch(e){}ocBusy=false}
+  if(auto()){const pend=ocPending();if(pend.length&&pend.length<=15)ocCreate(pend)}
+  function auto(){return OCAUTO}
+}
+let OCAUTO=true;
+function ocInit(){if(ocUnsub||!db||!auth||!auth.currentUser)return;
+  ocUnsub=OC_REF().onSnapshot(d=>{const x=d.exists?d.data():{};OC=x.list||[];OCAUTO=x.auto!==false;OCL=true;if(!$('v-ocorr').hidden)ocRender();ocTick()},e=>{OCL=false;if(!$('v-ocorr').hidden)$('oc-list').innerHTML='<div class="card oc-empty">Não foi possível ler as ocorrências: '+e.message+'</div>'});
+}
+setInterval(()=>{ocInit();if(auth&&!auth.currentUser&&ocUnsub){ocUnsub();ocUnsub=null;OCL=false}ocTick();if(!$('v-ocorr').hidden)ocRender(true)},30000);setTimeout(ocInit,2500);setTimeout(ocInit,6000);
+function ocRender(soft){if(!$('v-ocorr'))return;ocInit();
+  if(soft&&document.activeElement&&/^(TEXTAREA|SELECT|INPUT)$/.test(document.activeElement.tagName)&&$('oc-list').contains(document.activeElement))return;
+  const bar=$('oc-bar'),pe=$('oc-pend'),li=$('oc-list');
+  if(!OCL){li.innerHTML='<div class="card oc-empty">Carregando…</div>';return}
+  const pend=ocPending(),abertas=OC.filter(o=>!o.fim||o.status==='Aberta'||o.status==='Em atendimento');
+  bar.innerHTML='';const mk=(t,k)=>{const b=document.createElement('button');b.className='chip';b.setAttribute('aria-pressed',ocFilter===k);b.innerHTML=t;b.onclick=()=>{ocFilter=k;ocRender()};bar.appendChild(b)};
+  mk('Abertas ('+abertas.length+')','abertas');mk('Todas ('+OC.length+')','todas');
+  if(IS_ED){const a=document.createElement('label');a.className='chip';a.style.cursor='pointer';a.innerHTML='<input type="checkbox" '+(OCAUTO?'checked':'')+' style="accent-color:#22D3EE"> Gerar automaticamente';a.querySelector('input').onchange=async e=>{try{await db.collection('config').doc('ocorrencias').set({auto:e.target.checked},{merge:true})}catch(x){toast('Erro: '+x.message)}};bar.appendChild(a)}
+  pe.innerHTML='';
+  if(pend.length){const c=document.createElement('div');c.className='card oc oc-pend';c.style.marginBottom='12px';
+    c.innerHTML='<div class="oc-h"><b>'+pend.length+(pend.length>1?' câmeras fora do ar há mais de 15 minutos':' câmera fora do ar há mais de 15 minutos')+'</b><span class="oc-t w">sem ocorrência</span></div><div class="oc-m">'+pend.slice(0,12).map(p=>esc2(pad(p.c.id))+' ('+ocDur(Date.now()-p.ini)+')').join(' · ')+(pend.length>12?' …':'')+'</div>';
+    if(IS_ED){const b=document.createElement('button');b.className='btn pri';b.textContent='Gerar '+(pend.length>1?pend.length+' ocorrências':'ocorrência');b.onclick=()=>ocCreate(ocPending());const w=document.createElement('div');w.className='oc-row';w.appendChild(b);c.appendChild(w)}
+    pe.appendChild(c)}
+  const L=(ocFilter==='abertas'?abertas:OC).slice().sort((a,b)=>b.ini-a.ini);
+  li.innerHTML='';
+  if(!L.length){li.innerHTML='<div class="card oc-empty">'+(ocFilter==='abertas'?'Nenhuma ocorrência aberta. Quando uma câmera passar de 15 minutos fora do ar, ela aparece aqui.':'Nenhuma ocorrência registrada ainda.')+'</div>';return}
+  L.forEach(o=>li.appendChild(ocCard(o)));
+}
+function ocCard(o){const c=byId(o.cam),lv=OC_LV[o.nivel]||OC_LV.N3,el=document.createElement('div');el.className='card oc';
+  const ed=IS_ED,fim=o.fim,now=Date.now(),tag=(!fim?'a':(o.status==='Encerrada'?'r':'w'));
+  const sla=!fim?(now-o.ini>lv.respMs?'prazo de resposta vencido':'')+(now-o.ini>lv.solMs?' · prazo de solução vencido':''):'';
+  el.innerHTML='<div class="oc-h"><div><b>'+esc2(c?pad(c.id):'Câmera '+o.cam)+'</b> <span class="oc-m">'+esc2(c?cn(c):'(removida)')+'</span></div><span class="oc-t '+tag+'">'+esc2(o.status||'Aberta')+'</span></div>'
+   +'<div class="oc-m">'+esc2(o.numero)+' · início '+ocFmt(o.ini)+' · '+(fim?'restabelecida '+ocFmt(fim)+' · ':'')+'duração '+ocDur((fim||now)-o.ini)+(sla?' · <span style="color:var(--off)">'+sla.replace(/^ · /,'')+'</span>':'')+'</div>'
+   +'<div class="oc-row"><label class="oc-m">Nível <select data-f="nivel" '+(ed?'':'disabled')+'>'+Object.values(OC_LV).map(v=>'<option value="'+v.k+'" '+(v.k===o.nivel?'selected':'')+'>'+v.k+' · '+v.nome+' (resposta '+v.resp+', solução '+v.sol+')</option>').join('')+'</select></label>'
+   +'<label class="oc-m">Situação <select data-f="status" '+(ed?'':'disabled')+'>'+['Aberta','Em atendimento','Restabelecida','Encerrada'].map(v=>'<option '+(v===(o.status||'Aberta')?'selected':'')+'>'+v+'</option>').join('')+'</select></label></div>'
+   +'<textarea data-f="obs" placeholder="Descrição / observações (causa, quem foi acionado…)" '+(ed?'':'disabled')+'>'+esc2(o.obs||'')+'</textarea>'
+   +(o.os&&o.os.num?'<div class="oc-m">Ordem de Serviço <b>'+esc2(o.os.num)+'</b>'+(o.os.empresa?' · '+esc2(o.os.empresa):'')+'</div>':'')
+   +'<div class="oc-row"><button class="btn" data-a="pdf">PDF da ocorrência</button><button class="btn" data-a="os">'+(o.os&&o.os.num?'PDF da Ordem de Serviço':'Gerar Ordem de Serviço')+'</button></div>';
+  if(!ed)el.querySelectorAll('[data-a=os]').forEach(b=>{if(!(o.os&&o.os.num))b.remove()});
+  el.querySelectorAll('[data-f]').forEach(f=>{f.onchange=async()=>{const k=f.dataset.f;try{await ocMutate(list=>{const x=list.find(z=>z.id===o.id);if(x)x[k]=f.value})}catch(e){toast('Não foi possível salvar: '+e.message)}}});
+  el.querySelector('[data-a=pdf]').onclick=()=>ocPDF('oc',o);
+  const bo=el.querySelector('[data-a=os]');if(bo)bo.onclick=()=>o.os&&o.os.num?ocPDF('os',o):ocOS(o,el);
+  return el}
+function ocOS(o,el){if(el.querySelector('.oc-osf'))return;const w=document.createElement('div');w.className='oc-row oc-osf';let emp='',pre='';try{emp=localStorage.getItem('oc-emp')||'';pre=localStorage.getItem('oc-pre')||''}catch(e){}
+  w.innerHTML='<input data-k="e" placeholder="Empresa contratada" value="'+esc2(emp)+'" style="flex:1 1 200px"><input data-k="p" placeholder="Preposto (nome)" value="'+esc2(pre)+'" style="flex:1 1 160px"><button class="btn pri">Gerar OS</button>';
+  w.querySelector('button').onclick=async()=>{const e=w.querySelector('[data-k=e]').value.trim(),p=w.querySelector('[data-k=p]').value.trim();try{localStorage.setItem('oc-emp',e);localStorage.setItem('oc-pre',p)}catch(x){}
+    try{const os=await ocMutate(list=>{const x=list.find(z=>z.id===o.id);if(!x)return null;x.os={num:ocNext(list,'os'),data:Date.now(),empresa:e,preposto:p};if(x.status==='Aberta')x.status='Em atendimento';return x.os});if(os){o.os=os;ocPDF('os',Object.assign({},o,{os}))}}catch(x){toast('Não foi possível gerar a OS: '+x.message)}};
+  el.appendChild(w)}
+async function ocPDF(kind,o){if(typeof gerarDocOcorrencia==='undefined'){alert('Atualize a página (Ctrl+Shift+R) para carregar o gerador.');return}
+  const c=byId(o.cam),lv=OC_LV[o.nivel]||OC_LV.N3;
+  const dados={numero:o.numero,cod:c?pad(c.id):String(o.cam),nome:c?cn(c):'',tipoTxt:c&&TYPES[c.t]?TYPES[c.t][0]:'',bairro:c?ocBairro(c):'',lat:c?c.lat:null,lon:c?c.lon:null,ini:o.ini,det:o.det,fim:o.fim,status:o.status||'Aberta',obs:o.obs,os:o.os,nivel:lv};
+  try{const u8=await gerarDocOcorrencia(kind,dados,{ident:{processo:'6866/2025',contrato:'nº 060/2026',unidade:'Central Operacional SEMMU'}});
+    const u=URL.createObjectURL(new Blob([u8],{type:'application/pdf'})),a=document.createElement('a');a.href=u;a.download=(kind==='os'?(o.os&&o.os.num):o.numero)+'.pdf';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000)}catch(e){toast('Não foi possível gerar o PDF: '+e.message)}}
 /* Pegar coordenadas clicando no mapa (editor) */
 (function(){let on=false,pop=null;const b=$('zp');if(!b)return;
   function set(v){on=v;b.setAttribute('aria-pressed',v);b.style.outline=v?'2px solid #22D3EE':'';if(map)map.getContainer().style.cursor=v?'crosshair':'';if(!v&&pop&&map){map.closePopup(pop);pop=null}if(v)toast('Clique no mapa no local da câmera.')}

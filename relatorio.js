@@ -170,4 +170,47 @@ window.gerarRelatorioPDF=async function(cams,TYPES,ATS,usuario,pad,cn,fotos,opt)
   }
   return d.build({titulo:'Relatorio de funcionamento das cameras - '+dCurta,dataCurta:dCurta,hora:hora,rodape:''},bg);
 };
+
+/* ---------- Ocorrência técnica e Ordem de Serviço (1 câmera) ---------- */
+window.gerarDocOcorrencia=async function(tipo,o,opt){opt=opt||{};
+  let bg=null;try{const r=await fetch('papel-timbrado.jpg');if(r.ok){const u=new Uint8Array(await r.arrayBuffer());let b='';for(let i=0;i<u.length;i+=8192)b+=String.fromCharCode.apply(null,u.subarray(i,i+8192));
+    let w=0,h=0;for(let i=2;i<u.length;){if(u[i]!==255){i++;continue}const m=u[i+1];if(m>=192&&m<=207&&m!==196&&m!==200&&m!==204){h=u[i+5]*256+u[i+6];w=u[i+7]*256+u[i+8];break}i+=2+u[i+2]*256+u[i+3]}
+    if(w&&h)bg={w,h,data:b}}}catch(e){}
+  const tz={timeZone:'America/Sao_Paulo'};
+  const F=t=>t?new Date(t).toLocaleDateString('pt-BR',Object.assign({day:'2-digit',month:'2-digit',year:'numeric'},tz))+' às '+new Date(t).toLocaleTimeString('pt-BR',Object.assign({hour:'2-digit',minute:'2-digit'},tz)):'—';
+  const D=t=>t?new Date(t).toLocaleDateString('pt-BR',Object.assign({day:'2-digit',month:'long',year:'numeric'},tz)):'—';
+  const dur=ms=>{if(ms==null||ms<0)return '—';const m=Math.floor(ms/60000),h=Math.floor(m/60),d=Math.floor(h/24);return (d?d+' d ':'')+(h%24?h%24+' h ':'')+(m%60)+' min'};
+  const C=v=>(v===undefined||v===null||v==='')?'—':String(v);
+  const d=new Doc(),ehOS=tipo==='os';
+  d.text(MX,d.y+14,ehOS?'ORDEM DE SERVIÇO':'REGISTRO DE OCORRÊNCIA TÉCNICA',{size:15.5,bold:true,color:'#0B3D5C'});d.y+=22;
+  d.text(MX,d.y+14,ehOS?'MANUTENÇÃO CORRETIVA · CÂMERA DE MONITORAMENTO':'INDISPONIBILIDADE DE CÂMERA DE MONITORAMENTO',{size:10.5,bold:true,color:'#444444'});d.y+=26;
+  const lin=(a,b)=>{d.need(16);d.text(MX,d.y+11,a,{size:9.5,bold:true,color:'#333333'});const ls=wrap(C(b),W-2*MX-170,9.5,false);ls.forEach((l,i)=>{if(i)d.need(14);d.text(MX+170,d.y+11,l,{size:9.5,color:b?'#111111':'#8899A3'});if(i<ls.length-1)d.y+=13});d.y+=16};
+  const I=opt.ident||{};
+  d.h('1. Identificação');
+  lin(ehOS?'Ordem de Serviço nº:':'Ocorrência nº:',ehOS?(o.os&&o.os.num):o.numero);
+  if(ehOS){lin('Referente à ocorrência nº:',o.numero);lin('Data de emissão:',D(o.os&&o.os.data||Date.now()))}
+  lin('Processo Administrativo:',I.processo);lin('Contrato Administrativo:',I.contrato);lin('Unidade:',I.unidade);
+  if(ehOS){lin('Contratada:',o.os&&o.os.empresa);lin('Preposto da contratada:',o.os&&o.os.preposto)}
+  d.h('2. Equipamento');
+  lin('Câmera:',o.cod);lin('Nome / local:',o.nome);lin('Tipo:',o.tipoTxt);lin('Bairro:',o.bairro);lin('Coordenadas:',o.lat!=null?o.lat.toFixed(6)+', '+o.lon.toFixed(6):'');
+  d.h(ehOS?'3. Falha constatada':'3. Registro da indisponibilidade');
+  lin('Início da interrupção:',F(o.ini));lin('Ocorrência registrada em:',F(o.det));
+  lin('Restabelecimento:',o.fim?F(o.fim):'Ainda indisponível');
+  lin('Duração da interrupção:',dur((o.fim||Date.now())-o.ini)+(o.fim?'':' (até o momento)'));
+  lin('Situação:',o.status);
+  d.para('Indisponibilidade registrada por interrupção contínua superior a 15 (quinze) minutos, conforme a Cláusula Nona do contrato (níveis mínimos de serviço), sem que tenha sido iniciada medida corretiva ou comunicação formal à fiscalização.',{size:9,color:'#555555'});
+  d.y+=4;d.h('4. Severidade e prazos de atendimento (SLA)');
+  lin('Nível de severidade:',o.nivel?o.nivel.k+' — '+o.nivel.nome:'');
+  if(o.nivel){lin('Resposta inicial até:',o.nivel.resp+' após o início ('+F(o.ini+o.nivel.respMs)+')');lin('Solução até:',o.nivel.sol+' após o início ('+F(o.ini+o.nivel.solMs)+')')}
+  if(o.obs){d.h('5. Descrição / observações');d.para(o.obs,{size:10})}
+  if(ehOS){d.h((o.obs?'6':'5')+'. Serviço a executar');
+    d.para('Realizar o atendimento técnico corretivo na câmera acima identificada, restabelecendo o seu pleno funcionamento (alimentação, conectividade, enlace de rede e gravação), nos prazos do nível de severidade indicado, e comunicar a conclusão à fiscalização do contrato.',{size:10});
+    d.y+=4;lin('Serviço concluído em:','');lin('Observações do técnico:','')}
+  d.y+=28;d.need(110);
+  const cols=ehOS?[['Gestor do contrato'],['Fiscal Técnico'],['Preposto da Contratada (ciente)']]:[['Fiscal Técnico'],['Gestor do contrato']];
+  const gw=(W-2*MX-10*(cols.length-1))/cols.length;
+  cols.forEach((g,i)=>{const x=MX+i*(gw+10);d.line(x,d.y,x+gw,d.y,'#444444',.8);d.text(x+gw/2,d.y+12,g[0],{size:8.5,bold:true,align:'center'});d.text(x+gw/2,d.y+23,'Nome · Matrícula',{size:7.5,color:'#777777',align:'center'})});
+  d.y+=50;d.text(MX,d.y,'Arraial do Cabo, '+D(Date.now())+'.',{size:9.5,color:'#444444'});
+  return d.build({titulo:(ehOS?'Ordem de Servico ':'Ocorrencia ')+C(ehOS?(o.os&&o.os.num):o.numero)},bg);
+};
 })();
