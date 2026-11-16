@@ -114,15 +114,21 @@ window.gerarRelatorioPDF=async function(cams,TYPES,ATS,usuario,pad,cn,fotos,opt)
     d.h((secN++)+'. Verificações operacionais');
     const cols=[{t:'Verificação',w:190},{t:'Conforme',w:52},{t:'Não conforme',w:62},{t:'Observações',w:147}],k0=(W-2*MX)/451,cw=cols.map(c=>c.w*k0),tw0=cw.reduce((a,b)=>a+b,0),rh=16;
     const head=()=>{d.need(rh*3);d.rect(MX,d.y,tw0,rh,'#0B3D5C');let x=MX;cols.forEach((c,j)=>{d.text(j===1||j===2?x+cw[j]/2:x+6,d.y+rh-5,c.t,{size:8,bold:true,color:'#FFFFFF',align:j===1||j===2?'center':'left'});x+=cw[j]});d.y+=rh};
+    const OCI=opt.oc||null,NC={'Equipamentos íntegros, sem avarias':off>0?off+(off>1?' câmeras fora de operação':' câmera fora de operação'):null,'Chamados registrados, atendidos e encerrados':OCI&&OCI.abertas>0?OCI.abertas+(OCI.abertas>1?' abertas':' aberta')+(OCI.vencidas>0?' ('+OCI.vencidas+' vencida'+(OCI.vencidas>1?'s':'')+')':''):null};
+    const xis=(cx,cy)=>{d.line(cx-3.2,cy-3.2,cx+3.2,cy+3.2,'#0B3D5C',1.2);d.line(cx-3.2,cy+3.2,cx+3.2,cy-3.2,'#0B3D5C',1.2)};
     const grupo=(nome,itens)=>{d.need(rh*3);d.rect(MX,d.y,tw0,rh,'#DDE9EF');d.text(MX+6,d.y+rh-5,nome,{size:8.5,bold:true,color:'#0B3D5C'});d.y+=rh;
       itens.forEach((it,i)=>{if(d.y+rh>H-BOT){d.newPage();head()}let x=MX;d.text(x+6,d.y+rh-5,fit(it,cw[0]-10,8.5,false),{size:8.5,color:'#222222'});x+=cw[0];
-        [1,2].forEach(j=>{d.rect(x+cw[j]/2-4,d.y+rh/2-4,8,8,'#FFFFFF','#6B7C86');x+=cw[j]});d.line(MX,d.y+rh,MX+tw0,d.y+rh,'#E1E8EC',.5);d.y+=rh})};
+        const nc=NC[it]||null;
+        [1,2].forEach(j=>{d.rect(x+cw[j]/2-4,d.y+rh/2-4,8,8,'#FFFFFF','#6B7C86');if((j===1&&!nc)||(j===2&&nc))xis(x+cw[j]/2,d.y+rh/2);x+=cw[j]});
+        if(nc)d.text(x+4,d.y+rh-5,fit(nc,cw[3]-8,7.5,false),{size:7.5,color:'#C62A47'});
+        d.line(MX,d.y+rh,MX+tw0,d.y+rh,'#E1E8EC',.5);d.y+=rh})};
     head();
     grupo('Central operacional',['Central operacional ativa','Videowall e servidores operacionais','Sistema VMS funcional','Backups e redundância ativos']);
     grupo('Câmeras',['Qualidade da imagem e visão noturna','Zoom/PTZ funcional','Equipamentos íntegros, sem avarias']);
     grupo('Atendimento e gravações',['Chamados registrados, atendidos e encerrados','Gravações disponíveis e recuperáveis','Período de retenção adequado']);
     grupo('Rede, segurança e documentos',['Estabilidade da conexão e latência compatível','Controle de acesso, perfis e logs','Relatório mensal da contratada']);
-    d.y+=10;
+    d.y+=8;d.para('Marcações preenchidas automaticamente a partir dos dados do sistema (situação das câmeras e ocorrências registradas). Os itens que dependem de verificação no local ou na central devem ser conferidos pelo fiscal antes da assinatura.',{size:8.5,color:'#555555'});
+    d.y+=4;
     d.h((secN++)+'. Conclusão e manifestação quanto à medição');
     d.para('Não conformidades: as câmeras fora de operação estão relacionadas na seção 3. Demais irregularidades e providências recomendadas:',{size:10,after:2});
     for(let i=0;i<3;i++){d.need(20);d.line(MX,d.y+14,W-MX,d.y+14,'#9FB0BA',.6);d.y+=20}
@@ -134,21 +140,26 @@ window.gerarRelatorioPDF=async function(cams,TYPES,ATS,usuario,pad,cn,fotos,opt)
     op('Favorável à medição integral');op('Favorável à medição com ressalvas');op('Necessária análise complementar');op('Necessária aplicação de glosa');
     d.y+=8;
   }
-  d.need(120);d.y+=14;
-  d.para('Arraial do Cabo, '+dLonga.replace(/^[^,]+, /,'')+'.',{size:10.5});
-  d.y+=34;d.line(MX,d.y,MX+230,d.y,'#444444',.8);d.y+=13;
-  d.text(MX,d.y,'Responsável pelas informações',{size:9.5,bold:true});d.y+=13;
-  d.text(MX,d.y,'Secretaria de Mobilidade Urbana · Prefeitura de Arraial do Cabo',{size:9,color:'#555555'});
-  if(opt.fiscalizacao){d.y+=40;d.need(60);const gw=(W-2*MX-20)/3;[['Gestor do contrato'],['Fiscal Técnico'],['Fiscal Administrativo']].forEach((g,i)=>{const x=MX+i*(gw+10);d.line(x,d.y,x+gw,d.y,'#444444',.8);d.text(x+gw/2,d.y+12,g[0],{size:8.5,bold:true,align:'center'});d.text(x+gw/2,d.y+23,'Nome · Matrícula',{size:7.5,color:'#777777',align:'center'})})}
-
-  if(opt.fiscalizacao||(fotos&&fotos.length)){
-    const mesC=now.toLocaleDateString('pt-BR',Object.assign({month:'long',year:'numeric'},tz));
-    d.newPage();d.h('Ciente e de acordo');d.y+=6;
+  const ciente=(nova)=>{const mesC=now.toLocaleDateString('pt-BR',Object.assign({month:'long',year:'numeric'},tz));
+    if(nova)d.newPage();else{d.y+=26;d.need(200)}
+    d.h('Ciente e de acordo');d.y+=6;
     d.para('Ciente e de acordo com as informações constantes deste relatório de funcionamento das câmeras de monitoramento, referente ao mês de '+mesC+'.',{size:10.5});
-    d.y+=70;const lw=250,lx=(W-lw)/2;d.line(lx,d.y,lx+lw,d.y,'#444444',.8);
+    d.y+=(nova?70:50);const lw=250,lx=(W-lw)/2;d.line(lx,d.y,lx+lw,d.y,'#444444',.8);
     d.text(W/2,d.y+14,'Secretário Municipal de Mobilidade Urbana',{size:10,bold:true,align:'center'});
     d.text(W/2,d.y+27,'Nome · Matrícula',{size:8,color:'#777777',align:'center'});
-    d.y+=60;d.text(W/2,d.y,'Arraial do Cabo, ______ de ____________________ de ________.',{size:10,align:'center'});
+    d.y+=nova?60:48;d.text(W/2,d.y,'Arraial do Cabo, ______ de ____________________ de ________.',{size:10,align:'center'})};
+  if(opt.fiscalizacao){
+    d.need(380);d.y+=14;
+    d.para('Arraial do Cabo, '+dLonga.replace(/^[^,]+, /,'')+'.',{size:10.5});
+    d.y+=44;const gw=(W-2*MX-20)/3;[['Gestor do contrato'],['Fiscal Técnico'],['Fiscal Administrativo']].forEach((g,i)=>{const x=MX+i*(gw+10);d.line(x,d.y,x+gw,d.y,'#444444',.8);d.text(x+gw/2,d.y+12,g[0],{size:8.5,bold:true,align:'center'});d.text(x+gw/2,d.y+23,'Nome · Matrícula',{size:7.5,color:'#777777',align:'center'})});
+    d.y+=30;ciente(false);
+  }else{
+    d.need(120);d.y+=14;
+    d.para('Arraial do Cabo, '+dLonga.replace(/^[^,]+, /,'')+'.',{size:10.5});
+    d.y+=34;d.line(MX,d.y,MX+230,d.y,'#444444',.8);d.y+=13;
+    d.text(MX,d.y,'Responsável pelas informações',{size:9.5,bold:true});d.y+=13;
+    d.text(MX,d.y,'Secretaria de Mobilidade Urbana · Prefeitura de Arraial do Cabo',{size:9,color:'#555555'});
+    if(fotos&&fotos.length)ciente(true);
   }
 
   if(fotos&&fotos.length){
