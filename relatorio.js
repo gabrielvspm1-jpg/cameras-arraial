@@ -192,7 +192,7 @@ window.gerarDocOcorrencia=async function(tipo,o,opt){opt=opt||{};
   const dur=ms=>{if(ms==null||ms<0)return '—';const m=Math.floor(ms/60000),h=Math.floor(m/60),d=Math.floor(h/24);return (d?d+' d ':'')+(h%24?h%24+' h ':'')+(m%60)+' min'};
   const C=v=>(v===undefined||v===null||v==='')?'—':String(v);
   const d=new Doc(),ehOS=tipo==='os';
-  d.text(MX,d.y+14,ehOS?'ORDEM DE SERVIÇO':'REGISTRO DE OCORRÊNCIA TÉCNICA',{size:15.5,bold:true,color:'#0B3D5C'});d.y+=22;
+  d.text(MX,d.y+14,ehOS?(o.resolvidoEm?'ORDEM DE SERVIÇO · CONCLUÍDA':'ORDEM DE SERVIÇO'):'REGISTRO DE OCORRÊNCIA TÉCNICA',{size:15.5,bold:true,color:'#0B3D5C'});d.y+=22;
   d.text(MX,d.y+14,ehOS?'MANUTENÇÃO CORRETIVA · CÂMERA DE MONITORAMENTO':'INDISPONIBILIDADE DE CÂMERA DE MONITORAMENTO',{size:10.5,bold:true,color:'#444444'});d.y+=26;
   const lin=(a,b)=>{d.need(16);d.text(MX,d.y+11,a,{size:9.5,bold:true,color:'#333333'});const ls=wrap(C(b),W-2*MX-170,9.5,false);ls.forEach((l,i)=>{if(i)d.need(14);d.text(MX+170,d.y+11,l,{size:9.5,color:b?'#111111':'#8899A3'});if(i<ls.length-1)d.y+=13});d.y+=16};
   const I=opt.ident||{};
@@ -206,7 +206,8 @@ window.gerarDocOcorrencia=async function(tipo,o,opt){opt=opt||{};
   d.h(ehOS?'3. Falha constatada':'3. Registro da indisponibilidade');
   lin('Início da interrupção:',F(o.ini));lin('Ocorrência registrada em:',F(o.det));
   lin('Restabelecimento:',o.fim?F(o.fim):'Ainda indisponível');
-  lin('Duração da interrupção:',dur((o.fim||Date.now())-o.ini)+(o.fim?'':' (até o momento)'));
+  if(o.resolvidoEm)lin('Serviço resolvido em:',F(o.resolvidoEm));
+  lin('Duração da interrupção:',dur((o.fim||o.resolvidoEm||Date.now())-o.ini)+((o.fim||o.resolvidoEm)?'':' (até o momento)'));
   lin('Situação:',o.status);
   d.para('Indisponibilidade registrada por interrupção contínua superior a 15 (quinze) minutos, conforme a Cláusula Nona do contrato (níveis mínimos de serviço), sem que tenha sido iniciada medida corretiva ou comunicação formal à fiscalização.',{size:9,color:'#555555'});
   d.y+=4;d.h('4. Severidade e prazos de atendimento (SLA)');
@@ -215,7 +216,7 @@ window.gerarDocOcorrencia=async function(tipo,o,opt){opt=opt||{};
   if(o.obs){d.h('5. Descrição / observações');d.para(o.obs,{size:10})}
   if(ehOS){d.h((o.obs?'6':'5')+'. Serviço a executar');
     d.para('Realizar o atendimento técnico corretivo na câmera acima identificada, restabelecendo o seu pleno funcionamento (alimentação, conectividade, enlace de rede e gravação), nos prazos do nível de severidade indicado, e comunicar a conclusão à fiscalização do contrato.',{size:10});
-    d.y+=4;lin('Serviço concluído em:','');lin('Observações do técnico:','')}
+    d.y+=4;lin('Serviço concluído em:',o.resolvidoEm?F(o.resolvidoEm):'');lin('Observações do técnico:',o.solucao||'')}
   d.y+=28;d.need(110);
   const cols=ehOS?[['Gestor do contrato'],['Fiscal Técnico'],['Preposto da Contratada (ciente)']]:[['Fiscal Técnico'],['Gestor do contrato']];
   const gw=(W-2*MX-10*(cols.length-1))/cols.length;
