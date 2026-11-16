@@ -199,7 +199,7 @@ window.gerarDocOcorrencia=async function(tipo,o,opt){opt=opt||{};
   d.h('1. Identificação');
   lin(ehOS?'Ordem de Serviço nº:':'Ocorrência nº:',ehOS?(o.os&&o.os.num):o.numero);
   if(ehOS){lin('Referente à ocorrência nº:',o.numero);lin('Data de emissão:',D(o.os&&o.os.data||Date.now()))}
-  lin('Processo Administrativo:',I.processo);lin('Contrato Administrativo:',I.contrato);lin('Unidade:',I.unidade);
+  lin('Situação:',o.status);lin('Processo Administrativo:',I.processo);lin('Contrato Administrativo:',I.contrato);lin('Unidade:',I.unidade);
   if(ehOS){lin('Contratada:',o.os&&o.os.empresa);lin('Preposto da contratada:',o.os&&o.os.preposto)}
   d.h('2. Equipamento');
   lin('Câmera:',o.cod);lin('Nome / local:',o.nome);lin('Tipo:',o.tipoTxt);lin('Bairro:',o.bairro);lin('Coordenadas:',o.lat!=null?o.lat.toFixed(6)+', '+o.lon.toFixed(6):'');
@@ -208,7 +208,6 @@ window.gerarDocOcorrencia=async function(tipo,o,opt){opt=opt||{};
   lin('Restabelecimento:',o.fim?F(o.fim):'Ainda indisponível');
   if(o.resolvidoEm)lin('Serviço resolvido em:',F(o.resolvidoEm));
   lin('Duração da interrupção:',dur((o.fim||o.resolvidoEm||Date.now())-o.ini)+((o.fim||o.resolvidoEm)?'':' (até o momento)'));
-  lin('Situação:',o.status);
   d.para('Indisponibilidade registrada por interrupção contínua superior a 15 (quinze) minutos, conforme a Cláusula Nona do contrato (níveis mínimos de serviço), sem que tenha sido iniciada medida corretiva ou comunicação formal à fiscalização.',{size:9,color:'#555555'});
   d.y+=4;d.h('4. Severidade e prazos de atendimento (SLA)');
   lin('Nível de severidade:',o.nivel?o.nivel.k+' — '+o.nivel.nome:'');

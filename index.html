@@ -745,23 +745,25 @@ function ocRender(soft){if(!$('v-ocorr'))return;ocInit();
   if(!L.length){li.innerHTML='<div class="card oc-empty">'+(ocFilter==='abertas'?'Nenhuma ocorrência aberta. Quando uma câmera passar de 15 minutos fora do ar, ela aparece aqui.':'Nenhuma ocorrência registrada ainda.')+'</div>';return}
   L.forEach(o=>li.appendChild(ocCard(o)));
 }
-function ocCard(o){const c=byId(o.cam),lv=OC_LV[o.nivel]||OC_LV.N3,el=document.createElement('div');el.className='card oc';
-  const ed=IS_ED,fim=o.fim,now=Date.now(),tag=(o.status==='Encerrada'?'r':(!fim?'a':'w')),temOS=!!(o.os&&o.os.num),res=!!o.resolvidoEm;
-  const sla=(!fim&&!res)?(now-o.ini>lv.respMs?'prazo de resposta vencido':'')+(now-o.ini>lv.solMs?' · prazo de solução vencido':''):'';
-  el.innerHTML='<div class="oc-h"><div><b>'+esc2(c?pad(c.id):'Câmera '+o.cam)+'</b> <span class="oc-m">'+esc2(c?cn(c):'(removida)')+'</span></div><span class="oc-t '+tag+'">'+esc2(o.status||'Aberta')+'</span></div>'
-   +'<div class="oc-m">'+esc2(o.numero)+' · início '+ocFmt(o.ini)+' · '+(fim?'restabelecida '+ocFmt(fim)+' · ':'')+(res?'resolvida '+ocFmt(o.resolvidoEm)+' · ':'')+'duração '+ocDur((fim||o.resolvidoEm||now)-o.ini)+(sla?' · <span style="color:var(--off)">'+sla.replace(/^ · /,'')+'</span>':'')+'</div>'
-   +'<div class="oc-row"><label class="oc-m">Nível <select data-f="nivel" '+(ed?'':'disabled')+'>'+Object.values(OC_LV).map(v=>'<option value="'+v.k+'" '+(v.k===o.nivel?'selected':'')+'>'+v.k+' · '+v.nome+' (resposta '+v.resp+', solução '+v.sol+')</option>').join('')+'</select></label>'
-   +'<label class="oc-m">Situação <select data-f="status" '+(ed?'':'disabled')+'>'+['Aberta','Em atendimento','Restabelecida','Encerrada'].map(v=>'<option '+(v===(o.status||'Aberta')?'selected':'')+'>'+v+'</option>').join('')+'</select></label></div>'
-   +'<textarea data-f="obs" placeholder="Descrição / observações (causa, quem foi acionado…)" '+(ed?'':'disabled')+'>'+esc2(o.obs||'')+'</textarea>'
-   +(o.os&&o.os.num?'<div class="oc-m">Ordem de Serviço <b>'+esc2(o.os.num)+'</b>'+(o.os.empresa?' · '+esc2(o.os.empresa):'')+'</div>':'')
-   +'<div class="oc-m" style="display:flex;gap:6px;flex-wrap:wrap"><span>① Ocorrência registrada ✓</span><span>→</span><span style="'+(temOS?'':'opacity:.5')+'">② Ordem de Serviço '+(temOS?'emitida ✓':'pendente')+'</span><span>→</span><span style="'+(res?'':'opacity:.5')+'">③ '+(res?'Resolvida ✓':'Resolução pendente')+'</span></div>'
-   +'<div class="oc-row"><button class="btn" data-a="pdf">PDF da ocorrência</button>'
-   +(ed||temOS?'<button class="btn" data-a="os">'+(temOS?(res?'PDF da OS concluída':'PDF da Ordem de Serviço'):'Gerar Ordem de Serviço')+'</button>':'')
-   +(ed&&temOS&&!res?'<button class="btn pri" data-a="res">✔ Marcar como resolvida</button>':'')
+function ocStatusTxt(o){return o.resolvidoEm||o.status==='Encerrada'?'Resolvida':(o.os&&o.os.num?'OS emitida — em atendimento':(o.fim?'Câmera voltou — aguardando fechamento':'Aberta'))}
+function ocCard(o){const c=byId(o.cam),el=document.createElement('div');el.className='card oc';
+  const ed=IS_ED,fim=o.fim,now=Date.now(),temOS=!!(o.os&&o.os.num),res=!!(o.resolvidoEm||o.status==='Encerrada'),lv=OC_LV[o.nivel]||OC_LV.N3;
+  const tag=res?'r':(temOS?'w':'a'),lbl=res?'Resolvida':(temOS?'OS emitida':(fim?'Câmera voltou':'Aberta'));
+  const venc=(!fim&&!res)?(now-o.ini>lv.solMs?'prazo de solução vencido':(now-o.ini>lv.respMs?'prazo de resposta vencido':'')):'';
+  const fimT=o.resolvidoEm||fim;
+  let main='';
+  if(ed&&!res){main=temOS?'<button class="btn pri" data-a="res">✔ Marcar como resolvida</button>':(fim?'<button class="btn pri" data-a="res">✔ Marcar como resolvida</button>':'<button class="btn pri" data-a="os">Gerar Ordem de Serviço</button>')}
+  else if(res&&temOS)main='<button class="btn pri" data-a="os">PDF da OS concluída</button>';
+  el.innerHTML='<div class="oc-h"><div><b>'+esc2(c?pad(c.id):'Câmera '+o.cam)+'</b> <span class="oc-m">'+esc2(c?cn(c):'(removida)')+'</span></div><span class="oc-t '+tag+'">'+lbl+'</span></div>'
+   +'<div class="oc-m">'+esc2(o.numero)+(temOS?' · '+esc2(o.os.num):'')+' · desde '+ocFmt(o.ini)+(fimT?' até '+ocFmt(fimT):'')+' · '+ocDur((fimT||now)-o.ini)+(venc?' · <span style="color:var(--off)">'+venc+'</span>':'')+'</div>'
+   +'<div class="oc-row"><label class="oc-m">Nível <select data-f="nivel" '+(ed&&!res?'':'disabled')+'>'+Object.values(OC_LV).map(v=>'<option value="'+v.k+'" '+(v.k===o.nivel?'selected':'')+'>'+v.k+' · '+v.nome+' (resposta '+v.resp+', solução '+v.sol+')</option>').join('')+'</select></label></div>'
+   +'<textarea data-f="obs" placeholder="Observações (causa, quem foi acionado…)" '+(ed&&!res?'':'disabled')+'>'+esc2(o.obs||'')+'</textarea>'
+   +'<div class="oc-row">'+main+'<button class="btn" data-a="pdf">PDF da ocorrência</button>'+(temOS&&!res?'<button class="btn" data-a="os2">PDF da OS</button>':'')
    +(ed?'<button class="btn" data-a="del" style="margin-left:auto;color:var(--off)">Excluir</button>':'')+'</div>';
   el.querySelectorAll('[data-f]').forEach(f=>{f.onchange=async()=>{const k=f.dataset.f;try{await ocMutate(list=>{const x=list.find(z=>z.id===o.id);if(x)x[k]=f.value})}catch(e){toast('Não foi possível salvar: '+e.message)}}});
   el.querySelector('[data-a=pdf]').onclick=()=>ocPDF('oc',o);
-  const bo=el.querySelector('[data-a=os]');if(bo)bo.onclick=()=>o.os&&o.os.num?ocPDF('os',o):ocOS(o,el);
+  const bo=el.querySelector('[data-a=os]');if(bo)bo.onclick=()=>temOS?ocPDF('os',o):ocOS(o,el);
+  const b2=el.querySelector('[data-a=os2]');if(b2)b2.onclick=()=>ocPDF('os',o);
   const br=el.querySelector('[data-a=res]');if(br)br.onclick=()=>ocRes(o,el);
   const bd=el.querySelector('[data-a=del]');if(bd)bd.onclick=()=>{if(bd.dataset.c!=='1'){bd.dataset.c='1';bd.textContent='Confirmar exclusão';setTimeout(()=>{bd.dataset.c='';bd.textContent='Excluir'},4000);return}
     ocMutate(list=>{const k=list.findIndex(z=>z.id===o.id);if(k>=0)list.splice(k,1)}).then(()=>toast('Ocorrência excluída.')).catch(e=>toast('Não foi possível excluir: '+e.message))};
@@ -776,11 +778,11 @@ function ocRes(o,el){if(el.querySelector('.oc-resf'))return;const w=document.cre
   w.innerHTML='<label class="oc-m">Resolvida em <input type="datetime-local" data-k="d" value="'+d+'"></label><textarea data-k="t" placeholder="O que foi feito (ex.: religada a energia, trocado o cabo…)"></textarea><div class="oc-row"><button class="btn pri">Confirmar e gerar PDF</button><button class="btn" data-x>Cancelar</button></div>';
   w.querySelector('[data-x]').onclick=()=>w.remove();
   w.querySelector('.pri').onclick=async()=>{const v=w.querySelector('[data-k=d]').value,t=w.querySelector('[data-k=t]').value.trim();const ts=v?new Date(v).getTime():Date.now();
-    try{const x=await ocMutate(list=>{const z=list.find(q=>q.id===o.id);if(!z)return null;z.resolvidoEm=ts;z.solucao=t;z.status='Encerrada';return z});if(x){Object.assign(o,{resolvidoEm:ts,solucao:t,status:'Encerrada'});toast('Ocorrência resolvida. Ela saiu da lista de abertas e ficou no Histórico.');ocPDF('os',o)}}catch(e){toast('Não foi possível salvar: '+e.message)}};
+    try{const x=await ocMutate(list=>{const z=list.find(q=>q.id===o.id);if(!z)return null;z.resolvidoEm=ts;z.solucao=t;z.status='Encerrada';return z});if(x){Object.assign(o,{resolvidoEm:ts,solucao:t,status:'Encerrada'});toast('Resolvida. Saiu das abertas e ficou no Histórico.');ocPDF(o.os&&o.os.num?'os':'oc',o)}}catch(e){toast('Não foi possível salvar: '+e.message)}};
   el.appendChild(w)}
 async function ocPDF(kind,o){if(typeof gerarDocOcorrencia==='undefined'){alert('Atualize a página (Ctrl+Shift+R) para carregar o gerador.');return}
   const c=byId(o.cam),lv=OC_LV[o.nivel]||OC_LV.N3;
-  const dados={numero:o.numero,cod:c?pad(c.id):String(o.cam),nome:c?cn(c):'',tipoTxt:c&&TYPES[c.t]?TYPES[c.t][0]:'',bairro:c?ocBairro(c):'',lat:c?c.lat:null,lon:c?c.lon:null,ini:o.ini,det:o.det,fim:o.fim,status:o.status||'Aberta',obs:o.obs,os:o.os,resolvidoEm:o.resolvidoEm,solucao:o.solucao,nivel:lv};
+  const dados={numero:o.numero,cod:c?pad(c.id):String(o.cam),nome:c?cn(c):'',tipoTxt:c&&TYPES[c.t]?TYPES[c.t][0]:'',bairro:c?ocBairro(c):'',lat:c?c.lat:null,lon:c?c.lon:null,ini:o.ini,det:o.det,fim:o.fim,status:ocStatusTxt(o),obs:o.obs,os:o.os,resolvidoEm:o.resolvidoEm,solucao:o.solucao,nivel:lv};
   try{const u8=await gerarDocOcorrencia(kind,dados,{ident:{processo:'6866/2025',contrato:'nº 060/2026',unidade:'Central Operacional SEMMU'}});
     const u=URL.createObjectURL(new Blob([u8],{type:'application/pdf'})),a=document.createElement('a');a.href=u;a.download=(kind==='os'?(o.os&&o.os.num):o.numero)+'.pdf';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000)}catch(e){toast('Não foi possível gerar o PDF: '+e.message)}}
 /* Pegar coordenadas clicando no mapa (editor) */
