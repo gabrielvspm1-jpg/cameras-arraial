@@ -141,6 +141,16 @@ window.gerarRelatorioPDF=async function(cams,TYPES,ATS,usuario,pad,cn,fotos,opt)
   d.text(MX,d.y,'Secretaria de Mobilidade Urbana · Prefeitura de Arraial do Cabo',{size:9,color:'#555555'});
   if(opt.fiscalizacao){d.y+=40;d.need(60);const gw=(W-2*MX-20)/3;[['Gestor do contrato'],['Fiscal Técnico'],['Fiscal Administrativo']].forEach((g,i)=>{const x=MX+i*(gw+10);d.line(x,d.y,x+gw,d.y,'#444444',.8);d.text(x+gw/2,d.y+12,g[0],{size:8.5,bold:true,align:'center'});d.text(x+gw/2,d.y+23,'Nome · Matrícula',{size:7.5,color:'#777777',align:'center'})})}
 
+  if(opt.fiscalizacao||(fotos&&fotos.length)){
+    const mesC=now.toLocaleDateString('pt-BR',Object.assign({month:'long',year:'numeric'},tz));
+    d.newPage();d.h('Ciente e de acordo');d.y+=6;
+    d.para('Ciente e de acordo com as informações constantes deste relatório de funcionamento das câmeras de monitoramento, referente ao mês de '+mesC+'.',{size:10.5});
+    d.y+=70;const lw=250,lx=(W-lw)/2;d.line(lx,d.y,lx+lw,d.y,'#444444',.8);
+    d.text(W/2,d.y+14,'Secretário Municipal de Mobilidade Urbana',{size:10,bold:true,align:'center'});
+    d.text(W/2,d.y+27,'Nome · Matrícula',{size:8,color:'#777777',align:'center'});
+    d.y+=60;d.text(W/2,d.y,'Arraial do Cabo, ______ de ____________________ de ________.',{size:10,align:'center'});
+  }
+
   if(fotos&&fotos.length){
     const mes=now.toLocaleDateString('pt-BR',Object.assign({month:'long',year:'numeric'},tz));
     d.newPage();d.h((opt.fiscalizacao?secN:5)+'. Registro fotográfico — '+mes);
