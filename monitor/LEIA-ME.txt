@@ -41,11 +41,10 @@ PASSO 2 - Criar a lista de cameras (cameras.csv)
   A lista usa a SIGLA de cada camera (ex.: PA-01, PG-11), a mesma que aparece no mapa do app.
 
   ENTENDA AS COLUNAS (isso evita o erro mais comum):
+      numero ..... numero interno da camera. E ESTE que o programa usa. NAO apague e NAO mude.
+      ip ......... o IP da camera. E o unico campo que voce preenche.
       codigo ..... a sigla (PA-01...). So para voce saber qual e qual. O programa ignora.
       nome ....... o nome da camera. So para voce. O programa ignora.
-      ip ......... o IP da camera. E o unico campo que voce preenche.
-      numero ..... numero interno da camera (fica por ultimo). E ESTE que o programa usa. NAO apague e NAO mude.
-      O programa acha as colunas pelo NOME na primeira linha (numero e ip), entao a ordem pode mudar.
 
   CAMINHO 1 - Lista real, ja pronta (o mais facil, use no computador do servidor)
   a) No app (logado como editor), aba Painel > "Administracao · lista de cameras" >
@@ -53,8 +52,8 @@ PASSO 2 - Criar a lista de cameras (cameras.csv)
   b) Coloque o arquivo baixado dentro da pasta monitor, com o nome exato:  cameras.csv
      (se ja existir um cameras.csv, substitua).
   c) Abra com o Bloco de Notas (botao direito > Abrir com > Bloco de Notas) e preencha o IP de
-     cada camera, na coluna ip, sem espacos. Exemplo de uma linha:
-         PA-12;Trevo da onca;192.168.0.45;12
+     cada camera, na coluna do meio, sem espacos. Exemplo de uma linha:
+         12;192.168.0.45;PA-12;Trevo da onca
      Camera sem IP: deixe em branco. O programa ignora essa linha e a camera continua no status manual.
   d) Salve (Ctrl+S) e feche.
 
@@ -63,11 +62,11 @@ PASSO 2 - Criar a lista de cameras (cameras.csv)
      para exatamente:  cameras.csv
      (Se nao aparecer ".csv" no nome, ative em Exibir > Mostrar > Extensoes de nomes de arquivos.)
   b) Abra com o Bloco de Notas. Ele vem assim:
-         codigo;nome;ip;numero
-         PA-01;Exemplo de camera;192.168.0.1;1
-         PA-02;Outro exemplo;192.168.0.2;2
-         PG-03;Camera ainda sem IP (linha ignorada);;3
-     - A primeira linha (codigo;nome;ip;numero) NAO pode ser apagada.
+         numero;ip;codigo;nome
+         1;192.168.0.1;PA-01;Exemplo de camera
+         2;192.168.0.2;PA-02;Outro exemplo
+         3;;PG-03;Camera ainda sem IP (linha ignorada)
+     - A primeira linha (numero;ip;codigo;nome) NAO pode ser apagada.
      - Os campos sao separados por ponto e virgula (;). Virgula tambem funciona se a primeira linha
        for  numero,ip  e as linhas forem  numero,ip.
      - Para o teste, troque os IPs por IPs que existam na rede desse computador:
@@ -142,7 +141,7 @@ PASSO 8 - Para abrir sozinho quando o computador ligar (recomendado)
 SE ALGO DER ERRADO
 =====================================================================
 "Nao achei o arquivo cameras.csv"  -> o nome precisa ser exatamente cameras.csv, na mesma pasta do monitor.ps1.
-"cameras.csv esta vazio ou fora do formato" -> confira se a primeira linha tem as colunas  numero  e  ip  (ex.: codigo;nome;ip;numero)
+"cameras.csv esta vazio ou fora do formato" -> confira se a primeira linha e  numero;ip;codigo;nome  (ou numero,ip)
    e se as outras linhas tem o numero e o IP preenchidos.
 "Linha X do cameras.csv ignorada" -> aquela camera esta sem IP (ou sem numero). Normal para camera sem IP.
 Muitas cameras "SEM RESPOSTA" no teste, mas elas estao funcionando -> o computador pode estar
