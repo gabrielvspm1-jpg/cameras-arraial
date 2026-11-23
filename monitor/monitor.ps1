@@ -47,12 +47,15 @@ $sep = ','; if ($first -match ';') { $sep = ';' }
 $f0 = (($first -split $sep)[0]).Trim().Trim([char]0xFEFF)
 if ($f0 -match '^\d+$') { $rows = Import-Csv $csvPath -Delimiter $sep -Header 'numero', 'ip' } else { $rows = Import-Csv $csvPath -Delimiter $sep }
 $cams = @(); $vistos = @{}; $ignoradas = 0; $linha = 1
+$cabec = @($rows | Select-Object -First 1 | ForEach-Object { $_.PSObject.Properties.Name })
+$colN = $null; $colI = $null
+foreach ($h in $cabec) { $hh = ($h + '').Trim().Trim([char]0xFEFF).ToLower(); if ($hh -eq 'numero') { $colN = $h } elseif ($hh -eq 'ip') { $colI = $h } }
+if ((-not $colN) -or (-not $colI)) { if ($cabec.Count -ge 2) { $colN = $cabec[0]; $colI = $cabec[1] } }
 foreach ($r in $rows) {
   $linha++
-  $nomes = @($r.PSObject.Properties.Name)
-  if ($nomes.Count -lt 2) { $ignoradas++; continue }
-  $n = 0; $ip = (($r.($nomes[1])) + '').Trim()
-  $ok = [int]::TryParse((($r.($nomes[0])) + '').Trim(), [ref]$n)
+  if ((-not $colN) -or (-not $colI)) { $ignoradas++; continue }
+  $n = 0; $ip = (($r.($colI)) + '').Trim()
+  $ok = [int]::TryParse((($r.($colN)) + '').Trim(), [ref]$n)
   if (-not $ok -or $n -le 0 -or $ip -eq '') { $ignoradas++; Log ("Linha {0} do cameras.csv ignorada (precisa de numero e IP)." -f $linha) 'Yellow'; continue }
   if ($vistos.ContainsKey($n)) { Log ("Camera {0:000} aparece mais de uma vez no cameras.csv; usando so a primeira." -f $n) 'Yellow'; continue }
   $vistos[$n] = $true
