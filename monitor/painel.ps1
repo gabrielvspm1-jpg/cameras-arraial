@@ -1,7 +1,7 @@
 ﻿# Painel do robo de cameras - Prefeitura de Arraial do Cabo
 # Abre um painel no navegador (so neste computador) para ligar/parar o robo, ver as cameras e editar IPs.
 # Nao muda o monitor.ps1. O robo continua sendo o monitor.ps1; o painel so liga, desliga e mostra.
-param([int]$Porta = 8080)
+param([int]$Porta = 8080, [switch]$AutoLigar)
 $ErrorActionPreference = 'Stop'
 $dir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $csvPath = Join-Path $dir 'cameras.csv'
@@ -162,6 +162,7 @@ Write-Host ''
 Write-Host 'Preparando (lendo a lista e testando as cameras)...' -ForegroundColor Gray
 try { LerCsv; AtualizarProcs; Pingar $true } catch {}
 Write-Host 'Pronto. Abrindo o painel no navegador.' -ForegroundColor Green
+if ($AutoLigar) { try { if ($script:procs.Count -eq 0) { $rr = LigarRobo; Write-Host $rr.msg -ForegroundColor Cyan } } catch {} }
 try { Start-Process ("http://localhost:{0}/" -f $Porta) } catch {}
 
 $async = $listener.BeginGetContext($null, $null)

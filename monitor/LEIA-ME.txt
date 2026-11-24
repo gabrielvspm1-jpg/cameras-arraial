@@ -167,3 +167,8 @@ PAINEL DO ROBO (novo) - abrir-painel.bat
   Se o cameras.csv estiver aberto no Excel, o painel nao consegue salvar IP: feche o Excel antes.
   Se a porta 8080 estiver ocupada, abra o PowerShell na pasta e rode:  .\painel.ps1 -Porta 8090
 
+
+  PAINEL JUNTO COM O WINDOWS (opcional): de dois cliques em iniciar-painel-com-windows.bat uma vez.
+  Dai em diante, ao ligar o PC, o painel abre sozinho (minimizado), liga o robo se ele nao estiver
+  ligado e abre a pagina no navegador. Se voce ja usava iniciar-automatico-com-windows.bat, apague
+  aquele atalho (Win+R, shell:startup) para nao ter dois robos.
