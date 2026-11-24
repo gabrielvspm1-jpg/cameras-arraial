@@ -108,10 +108,10 @@ function Estado {
   $pr = @($script:procs)
   $min = 0; $pid2 = 0
   if ($pr.Count -gt 0) { $pid2 = [int]$pr[0].ProcessId; try { $min = [int]((Get-Date) - $pr[0].CreationDate).TotalMinutes } catch {} }
-  $log = @(); try { if (Test-Path $logPath) { $log = @(Get-Content $logPath -Tail 120 -Encoding UTF8) } } catch {}
+  $log = @(); try { if (Test-Path $logPath) { $log = @(Get-Content $logPath -Tail 120 -Encoding UTF8 | ForEach-Object { [string]('' + $_) }) } } catch {}
   return @{
     robo = @{ ligado = ($pr.Count -gt 0); pid = $pid2; minutos = $min }
-    resumo = @{ total = $cams.Count; respondendo = $resp; semResposta = $nao; semIp = $sem; testadoHa = [int]((Get-Date) - $script:pingAt).TotalSeconds }
+    resumo = @{ total = $cams.Count; respondendo = $resp; semResposta = $nao; semIp = $sem; testadoHa = [int][math]::Min(99999, ((Get-Date) - $script:pingAt).TotalSeconds) }
     csvErro = $script:csvErro
     cameras = $cams
     log = $log
@@ -195,6 +195,7 @@ while ($true) {
       }
     } else { Send $ctx 404 'text/plain; charset=utf-8' ([Text.Encoding]::UTF8.GetBytes('Nao encontrado')) }
   } catch {
+    Write-Host ('ERRO no painel: ' + $_.Exception.Message) -ForegroundColor Red
     try { SendJson $ctx @{ ok = $false; msg = ('Erro: ' + $_.Exception.Message) } 500 } catch {}
   }
 }

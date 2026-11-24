@@ -70,8 +70,8 @@ h2{margin:0 0 10px;font-size:13px;letter-spacing:.12em;text-transform:uppercase;
 const $=id=>document.getElementById(id);let D=null,filtro='todas',mudou=false,busy=false;
 const esc=s=>String(s).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
 function msg(t){const m=$('msg');m.textContent=t;m.classList.add('show');clearTimeout(msg.t);msg.t=setTimeout(()=>m.classList.remove('show'),4500)}
-async function api(p,b){const r=await fetch(p,b?{method:'POST',headers:{'Content-Type':'application/json','X-Painel':'1'},body:JSON.stringify(b)}:undefined);return r.json()}
-let emVoo=false;async function carregar(){if(emVoo)return;emVoo=true;try{D=await api('/api/estado');render()}catch(e){$('rtit').textContent='Painel sem resposta';$('rsub').textContent='Confira se a janela do painel ainda está aberta.'}emVoo=false}
+async function api(p,b){const c=new AbortController(),t=setTimeout(()=>c.abort(),30000);try{const r=await fetch(p,Object.assign({signal:c.signal},b?{method:'POST',headers:{'Content-Type':'application/json','X-Painel':'1'},body:JSON.stringify(b)}:{}));return await r.json()}finally{clearTimeout(t)}}
+let emVoo=false;async function carregar(){if(emVoo)return;emVoo=true;try{D=await api('/api/estado');if(!D.robo)throw new Error(D.msg||'resposta invalida');render()}catch(e){$('rtit').textContent='Painel sem resposta';$('rsub').textContent='Erro: '+e.message+' · confira a janela preta do painel.'}emVoo=false}
 function render(){const r=D.robo,s=D.resumo;
   $('luz').className='luz '+(r.ligado?'on':'off');$('rtit').textContent=r.ligado?'Robô ligado':'Robô parado';
   $('rsub').textContent=r.ligado?('Rodando há '+r.minutos+' min · processo '+r.pid):'Clique em Ligar robô para começar a monitorar.';
