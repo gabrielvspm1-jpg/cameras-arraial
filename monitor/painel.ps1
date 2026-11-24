@@ -14,6 +14,7 @@ $script:rows = @(); $script:csvTime = [datetime]::MinValue; $script:sep = ';'
 $script:colN = $null; $script:colI = $null; $script:colC = $null; $script:colNm = $null
 $script:res = @{}; $script:pingAt = [datetime]::MinValue; $script:csvErro = ''
 $script:backupFeito = $false
+$script:procs = @(); $script:procsAt = [datetime]::MinValue
 
 function LerCsv {
   if (-not (Test-Path $csvPath)) { $script:rows = @(); $script:csvErro = 'Nao achei o cameras.csv nesta pasta.'; return }
@@ -75,22 +76,24 @@ function RoboProcs {
     return @(Get-CimInstance Win32_Process -Filter "Name='powershell.exe'" -ErrorAction Stop | Where-Object { $_.CommandLine -and ($_.CommandLine -like '*monitor.ps1*') -and ($_.CommandLine -notlike '*-Teste*') })
   } catch { return @() }
 }
+function AtualizarProcs { $script:procs = @(RoboProcs); $script:procsAt = Get-Date }
 function PararRobo {
   foreach ($p in (RoboProcs)) { try { Stop-Process -Id $p.ProcessId -Force -ErrorAction Stop } catch {} }
   Start-Sleep -Milliseconds 800
+  AtualizarProcs
 }
 function LigarRobo {
-  if ((RoboProcs).Count -gt 0) { return @{ ok = $true; msg = 'O robo ja estava ligado.' } }
+  if ((RoboProcs).Count -gt 0) { AtualizarProcs; return @{ ok = $true; msg = 'O robo ja estava ligado.' } }
   $args2 = '-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File "' + (Join-Path $dir 'monitor.ps1') + '"'
   Start-Process -FilePath 'powershell.exe' -ArgumentList $args2 -WindowStyle Hidden -WorkingDirectory $dir | Out-Null
   Start-Sleep -Seconds 5
-  if ((RoboProcs).Count -gt 0) { return @{ ok = $true; msg = 'Robo ligado.' } }
+  AtualizarProcs
+  if ($script:procs.Count -gt 0) { return @{ ok = $true; msg = 'Robo ligado.' } }
   return @{ ok = $false; msg = 'O robo fechou logo ao iniciar. De dois cliques em iniciar-monitor.bat para ver o motivo na tela (login, config.json ou cameras.csv).' }
 }
 
 function Estado {
   LerCsv
-  Pingar $false
   $cams = @(); $sem = 0; $resp = 0; $nao = 0
   foreach ($r in $script:rows) {
     $n = 0; $ip = (($r.($script:colI)) + '').Trim()
@@ -102,7 +105,7 @@ function Estado {
     elseif ($script:res.ContainsKey($n)) { $ok = [bool]$script:res[$n].Ok; $ms = [int]$script:res[$n].Ms; if ($ok) { $resp++ } else { $nao++ } }
     $cams += [pscustomobject]@{ numero = $n; codigo = $cod; nome = $nome; ip = $ip; ok = $ok; ms = $ms }
   }
-  $pr = @(RoboProcs)
+  $pr = @($script:procs)
   $min = 0; $pid2 = 0
   if ($pr.Count -gt 0) { $pid2 = [int]$pr[0].ProcessId; try { $min = [int]((Get-Date) - $pr[0].CreationDate).TotalMinutes } catch {} }
   $log = @(); try { if (Test-Path $logPath) { $log = @(Get-Content $logPath -Tail 120 -Encoding UTF8) } } catch {}
@@ -156,11 +159,18 @@ Write-Host ("Painel do robo aberto em  http://localhost:{0}/" -f $Porta) -Foregr
 Write-Host 'Deixe esta janela aberta enquanto usa o painel (fechar so fecha o painel; o robo continua).' -ForegroundColor Gray
 Write-Host 'Para fechar o painel: Ctrl+C ou feche a janela.' -ForegroundColor Gray
 Write-Host ''
+Write-Host 'Preparando (lendo a lista e testando as cameras)...' -ForegroundColor Gray
+try { LerCsv; AtualizarProcs; Pingar $true } catch {}
+Write-Host 'Pronto. Abrindo o painel no navegador.' -ForegroundColor Green
 try { Start-Process ("http://localhost:{0}/" -f $Porta) } catch {}
 
 $async = $listener.BeginGetContext($null, $null)
 while ($true) {
-  if (-not $async.AsyncWaitHandle.WaitOne(500)) { continue }
+  if (-not $async.AsyncWaitHandle.WaitOne(500)) {
+    # ocioso: atualiza em segundo plano (assim a tela responde na hora)
+    try { LerCsv; if (((Get-Date) - $script:procsAt).TotalSeconds -gt 4) { AtualizarProcs }; Pingar $false } catch {}
+    continue
+  }
   $ctx = $listener.EndGetContext($async)
   $async = $listener.BeginGetContext($null, $null)
   try {
