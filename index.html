@@ -708,13 +708,14 @@ $('zf').onclick=()=>{sel=null;sheet();draw();fit(vis(),false)};
 /* ---------- Ocorrências (config/ocorrencias) ---------- */
 const OC_LV={N1:{k:'N1',nome:'Crítico',resp:'30 minutos',sol:'4 horas corridas',respMs:30*6e4,solMs:4*36e5},N2:{k:'N2',nome:'Alto',resp:'2 horas',sol:'12 horas corridas',respMs:2*36e5,solMs:12*36e5},N3:{k:'N3',nome:'Médio',resp:'4 horas',sol:'24 horas corridas',respMs:4*36e5,solMs:24*36e5},N4:{k:'N4',nome:'Baixo',resp:'8 horas',sol:'48 horas úteis',respMs:8*36e5,solMs:48*36e5}};
 const ocOpen=o=>o.status!=='Encerrada'&&(!o.fim||o.status==='Aberta'||o.status==='Em atendimento');
+let OCIGN={};
 let OC=[],OCL=false,ocUnsub=null,ocFilter='abertas',ocBusy=false;
 const OC_REF=()=>db.collection('config').doc('ocorrencias');
 const ocDur=ms=>{if(ms==null||ms<0)return '—';const m=Math.floor(ms/6e4),h=Math.floor(m/60),d=Math.floor(h/24);return (d?d+' d ':'')+(h%24?h%24+' h ':'')+(m%60)+' min'};
 const ocFmt=t=>t?new Date(t).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',timeZone:'America/Sao_Paulo'}):'—';
 function ocBairro(c){try{if(ZD){const f=ZD.bairros.find(f=>inFeat(f,c.lat,c.lon));if(f)return f.n.replace(/\(.*?\)/g,'').trim()}}catch(e){}return ''}
-function ocPending(){const now=Date.now();return cams.filter(c=>!c.on&&ATS[c.id]&&now-ATS[c.id].getTime()>15*6e4&&!OC.some(o=>o.cam===c.id&&!o.fim)).map(c=>({c,ini:ATS[c.id].getTime()}))}
-async function ocMutate(fn){if(!db||!IS_ED)return null;let out=null;await db.runTransaction(async t=>{const d=await t.get(OC_REF());const data=d.exists?d.data():{};const list=(data.list||[]).slice();out=fn(list,data);t.set(OC_REF(),{list,auto:data.auto!==false,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true})});return out}
+function ocPending(){const now=Date.now();return cams.filter(c=>!c.on&&ATS[c.id]&&now-ATS[c.id].getTime()>15*6e4&&!OC.some(o=>o.cam===c.id&&!o.fim)&&OCIGN[c.id]!==ATS[c.id].getTime()).map(c=>({c,ini:ATS[c.id].getTime()}))}
+async function ocMutate(fn){if(!db||!IS_ED)return null;let out=null;await db.runTransaction(async t=>{const d=await t.get(OC_REF());const data=d.exists?d.data():{};const list=(data.list||[]).slice();out=fn(list,data);t.set(OC_REF(),{list,ign:data.ign||{},auto:data.auto!==false,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true})});return out}
 function ocNext(list,kind){const y=new Date().getFullYear();const n=list.filter(o=>kind==='os'?(o.os&&o.os.num&&o.os.num.indexOf('OS-'+y)===0):(o.numero||'').indexOf('OC-'+y)===0).length+1;return (kind==='os'?'OS-':'OC-')+y+'-'+String(n).padStart(3,'0')}
 async function ocCreate(items){if(ocBusy||!items.length)return;ocBusy=true;try{const n=await ocMutate(list=>{let k=0;items.forEach(it=>{if(list.some(o=>o.cam===it.c.id&&!o.fim))return;list.push({id:'o'+it.c.id+'-'+it.ini,numero:ocNext(list,'oc'),cam:it.c.id,ini:it.ini,det:Date.now(),fim:null,nivel:'N3',status:'Aberta',obs:'',por:(auth.currentUser&&auth.currentUser.email)||''});k++});return k});if(n)toast(n+(n>1?' ocorrências geradas.':' ocorrência gerada.'))}catch(e){toast('Não foi possível gerar a ocorrência: '+e.message)}ocBusy=false}
 async function ocTick(){if(!IS_ED||!db||!OCL||!statLoaded)return;
@@ -726,7 +727,7 @@ async function ocTick(){if(!IS_ED||!db||!OCL||!statLoaded)return;
 }
 let OCAUTO=true;
 function ocInit(){if(ocUnsub||!db||!auth||!auth.currentUser)return;
-  ocUnsub=OC_REF().onSnapshot(d=>{const x=d.exists?d.data():{};OC=x.list||[];OCAUTO=x.auto!==false;OCL=true;ocBadge();if(!$('v-ocorr').hidden)ocRender();ocTick()},e=>{OCL=false;if(!$('v-ocorr').hidden)$('oc-list').innerHTML='<div class="card oc-empty">Não foi possível ler as ocorrências: '+e.message+'</div>'});
+  ocUnsub=OC_REF().onSnapshot(d=>{const x=d.exists?d.data():{};OC=x.list||[];OCIGN=x.ign||{};OCAUTO=x.auto!==false;OCL=true;ocBadge();if(!$('v-ocorr').hidden)ocRender();ocTick()},e=>{OCL=false;if(!$('v-ocorr').hidden)$('oc-list').innerHTML='<div class="card oc-empty">Não foi possível ler as ocorrências: '+e.message+'</div>'});
 }
 setInterval(()=>{ocBadge();ocInit();if(auth&&!auth.currentUser&&ocUnsub){ocUnsub();ocUnsub=null;OCL=false}ocTick();if(!$('v-ocorr').hidden)ocRender(true)},30000);setTimeout(ocInit,2500);setTimeout(ocInit,6000);
 function ocBadge(){const b=$('t-ocorr');if(!b)return;const n=OCL?OC.filter(ocOpen).length+ocPending().length:0;b.innerHTML='Ocorrências'+(n?'<span class="ocn">'+n+'</span>':'')}
@@ -741,7 +742,11 @@ function ocRender(soft){ocBadge();if(!$('v-ocorr'))return;ocInit();
   pe.innerHTML='';
   if(pend.length){const c=document.createElement('div');c.className='card oc oc-pend';c.style.marginBottom='12px';
     c.innerHTML='<div class="oc-h"><b>'+pend.length+(pend.length>1?' câmeras fora do ar há mais de 15 minutos':' câmera fora do ar há mais de 15 minutos')+'</b><span class="oc-t w">sem ocorrência</span></div><div class="oc-m">'+pend.slice(0,12).map(p=>esc2(pad(p.c.id))+' ('+ocDur(Date.now()-p.ini)+')').join(' · ')+(pend.length>12?' …':'')+'</div>';
-    if(IS_ED){const b=document.createElement('button');b.className='btn pri';b.textContent='Gerar '+(pend.length>1?pend.length+' ocorrências':'ocorrência');b.onclick=()=>ocCreate(ocPending());const w=document.createElement('div');w.className='oc-row';w.appendChild(b);c.appendChild(w)}
+    if(IS_ED){const b=document.createElement('button');b.className='btn pri';b.textContent='Gerar '+(pend.length>1?pend.length+' ocorrências':'ocorrência');b.onclick=()=>ocCreate(ocPending());const w=document.createElement('div');w.className='oc-row';w.appendChild(b);
+      const z=document.createElement('button');z.className='btn';z.textContent='Zerar (ignorar '+(pend.length>1?'estas '+pend.length:'esta')+')';let tz=0;
+      z.onclick=async()=>{if(z.dataset.c!=='1'){z.dataset.c='1';z.textContent='Confirmar: zerar';clearTimeout(tz);tz=setTimeout(()=>{z.dataset.c='';z.textContent='Zerar (ignorar '+(pend.length>1?'estas '+pend.length:'esta')+')'},5000);return}
+        const alvo=ocPending();try{await ocMutate((list,data)=>{data.ign=data.ign||{};alvo.forEach(p=>{data.ign[p.c.id]=p.ini})});toast('Zerado. Essas câmeras não vão gerar ocorrência por essa queda.')}catch(e){toast('Não foi possível zerar: '+e.message)}};
+      w.appendChild(z);c.appendChild(w)}
     pe.appendChild(c)}
   const L=(ocFilter==='abertas'?abertas:OC).slice().sort((a,b)=>b.ini-a.ini);
   li.innerHTML='';
