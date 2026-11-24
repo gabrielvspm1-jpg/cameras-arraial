@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Painel do robô · Central de Câmeras</title>
+<style>
+:root{--bg:#070B14;--panel:#0E1626;--line:#1E2B45;--fg:#E8EEF8;--fg2:#8FA0BF;--cy:#22D3EE;--on:#34D399;--off:#FB7185;--amber:#FBBF24}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(1200px 600px at 80% -10%,#0f2a4a 0,transparent 60%),var(--bg);color:var(--fg);font:14px/1.45 "Segoe UI",system-ui,sans-serif}
+.wrap{max-width:1280px;margin:0 auto;padding:20px 18px 60px}
+header{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:16px}
+h1{margin:0;font-size:20px;letter-spacing:.04em}h1 small{display:block;font-size:11px;color:var(--fg2);font-weight:500;letter-spacing:.14em;text-transform:uppercase}
+.sp{flex:1}
+.card{background:linear-gradient(180deg,#101a2e,var(--panel));border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.robo{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+.luz{width:14px;height:14px;border-radius:50%;background:#475569;box-shadow:0 0 0 4px rgba(71,85,105,.25)}
+.luz.on{background:var(--on);box-shadow:0 0 14px var(--on),0 0 0 4px rgba(52,211,153,.2)}.luz.off{background:var(--off);box-shadow:0 0 14px var(--off),0 0 0 4px rgba(251,113,133,.2)}
+.rt b{font-size:16px}.rt span{display:block;color:var(--fg2);font-size:12px}
+button{font:inherit;cursor:pointer;border:1px solid var(--line);background:#14213a;color:var(--fg);padding:8px 14px;border-radius:10px}
+button:hover{border-color:var(--cy)}button:disabled{opacity:.45;cursor:default}
+.pri{background:linear-gradient(180deg,#0e7490,#0891b2);border-color:#22D3EE}.dan{color:var(--off);border-color:#5b2230}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:14px}
+.k b{display:block;font-size:30px;line-height:1.1}.k span{color:var(--fg2);font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+.k.g b{color:var(--on)}.k.r b{color:var(--off)}.k.a b{color:var(--amber)}
+.grid{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(0,1fr);gap:14px;align-items:start}
+@media(max-width:1000px){.grid{grid-template-columns:1fr}}
+.tools{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+input[type=search],.ip{background:#0a1222;color:var(--fg);border:1px solid var(--line);border-radius:9px;padding:7px 10px;font:inherit}
+input[type=search]{flex:1;min-width:160px}
+.chip{padding:6px 12px;border-radius:999px}.chip[aria-pressed=true]{border-color:var(--cy);color:var(--cy)}
+.tb{max-height:62vh;overflow:auto;border:1px solid var(--line);border-radius:10px}
+table{width:100%;border-collapse:collapse}th,td{padding:7px 10px;text-align:left;border-bottom:1px solid #15203a;white-space:nowrap}
+th{position:sticky;top:0;background:#0b1424;color:var(--fg2);font-size:11px;letter-spacing:.1em;text-transform:uppercase;z-index:1}
+td.nm{white-space:normal;color:var(--fg2);max-width:280px}td.cod{font-weight:600}
+.ip{width:150px;font-variant-numeric:tabular-nums}.ip.ok{border-color:#1f6f55}.ip.bad{border-color:#7a2a3a}.ip.er{border-color:var(--amber)}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:7px;background:#475569}.dot.on{background:var(--on);box-shadow:0 0 8px var(--on)}.dot.off{background:var(--off);box-shadow:0 0 8px var(--off)}
+.log{background:#050a14;border:1px solid var(--line);border-radius:10px;height:62vh;overflow:auto;padding:10px;font:12px/1.5 Consolas,monospace;white-space:pre-wrap}
+.log .v{color:var(--on)}.log .c{color:var(--off)}.log .e{color:var(--amber)}
+h2{margin:0 0 10px;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--fg2)}
+.msg{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#0e1a2f;border:1px solid var(--cy);padding:10px 16px;border-radius:12px;max-width:90vw;opacity:0;pointer-events:none;transition:opacity .2s}.msg.show{opacity:1}
+.ban{background:#2a2108;border:1px solid #7a5c10;color:#FDE68A;border-radius:12px;padding:10px 14px;margin-bottom:12px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+[hidden]{display:none!important}
+</style></head><body><div class="wrap">
+<header><h1>Painel do robô<small>Central de câmeras · Arraial do Cabo</small></h1><div class="sp"></div><span id="atual" style="color:var(--fg2);font-size:12px"></span></header>
+
+<div class="card robo">
+  <div class="luz" id="luz"></div>
+  <div class="rt"><b id="rtit">Verificando…</b><span id="rsub"></span></div>
+  <div class="sp"></div>
+  <button class="pri" id="bl">Ligar robô</button><button id="br">Reiniciar</button><button class="dan" id="bp">Parar</button><button id="bt">Testar agora</button>
+</div>
+<div class="ban" id="ban" hidden><span id="bant"></span><button class="pri" id="banb">Reiniciar robô agora</button></div>
+<div class="ban" id="err" hidden style="background:#2a0d14;border-color:#7a2a3a;color:#FECDD3"></div>
+
+<div class="kpis">
+  <div class="card k"><b id="k1">–</b><span>Câmeras na lista</span></div>
+  <div class="card k g"><b id="k2">–</b><span>Respondendo</span></div>
+  <div class="card k r"><b id="k3">–</b><span>Sem resposta</span></div>
+  <div class="card k a"><b id="k4">–</b><span>Sem IP</span></div>
+</div>
+
+<div class="grid">
+  <div class="card">
+    <h2>Câmeras</h2>
+    <div class="tools"><input type="search" id="q" placeholder="Buscar por sigla, nome ou IP"><button class="chip" data-f="todas" aria-pressed="true">Todas</button><button class="chip" data-f="off" aria-pressed="false">Sem resposta</button><button class="chip" data-f="semip" aria-pressed="false">Sem IP</button></div>
+    <div class="tb"><table><thead><tr><th>Sigla</th><th>Nome / local</th><th>IP</th><th>Situação</th><th>Tempo</th></tr></thead><tbody id="tb"></tbody></table></div>
+    <p style="color:var(--fg2);font-size:12px;margin:8px 0 0">Digite o IP e aperte Enter (ou clique fora) para salvar no cameras.csv. Depois, reinicie o robô.</p>
+  </div>
+  <div class="card"><h2>Registro do robô</h2><div class="log" id="log"></div></div>
+</div>
+</div><div class="msg" id="msg"></div>
+<script>
+const $=id=>document.getElementById(id);let D=null,filtro='todas',mudou=false,busy=false;
+const esc=s=>String(s).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+function msg(t){const m=$('msg');m.textContent=t;m.classList.add('show');clearTimeout(msg.t);msg.t=setTimeout(()=>m.classList.remove('show'),4500)}
+async function api(p,b){const r=await fetch(p,b?{method:'POST',headers:{'Content-Type':'application/json','X-Painel':'1'},body:JSON.stringify(b)}:undefined);return r.json()}
+async function carregar(){try{D=await api('/api/estado');render()}catch(e){$('rtit').textContent='Painel sem resposta';$('rsub').textContent='Confira se a janela do painel ainda está aberta.'}}
+function render(){const r=D.robo,s=D.resumo;
+  $('luz').className='luz '+(r.ligado?'on':'off');$('rtit').textContent=r.ligado?'Robô ligado':'Robô parado';
+  $('rsub').textContent=r.ligado?('Rodando há '+r.minutos+' min · processo '+r.pid):'Clique em Ligar robô para começar a monitorar.';
+  $('bl').disabled=busy||r.ligado;$('bp').disabled=busy||!r.ligado;$('br').disabled=busy;
+  $('k1').textContent=s.total;$('k2').textContent=s.respondendo;$('k3').textContent=s.semResposta;$('k4').textContent=s.semIp;
+  $('atual').textContent='Testado há '+s.testadoHa+' s';
+  const er=$('err');er.hidden=!D.csvErro;er.textContent=D.csvErro||'';
+  $('ban').hidden=!(mudou&&r.ligado);$('bant').textContent='IP alterado. O robô só passa a usar o IP novo depois de reiniciar.';
+  tabela();const L=$('log'),bottom=L.scrollTop+L.clientHeight>=L.scrollHeight-30;
+  L.innerHTML=D.log.map(l=>{const c=/VOLTOU|Login feito|Monitorando/.test(l)?'v':(/CAIU/.test(l)?'c':(/Erro|Aviso|ignorada/.test(l)?'e':''));return '<div class="'+c+'">'+esc(l)+'</div>'}).join('')||'<div style="color:var(--fg2)">Sem registros ainda.</div>';
+  if(bottom)L.scrollTop=L.scrollHeight}
+function tabela(){if(document.activeElement&&document.activeElement.classList.contains('ip'))return;
+  const q=$('q').value.trim().toLowerCase();
+  const rows=D.cameras.filter(c=>(filtro==='todas'||(filtro==='off'&&c.ok===false)||(filtro==='semip'&&!c.ip))&&(!q||(c.codigo+' '+c.nome+' '+c.ip).toLowerCase().includes(q)));
+  $('tb').innerHTML=rows.map(c=>{const st=!c.ip?'<span style="color:var(--fg2)">sem IP</span>':(c.ok?'<span class="dot on"></span>Responde':'<span class="dot off"></span>Sem resposta');
+    return '<tr><td class="cod">'+esc(c.codigo||c.numero)+'</td><td class="nm">'+esc(c.nome)+'</td><td><input class="ip '+(c.ip?(c.ok?'ok':'bad'):'')+'" data-n="'+c.numero+'" data-v="'+esc(c.ip)+'" value="'+esc(c.ip)+'" placeholder="0.0.0.0" spellcheck="false"></td><td>'+st+'</td><td>'+(c.ok?c.ms+' ms':'–')+'</td></tr>'}).join('')||'<tr><td colspan="5" style="color:var(--fg2);padding:18px">Nenhuma câmera.</td></tr>'}
+$('tb').addEventListener('change',async e=>{const i=e.target;if(!i.classList.contains('ip'))return;
+  const r=await api('/api/ip',{numero:+i.dataset.n,ip:i.value});msg(r.msg);if(r.ok){mudou=true;i.dataset.v=i.value.trim();i.classList.remove('er');carregar()}else{i.classList.add('er');i.value=i.dataset.v}});
+$('tb').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.classList.contains('ip'))e.target.blur()});
+document.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{filtro=b.dataset.f;document.querySelectorAll('.chip').forEach(x=>x.setAttribute('aria-pressed',x===b));if(D)tabela()});
+$('q').oninput=()=>D&&tabela();
+async function acao(a,t){busy=true;if(D)render();msg(t);try{const r=await api('/api/robo',{acao:a});msg(r.msg);if(a!=='parar'&&r.ok)mudou=false}catch(e){msg('Não consegui falar com o painel.')}busy=false;carregar()}
+$('bl').onclick=()=>acao('ligar','Ligando o robô…');$('br').onclick=()=>acao('reiniciar','Reiniciando o robô…');$('banb').onclick=()=>acao('reiniciar','Reiniciando o robô…');
+$('bp').onclick=()=>{if($('bp').dataset.c!=='1'){$('bp').dataset.c='1';$('bp').textContent='Confirmar: parar';setTimeout(()=>{$('bp').dataset.c='';$('bp').textContent='Parar'},4000);return}$('bp').dataset.c='';$('bp').textContent='Parar';acao('parar','Parando o robô…')};
+$('bt').onclick=async()=>{$('bt').disabled=true;msg('Testando todas as câmeras…');try{await api('/api/testar',{})}catch(e){}$('bt').disabled=false;carregar()};
+carregar();setInterval(carregar,5000);
+</script></body></html>

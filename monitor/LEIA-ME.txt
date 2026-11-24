@@ -151,3 +151,19 @@ Muitas cameras "SEM RESPOSTA" no teste, mas elas estao funcionando -> o computad
 Janela fecha sozinha / nada acontece -> de dois cliques no .bat (nao no .ps1) e tire print da tela.
 Para ver o historico do que aconteceu: abra o arquivo monitor.log com o Bloco de Notas.
 Para parar o programa: feche a janela preta (ou Ctrl+C).
+
+=====================================================================
+PAINEL DO ROBO (novo) - abrir-painel.bat
+=====================================================================
+  Dois cliques em  abrir-painel.bat.  Abre uma pagina no navegador (so neste computador) com:
+    - luz verde/vermelha dizendo se o robo esta ligado, e os botoes Ligar, Reiniciar, Parar e Testar agora;
+    - todas as cameras da lista (sigla, nome, IP, se responde e o tempo de resposta);
+    - o registro do robo ao vivo (quem caiu, quem voltou);
+    - a coluna de IP editavel: digite o IP, aperte Enter, e ele e salvo no cameras.csv
+      (o painel faz uma copia de seguranca em cameras.csv.bak antes da primeira alteracao).
+  Depois de mudar um IP, clique em "Reiniciar robo" para o robo usar o IP novo.
+  O painel NAO substitui o monitor.ps1: o robo continua sendo ele. O painel so liga, desliga e mostra.
+  Pode fechar a janela do painel a qualquer hora; o robo continua rodando.
+  Se o cameras.csv estiver aberto no Excel, o painel nao consegue salvar IP: feche o Excel antes.
+  Se a porta 8080 estiver ocupada, abra o PowerShell na pasta e rode:  .\painel.ps1 -Porta 8090
+
