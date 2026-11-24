@@ -105,13 +105,14 @@ function Estado {
     elseif ($script:res.ContainsKey($n)) { $ok = [bool]$script:res[$n].Ok; $ms = [int]$script:res[$n].Ms; if ($ok) { $resp++ } else { $nao++ } }
     $cams += [pscustomobject]@{ numero = $n; codigo = $cod; nome = $nome; ip = $ip; ok = $ok; ms = $ms }
   }
+  $seg = ((Get-Date) - $script:pingAt).TotalSeconds; if ($seg -gt 99999) { $seg = 99999 }; $seg = [int]$seg
   $pr = @($script:procs)
   $min = 0; $pid2 = 0
   if ($pr.Count -gt 0) { $pid2 = [int]$pr[0].ProcessId; try { $min = [int]((Get-Date) - $pr[0].CreationDate).TotalMinutes } catch {} }
   $log = @(); try { if (Test-Path $logPath) { $log = @(Get-Content $logPath -Tail 120 -Encoding UTF8 | ForEach-Object { [string]('' + $_) }) } } catch {}
   return @{
     robo = @{ ligado = ($pr.Count -gt 0); pid = $pid2; minutos = $min }
-    resumo = @{ total = $cams.Count; respondendo = $resp; semResposta = $nao; semIp = $sem; testadoHa = [int][math]::Min(99999, ((Get-Date) - $script:pingAt).TotalSeconds) }
+    resumo = @{ total = $cams.Count; respondendo = $resp; semResposta = $nao; semIp = $sem; testadoHa = $seg }
     csvErro = $script:csvErro
     cameras = $cams
     log = $log
