@@ -164,7 +164,7 @@ window.gerarRelatorioPDF=async function(cams,TYPES,ATS,usuario,pad,cn,fotos,opt)
   if(fotos&&fotos.length){
     const mes=now.toLocaleDateString('pt-BR',Object.assign({month:'long',year:'numeric'},tz));
     d.newPage();d.h((opt.fiscalizacao?secN:5)+'. Registro fotográfico — '+mes);
-    d.para('As imagens a seguir correspondem a uma base estimada de câmeras do parque instalado ('+fotos.length+' de '+cams.length+' câmeras), apresentadas por amostragem.',{size:9.5,color:'#555555'});
+    d.para('Observação: valor estimado, com base estimada de câmeras.',{size:9.5,color:'#555555'});
     const gap=12,cw=(W-2*MX-gap)/2;let i=0;
     while(i<fotos.length){
       if(i>0)d.newPage();
