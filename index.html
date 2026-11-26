@@ -739,6 +739,10 @@ function ocRender(soft){ocBadge();if(!$('v-ocorr'))return;ocInit();
   bar.innerHTML='';const mk=(t,k)=>{const b=document.createElement('button');b.className='chip';b.setAttribute('aria-pressed',ocFilter===k);b.innerHTML=t;b.onclick=()=>{ocFilter=k;ocRender()};bar.appendChild(b)};
   mk('Abertas ('+abertas.length+')','abertas');mk('Histórico ('+OC.length+')','todas');
   if(IS_ED){const a=document.createElement('label');a.className='chip';a.style.cursor='pointer';a.innerHTML='<input type="checkbox" '+(OCAUTO?'checked':'')+' style="accent-color:#22D3EE"> Gerar automaticamente';a.querySelector('input').onchange=async e=>{try{await db.collection('config').doc('ocorrencias').set({auto:e.target.checked},{merge:true})}catch(x){toast('Erro: '+x.message)}};bar.appendChild(a)}
+  if(IS_ED&&OC.length){const x=document.createElement('button');x.className='chip';x.style.color='var(--off)';const t0='Excluir tudo ('+OC.length+')';x.textContent=t0;let tx=0;
+    x.onclick=async()=>{if(x.dataset.c!=='1'){x.dataset.c='1';x.textContent='Confirmar: excluir TUDO';clearTimeout(tx);tx=setTimeout(()=>{x.dataset.c='';x.textContent=t0},5000);return}
+      const off=cams.filter(c=>!c.on&&ATS[c.id]).map(c=>[c.id,ATS[c.id].getTime()]);
+      try{await ocMutate((list,data)=>{list.length=0;data.ign=data.ign||{};off.forEach(z=>{data.ign[z[0]]=z[1]})});toast('Todas as ocorrências foram excluídas.')}catch(e){toast('Não foi possível excluir: '+e.message)}};bar.appendChild(x)}
   pe.innerHTML='';
   if(pend.length){const c=document.createElement('div');c.className='card oc oc-pend';c.style.marginBottom='12px';
     c.innerHTML='<div class="oc-h"><b>'+pend.length+(pend.length>1?' câmeras fora do ar há mais de 15 minutos':' câmera fora do ar há mais de 15 minutos')+'</b><span class="oc-t w">sem ocorrência</span></div><div class="oc-m">'+pend.slice(0,12).map(p=>esc2(pad(p.c.id))+' ('+ocDur(Date.now()-p.ini)+')').join(' · ')+(pend.length>12?' …':'')+'</div>';
@@ -774,7 +778,7 @@ function ocCard(o){const c=byId(o.cam),el=document.createElement('div');el.class
   const b2=el.querySelector('[data-a=os2]');if(b2)b2.onclick=()=>ocPDF('os',o);
   const br=el.querySelector('[data-a=res]');if(br)br.onclick=()=>ocRes(o,el);
   const bd=el.querySelector('[data-a=del]');if(bd)bd.onclick=()=>{if(bd.dataset.c!=='1'){bd.dataset.c='1';bd.textContent='Confirmar exclusão';setTimeout(()=>{bd.dataset.c='';bd.textContent='Excluir'},4000);return}
-    ocMutate(list=>{const k=list.findIndex(z=>z.id===o.id);if(k>=0)list.splice(k,1)}).then(()=>toast('Ocorrência excluída.')).catch(e=>toast('Não foi possível excluir: '+e.message))};
+    ocMutate((list,data)=>{const k=list.findIndex(z=>z.id===o.id);if(k>=0)list.splice(k,1);if(!o.fim){data.ign=data.ign||{};data.ign[o.cam]=o.ini}}).then(()=>toast('Ocorrência excluída.')).catch(e=>toast('Não foi possível excluir: '+e.message))};
   return el}
 function ocOS(o,el){if(el.querySelector('.oc-osf'))return;const w=document.createElement('div');w.className='oc-row oc-osf';let emp='',pre='';try{emp=localStorage.getItem('oc-emp')||'';pre=localStorage.getItem('oc-pre')||''}catch(e){}
   w.innerHTML='<input data-k="e" placeholder="Empresa contratada" value="'+esc2(emp)+'" style="flex:1 1 200px"><input data-k="p" placeholder="Preposto (nome)" value="'+esc2(pre)+'" style="flex:1 1 160px"><button class="btn pri">Gerar OS</button>';
