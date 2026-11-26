@@ -769,17 +769,35 @@ function ocCard(o){const c=byId(o.cam),el=document.createElement('div');el.class
   el.innerHTML='<div class="oc-h"><div><b>'+esc2(c?pad(c.id):'Câmera '+o.cam)+'</b> <span class="oc-m">'+esc2(c?cn(c):'(removida)')+'</span></div><span class="oc-t '+tag+'">'+lbl+'</span></div>'
    +'<div class="oc-m">'+esc2(o.numero)+(temOS?' · '+esc2(o.os.num):'')+' · desde '+ocFmt(o.ini)+(fimT?' até '+ocFmt(fimT):'')+' · '+ocDur((fimT||now)-o.ini)+(venc?' · <span style="color:var(--off)">'+venc+'</span>':'')+'</div>'
    +'<div class="oc-row"><label class="oc-m">Nível <select data-f="nivel" '+(ed&&!res?'':'disabled')+'>'+Object.values(OC_LV).map(v=>'<option value="'+v.k+'" '+(v.k===o.nivel?'selected':'')+'>'+v.k+' · '+v.nome+' (resposta '+v.resp+', solução '+v.sol+')</option>').join('')+'</select></label></div>'
-   +'<textarea data-f="obs" placeholder="Observações (causa, quem foi acionado…)" '+(ed&&!res?'':'disabled')+'>'+esc2(o.obs||'')+'</textarea>'
+   +'<textarea data-f="obs" placeholder="Observações (causa, quem foi acionado…)" '+(ed&&!res?'':'disabled')+'>'+esc2(o.obs||'')+'</textarea>'+'<div class="oc-ph oc-row"></div>'
    +'<div class="oc-row">'+main+'<button class="btn" data-a="pdf">PDF da ocorrência</button>'+(temOS&&!res?'<button class="btn" data-a="os2">PDF da OS</button>':'')
    +(ed?'<button class="btn" data-a="del" style="margin-left:auto;color:var(--off)">Excluir</button>':'')+'</div>';
+  ocPhUI(o,el.querySelector('.oc-ph'));
   el.querySelectorAll('[data-f]').forEach(f=>{f.onchange=async()=>{const k=f.dataset.f;try{await ocMutate(list=>{const x=list.find(z=>z.id===o.id);if(x)x[k]=f.value})}catch(e){toast('Não foi possível salvar: '+e.message)}}});
   el.querySelector('[data-a=pdf]').onclick=()=>ocPDF('oc',o);
   const bo=el.querySelector('[data-a=os]');if(bo)bo.onclick=()=>temOS?ocPDF('os',o):ocOS(o,el);
   const b2=el.querySelector('[data-a=os2]');if(b2)b2.onclick=()=>ocPDF('os',o);
   const br=el.querySelector('[data-a=res]');if(br)br.onclick=()=>ocRes(o,el);
   const bd=el.querySelector('[data-a=del]');if(bd)bd.onclick=()=>{if(bd.dataset.c!=='1'){bd.dataset.c='1';bd.textContent='Confirmar exclusão';setTimeout(()=>{bd.dataset.c='';bd.textContent='Excluir'},4000);return}
-    ocMutate((list,data)=>{const k=list.findIndex(z=>z.id===o.id);if(k>=0)list.splice(k,1);if(!o.fim){data.ign=data.ign||{};data.ign[o.cam]=o.ini}}).then(()=>toast('Ocorrência excluída.')).catch(e=>toast('Não foi possível excluir: '+e.message))};
+    ocMutate((list,data)=>{const k=list.findIndex(z=>z.id===o.id);if(k>=0)list.splice(k,1);if(!o.fim){data.ign=data.ign||{};data.ign[o.cam]=o.ini}}).then(()=>{try{ocPhRef(o.id).delete();delete OCPH[o.id]}catch(e){}toast('Ocorrência excluída.')}).catch(e=>toast('Não foi possível excluir: '+e.message))};
   return el}
+
+/* ---------- fotos da ocorrência ---------- */
+const OCPH={};
+function ocPhRef(id){return db.collection('config').doc('ocf-'+String(id).replace(/[^A-Za-z0-9_-]/g,'_'))}
+async function ocPhLoad(o){if(OCPH[o.id])return OCPH[o.id];let l=[];try{const d=await ocPhRef(o.id).get();l=d.exists?(d.data().list||[]):[]}catch(e){}OCPH[o.id]=l;return l}
+function ocShrink(file){return new Promise((res,rej)=>{const img=new Image(),u=URL.createObjectURL(file);img.onload=()=>{URL.revokeObjectURL(u);let m=1000,out='';for(let t=0;t<4;t++){const k=Math.min(1,m/Math.max(img.width,img.height)),cv=document.createElement('canvas');cv.width=Math.round(img.width*k);cv.height=Math.round(img.height*k);cv.getContext('2d').drawImage(img,0,0,cv.width,cv.height);let q=.72;out=cv.toDataURL('image/jpeg',q);while(out.length>190000&&q>.3){q-=.1;out=cv.toDataURL('image/jpeg',q)}if(out.length<=190000)break;m=Math.round(m*.75)}res(out)};img.onerror=()=>rej(new Error('imagem inválida'));img.src=u})}
+async function ocPhUI(o,box){if(!box)return;const ed=IS_ED;let list=await ocPhLoad(o);
+  const draw=()=>{box.innerHTML='';list.forEach((d,i)=>{const w=document.createElement('span');w.style.cssText='position:relative;display:inline-block';const im=document.createElement('img');im.src=d;im.style.cssText='height:72px;border-radius:8px;border:1px solid var(--line);display:block';w.appendChild(im);
+      if(ed){const x=document.createElement('button');x.textContent='✕';x.title='Remover foto';x.style.cssText='position:absolute;top:2px;right:2px;border:0;border-radius:50%;width:20px;height:20px;background:#000a;color:#fff;cursor:pointer;font-size:11px;line-height:20px;padding:0';
+        x.onclick=async()=>{const n=list.filter((_,k)=>k!==i);try{await ocPhRef(o.id).set({list:n});list=OCPH[o.id]=n;draw()}catch(e){toast('Não foi possível remover: '+e.message)}};w.appendChild(x)}
+      box.appendChild(w)});
+    if(ed&&list.length<4){const b=document.createElement('button');b.className='btn';b.textContent='📷 Adicionar foto'+(list.length?'':' (causa / o que aconteceu)');const f=document.createElement('input');f.type='file';f.accept='image/*';f.multiple=true;f.hidden=true;
+      b.onclick=()=>f.click();
+      f.onchange=async()=>{const fs=[...f.files].slice(0,4-list.length);if(!fs.length)return;b.textContent='Enviando…';b.disabled=true;try{let n=list.slice();for(const x of fs)n.push(await ocShrink(x));await ocPhRef(o.id).set({list:n});list=OCPH[o.id]=n;toast('Foto adicionada. Sai no PDF da ocorrência e da OS.')}catch(e){toast('Não foi possível salvar a foto: '+e.message)}draw()};
+      box.appendChild(b);box.appendChild(f)}};
+  draw()}
+async function ocPhPdf(o){const l=await ocPhLoad(o);const out=[];for(const d of l){try{const dim=await new Promise((r,j)=>{const i=new Image();i.onload=()=>r([i.width,i.height]);i.onerror=j;i.src=d});out.push({w:dim[0],h:dim[1],data:atob(d.split(',')[1])})}catch(e){}}return out}
 function ocOS(o,el){if(el.querySelector('.oc-osf'))return;const w=document.createElement('div');w.className='oc-row oc-osf';let emp='',pre='';try{emp=localStorage.getItem('oc-emp')||'';pre=localStorage.getItem('oc-pre')||''}catch(e){}
   w.innerHTML='<input data-k="e" placeholder="Empresa contratada" value="'+esc2(emp)+'" style="flex:1 1 200px"><input data-k="p" placeholder="Preposto (nome)" value="'+esc2(pre)+'" style="flex:1 1 160px"><button class="btn pri">Gerar OS</button>';
   w.querySelector('button').onclick=async()=>{const e=w.querySelector('[data-k=e]').value.trim(),p=w.querySelector('[data-k=p]').value.trim();try{localStorage.setItem('oc-emp',e);localStorage.setItem('oc-pre',p)}catch(x){}
@@ -795,7 +813,7 @@ function ocRes(o,el){if(el.querySelector('.oc-resf'))return;const w=document.cre
 async function ocPDF(kind,o){if(typeof gerarDocOcorrencia==='undefined'){alert('Atualize a página (Ctrl+Shift+R) para carregar o gerador.');return}
   const c=byId(o.cam),lv=OC_LV[o.nivel]||OC_LV.N3;
   const dados={numero:o.numero,cod:c?pad(c.id):String(o.cam),nome:c?cn(c):'',tipoTxt:c&&TYPES[c.t]?TYPES[c.t][0]:'',bairro:c?ocBairro(c):'',lat:c?c.lat:null,lon:c?c.lon:null,ini:o.ini,det:o.det,fim:o.fim,status:ocStatusTxt(o),obs:o.obs,os:o.os,resolvidoEm:o.resolvidoEm,solucao:o.solucao,nivel:lv};
-  try{const u8=await gerarDocOcorrencia(kind,dados,{ident:{processo:'6866/2025',contrato:'nº 060/2026',unidade:'Central Operacional SEMMU',contratada:'REAL SEG TECNOLOGIA E SOLUÇÕES LTDA.'}});
+  try{dados.fotos=await ocPhPdf(o);const u8=await gerarDocOcorrencia(kind,dados,{ident:{processo:'6866/2025',contrato:'nº 060/2026',unidade:'Central Operacional SEMMU',contratada:'REAL SEG TECNOLOGIA E SOLUÇÕES LTDA.'}});
     const u=URL.createObjectURL(new Blob([u8],{type:'application/pdf'})),a=document.createElement('a');a.href=u;a.download=(kind==='os'?(o.os&&o.os.num):o.numero)+'.pdf';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000)}catch(e){toast('Não foi possível gerar o PDF: '+e.message)}}
 
 /* Ligar / desligar todas as câmeras de uma vez (editor) */

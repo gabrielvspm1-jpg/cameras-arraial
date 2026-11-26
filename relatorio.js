@@ -213,8 +213,15 @@ window.gerarDocOcorrencia=async function(tipo,o,opt){opt=opt||{};
   d.y+=4;d.h('4. Severidade e prazos de atendimento (SLA)');
   lin('Nível de severidade:',o.nivel?o.nivel.k+' — '+o.nivel.nome:'');
   if(o.nivel){lin('Resposta inicial até:',o.nivel.resp+' após o início ('+F(o.ini+o.nivel.respMs)+')');lin('Solução até:',o.nivel.sol+' após o início ('+F(o.ini+o.nivel.solMs)+')')}
-  if(o.obs){d.h('5. Descrição / observações');d.para(o.obs,{size:10})}
-  if(ehOS){d.h((o.obs?'6':'5')+'. Serviço a executar');
+  let sn=5;
+  if(o.obs){d.h((sn++)+'. Descrição / observações');d.para(o.obs,{size:10})}
+  if(o.fotos&&o.fotos.length){d.h((sn++)+'. Registro fotográfico (causa / ocorrência)');
+    const gap=10,cw=(W-2*MX-gap)/2,chh=170;let i=0;
+    while(i<o.fotos.length){d.need(chh+8);const y0=d.y;
+      for(let q=0;q<2&&i<o.fotos.length;q++,i++){const f=o.fotos[i],x=MX+q*(cw+gap),k=d.imgs.push(f)-1,sc=Math.min((cw-4)/f.w,(chh-4)/f.h),pw=f.w*sc,ph=f.h*sc;
+        d.rect(x,y0,cw,chh,'#F3F6F8','#C9D3DA');d.pic(x+(cw-pw)/2,y0+(chh-ph)/2,pw,ph,k)}
+      d.y=y0+chh+gap}}
+  if(ehOS){d.h((sn++)+'. Serviço a executar');
     d.para('Realizar o atendimento técnico corretivo na câmera acima identificada, restabelecendo o seu pleno funcionamento (alimentação, conectividade, enlace de rede e gravação), nos prazos do nível de severidade indicado, e comunicar a conclusão à fiscalização do contrato.',{size:10});
     d.y+=4;lin('Serviço concluído em:',o.resolvidoEm?F(o.resolvidoEm):'');lin('Observações do técnico:',o.solucao||'')}
   d.y+=28;d.need(110);
