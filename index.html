@@ -848,7 +848,7 @@ $('ms').addEventListener('input',e=>{const q=norm(e.target.value.trim()),r=$('re
 
 /* ---------- Firebase ---------- */
 let db=null,auth=null,statLoaded=false;
-function setStatus(c){if(!IS_ED)return;if(c.on)beepOn();else beep();if(!db)return;const p=track(db.collection('cameras').doc(String(c.id)).set({on:c.on,at:firebase.firestore.FieldValue.serverTimestamp(),by:(auth.currentUser&&auth.currentUser.email)||''},{merge:true}));p.catch(e=>toast('Não foi possível salvar: '+e.message))}
+function setStatus(c){if(!IS_ED)return;if(c.on)beepOn();else beep();if(!db)return;if(!c.on&&typeof ocCreate==='function')setTimeout(()=>ocCreate([{c,ini:Date.now()}]),400);const p=track(db.collection('cameras').doc(String(c.id)).set({on:c.on,at:firebase.firestore.FieldValue.serverTimestamp(),by:(auth.currentUser&&auth.currentUser.email)||''},{merge:true}));p.catch(e=>toast('Não foi possível salvar: '+e.message))}
 let migTry=false;
 async function fotosMig(){if(!IS_ED||MIG||migTry||!db||!cams.length||!auth.currentUser)return;migTry=true;
   try{const ids=Object.keys(FIXAS).map(Number),orf=[];
