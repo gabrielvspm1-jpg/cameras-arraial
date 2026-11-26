@@ -647,7 +647,7 @@ function fmOpen(){$('fmbg').hidden=false;fmRender().then(()=>fmRescan()).catch((
     if(bad.length){alert(bad.length+(bad.length>1?' fotos do mês estão sem número de câmera válido.':' foto do mês está sem número de câmera válido.')+' Preencha o número de cada uma antes de gerar o relatório.');fmOpen();return}
     rows.sort((a,b)=>a.cam-b.cam||a.at-b.at);const dt=t=>new Date(t).toLocaleDateString('pt-BR',{timeZone:'America/Sao_Paulo'});
     const fotos=rows.map(r=>{const c=byId(r.cam),nm=cn(c);return {w:r.w,h:r.h,data:atob(r.d.split(',')[1]),t:nm.indexOf('Câmera '+pad(c.id))===0?nm:'Nº '+pad(c.id)+' · '+nm,s:(($('rdt')&&$('rdt').value)?'':'Foto de '+dt(r.at))}});
-    const ocA=(typeof OCL!=='undefined'&&OCL)?OC.filter(ocOpen):null,ro={oc:ocA?{abertas:ocA.length,vencidas:ocA.filter(o=>Date.now()-o.ini>((OC_LV[o.nivel]||OC_LV.N3).solMs)).length}:null,refDate:($('rdt')&&$('rdt').value)?new Date($('rdt').value+'T12:00:00-03:00'):null,fiscalizacao:true,ident:{processo:'6866/2025',contrato:'nº 060/2026',unidade:'Central Operacional SEMMU'}};
+    const ocA=(typeof OCL!=='undefined'&&OCL)?OC.filter(ocOpen):null,ro={oc:ocA?{abertas:ocA.length,vencidas:ocA.filter(o=>Date.now()-o.ini>((OC_LV[o.nivel]||OC_LV.N3).solMs)).length}:null,refDate:($('rdt')&&$('rdt').value)?new Date($('rdt').value+'T12:00:00-03:00'):null,fiscalizacao:true,ident:{processo:'6866/2025',contrato:'nº 060/2026',unidade:'Central Operacional SEMMU',contratada:'REAL SEG TECNOLOGIA E SOLUÇÕES LTDA.'}};
     b.disabled=true;
     try{const u8=await gerarRelatorioPDF(cams,TYPES,ATS,'',pad,cn,fotos,ro);
       const u=URL.createObjectURL(new Blob([u8],{type:'application/pdf'}));const a=document.createElement('a');a.href=u;a.download='relatorio-cameras-arraial-do-cabo-'+new Date().toLocaleDateString('en-CA',{timeZone:'America/Sao_Paulo'})+'.pdf';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);
@@ -791,7 +791,7 @@ function ocRes(o,el){if(el.querySelector('.oc-resf'))return;const w=document.cre
 async function ocPDF(kind,o){if(typeof gerarDocOcorrencia==='undefined'){alert('Atualize a página (Ctrl+Shift+R) para carregar o gerador.');return}
   const c=byId(o.cam),lv=OC_LV[o.nivel]||OC_LV.N3;
   const dados={numero:o.numero,cod:c?pad(c.id):String(o.cam),nome:c?cn(c):'',tipoTxt:c&&TYPES[c.t]?TYPES[c.t][0]:'',bairro:c?ocBairro(c):'',lat:c?c.lat:null,lon:c?c.lon:null,ini:o.ini,det:o.det,fim:o.fim,status:ocStatusTxt(o),obs:o.obs,os:o.os,resolvidoEm:o.resolvidoEm,solucao:o.solucao,nivel:lv};
-  try{const u8=await gerarDocOcorrencia(kind,dados,{ident:{processo:'6866/2025',contrato:'nº 060/2026',unidade:'Central Operacional SEMMU'}});
+  try{const u8=await gerarDocOcorrencia(kind,dados,{ident:{processo:'6866/2025',contrato:'nº 060/2026',unidade:'Central Operacional SEMMU',contratada:'REAL SEG TECNOLOGIA E SOLUÇÕES LTDA.'}});
     const u=URL.createObjectURL(new Blob([u8],{type:'application/pdf'})),a=document.createElement('a');a.href=u;a.download=(kind==='os'?(o.os&&o.os.num):o.numero)+'.pdf';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000)}catch(e){toast('Não foi possível gerar o PDF: '+e.message)}}
 
 /* Ligar / desligar todas as câmeras de uma vez (editor) */

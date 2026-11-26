@@ -83,7 +83,7 @@ window.gerarRelatorioPDF=async function(cams,TYPES,ATS,usuario,pad,cn,fotos,opt)
   d.y+=72;
 
   d.h('2. Situação por tipo de câmera');
-  const rowsT=TYPES.map((t,i)=>{const l=cams.filter(c=>c.t===i),o=l.filter(c=>c.on).length;return {cells:[t[0],String(l.length),String(o),String(l.length-o)],styles:{3:(l.length-o)?{color:'#C62A47',bold:true}:{}}}}).filter(r=>+r.cells[1]>0);
+  const rowsT=TYPES.map((t,i)=>{const l=cams.filter(c=>c.t===i),o=l.filter(c=>c.on).length;return {cells:[({'OCR':'OCR / LPR (Tipo IV)','Facial':'Reconhecimento facial (Tipo III)','360°':'PTZ / Speed Dome (Tipo II)','Comum':'Câmera fixa (Tipo I)'})[t[0]]||t[0],String(l.length),String(o),String(l.length-o)],styles:{3:(l.length-o)?{color:'#C62A47',bold:true}:{}}}}).filter(r=>+r.cells[1]>0);
   rowsT.push({cells:['Total',String(tot),String(on),String(off)],styles:[{bold:true},{bold:true},{bold:true},{bold:true}]});
   d.table([{t:'Tipo',w:211},{t:'Total',w:100,al:'r'},{t:'Online',w:100,al:'r'},{t:'Offline',w:100,al:'r'}],rowsT,{rh:18,size:9});
 
@@ -102,7 +102,7 @@ window.gerarRelatorioPDF=async function(cams,TYPES,ATS,usuario,pad,cn,fotos,opt)
     const I=opt.ident||{},C=(x)=>x||'________________________';
     const lin=(a,b)=>{d.need(16);d.text(MX,d.y+11,a,{size:9.5,bold:true,color:'#333333'});d.text(MX+160,d.y+11,C(b),{size:9.5,color:b?'#111111':'#8899A3'});d.y+=15};
     d.h((secN++)+'. Identificação da fiscalização');
-    lin('Processo Administrativo:',I.processo);lin('Contrato Administrativo:',I.contrato);lin('Unidade fiscalizada:',I.unidade);lin('Data da fiscalização:',I.data||dCurta);lin('Fiscal Técnico:',I.fiscalTec);lin('Fiscal Administrativo:',I.fiscalAdm);lin('Representante da Contratada:',I.rep);
+    lin('Processo Administrativo:',I.processo);lin('Contrato Administrativo:',I.contrato);lin('Unidade fiscalizada:',I.unidade);lin('Contratada:',I.contratada);lin('Período de medição:',I.periodo);lin('Referência da medição:',I.medicao);lin('Data da fiscalização:',I.data||dCurta);lin('Fiscal Técnico:',I.fiscalTec);lin('Fiscal Administrativo:',I.fiscalAdm);lin('Representante da Contratada:',I.rep);
     d.h((secN++)+'. Indicadores de desempenho (ANS/SLA)');
     const ifc=tot?Math.round(on/tot*10000)/100:0,ido=opt.ido||{},iao=opt.iao||{},iig=opt.iig||{};
     d.para('Os indicadores abaixo seguem o Acordo de Nível de Serviço do contrato (disponibilidade operacional mínima de 98,5% ao mês). O IFC é calculado automaticamente com a situação das câmeras registrada no painel; os demais são preenchidos pelo fiscal.',{size:10});
