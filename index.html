@@ -19,6 +19,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="firebase-config.js"></script>
 <script src="relatorio.js"></script>
+<script src="relatorio-word.js"></script>
 <script src="costa.js"></script>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Chakra+Petch:wght@500;600;700&display=swap">
 <style>
@@ -601,7 +602,7 @@ async function fmStatus(){const c=$('fmcard');if(!c||!window.indexedDB){return}l
   $('fm-miss').hidden=!fmMiss||!miss.length;$('fm-miss').innerHTML=miss.map(x=>'<span title="'+esc2(cn(x))+'">'+pad(x.id)+'</span>').join('')}
 function askClear(n){let b=$('clrbar');if(b)b.remove();b=document.createElement('div');b.id='clrbar';
   b.style.cssText='position:fixed;left:12px;right:12px;bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:9999;background:#0f1a33;border:1px solid #22D3EE;border-radius:14px;padding:14px;box-shadow:0 10px 40px rgba(0,0,0,.6);color:#e8f0ff;display:flex;gap:10px;align-items:center;flex-wrap:wrap;max-width:560px;margin:0 auto';
-  b.innerHTML='<div style="flex:1 1 220px;font-size:14px"><b>Relatório gerado.</b> Confira o PDF e depois apague as '+n+(n>1?' fotos':' foto')+' do mês (em todos os aparelhos).</div><button type="button" class="btn" id="clrno">Manter</button><button type="button" class="btn pri" id="clryes">Apagar fotos</button>';
+  b.innerHTML='<div style="flex:1 1 220px;font-size:14px"><b>Relatório gerado.</b> Confira o arquivo e depois apague as '+n+(n>1?' fotos':' foto')+' do mês (em todos os aparelhos).</div><button type="button" class="btn" id="clrno">Manter</button><button type="button" class="btn pri" id="clryes">Apagar fotos</button>';
   document.body.appendChild(b);$('clrno').onclick=()=>b.remove();
   $('clryes').onclick=async()=>{b.remove();await FM.clear();fmRender();toast('Fotos do mês apagadas.')}}
 let fmRescanned=false;
@@ -614,7 +615,7 @@ async function fmRescan(){if(fmRescanned)return;fmRescanned=true;
       if(cam!==rec.cam||auto!==!!rec.auto||cand.join()!==(rec.cand||[]).join()){rec.cam=cam;rec.auto=auto;rec.cand=cand;await FM.put(rec);ch++}}
     if(ch)fmRender()}catch(e){}}
 function fmOpen(){$('fmbg').hidden=false;fmRender().then(()=>fmRescan()).catch(()=>{})}
-(function(){const b=$('csv'),fb=$('fotosmes');b.hidden=false;fb.hidden=false;
+(function(){const b=$('csv'),fb=$('fotosmes');b.hidden=false;fb.hidden=false;{const fs=fmtSelect();fs.style.marginLeft='6px';b.insertAdjacentElement('afterend',fs)}
   try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist()}catch(e){}
   if(!window.indexedDB){fb.hidden=true}else{FM.all().then(()=>fmRender()).catch(()=>{})}
   $('fm-ver').onclick=()=>{fmMiss=!fmMiss;fmStatus()};$('fmcard').onclick=e=>{if(!e.target.closest('button')&&!e.target.closest('.fmmiss'))fmOpen()};$('fmcard').style.cursor='pointer';
@@ -649,8 +650,9 @@ function fmOpen(){$('fmbg').hidden=false;fmRender().then(()=>fmRescan()).catch((
     const fotos=rows.map(r=>{const c=byId(r.cam),nm=cn(c);return {w:r.w,h:r.h,data:atob(r.d.split(',')[1]),t:nm.indexOf('Câmera '+pad(c.id))===0?nm:'Nº '+pad(c.id)+' · '+nm,s:(($('rdt')&&$('rdt').value)?'':'Foto de '+dt(r.at))}});
     const ocA=(typeof OCL!=='undefined'&&OCL)?OC.filter(ocOpen):null,ro={oc:ocA?{abertas:ocA.length,vencidas:ocA.filter(o=>Date.now()-o.ini>((OC_LV[o.nivel]||OC_LV.N3).solMs)).length}:null,refDate:($('rdt')&&$('rdt').value)?new Date($('rdt').value+'T12:00:00-03:00'):null,fiscalizacao:true,ident:{processo:'6866/2025',contrato:'nº 060/2026',unidade:'Central Operacional SEMMU',contratada:'REAL SEG TECNOLOGIA E SOLUÇÕES LTDA.'}};
     b.disabled=true;
-    try{const u8=await gerarRelatorioPDF(cams,TYPES,ATS,'',pad,cn,fotos,ro);
-      const u=URL.createObjectURL(new Blob([u8],{type:'application/pdf'}));const a=document.createElement('a');a.href=u;a.download='relatorio-cameras-arraial-do-cabo-'+new Date().toLocaleDateString('en-CA',{timeZone:'America/Sao_Paulo'})+'.pdf';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);
+    const fm=getFmt();if(fm==='docx'&&typeof gerarRelatorioDOCX==='undefined'){alert('Atualize a página (Ctrl+Shift+R) para carregar o gerador Word.');b.disabled=false;return}
+    try{const u8=await (fm==='docx'?gerarRelatorioDOCX:gerarRelatorioPDF)(cams,TYPES,ATS,'',pad,cn,fotos,ro);
+      dlFile(u8,'relatorio-cameras-arraial-do-cabo-'+new Date().toLocaleDateString('en-CA',{timeZone:'America/Sao_Paulo'}),fm);
       if(fotos.length)askClear(fotos.length)
     }catch(e){alert('Erro ao gerar o relatório: '+e.message)}finally{b.disabled=false}}})();
 
@@ -743,6 +745,7 @@ function ocRender(soft){ocBadge();if(!$('v-ocorr'))return;ocInit();
     x.onclick=async()=>{if(x.dataset.c!=='1'){x.dataset.c='1';x.textContent='Confirmar: excluir TUDO';clearTimeout(tx);tx=setTimeout(()=>{x.dataset.c='';x.textContent=t0},5000);return}
       const off=cams.filter(c=>!c.on&&ATS[c.id]).map(c=>[c.id,ATS[c.id].getTime()]);
       try{await ocMutate((list,data)=>{list.length=0;data.ign=data.ign||{};off.forEach(z=>{data.ign[z[0]]=z[1]})});toast('Todas as ocorrências foram excluídas.')}catch(e){toast('Não foi possível excluir: '+e.message)}};bar.appendChild(x)}
+  {const l=document.createElement('label');l.className='chip';l.style.cssText='cursor:default;margin-left:auto';l.appendChild(document.createTextNode('Baixar em '));l.appendChild(fmtSelect());bar.appendChild(l)}
   pe.innerHTML='';
   if(pend.length){const c=document.createElement('div');c.className='card oc oc-pend';c.style.marginBottom='12px';
     c.innerHTML='<div class="oc-h"><b>'+pend.length+(pend.length>1?' câmeras fora do ar há mais de 15 minutos':' câmera fora do ar há mais de 15 minutos')+'</b><span class="oc-t w">sem ocorrência</span></div><div class="oc-m">'+pend.slice(0,12).map(p=>esc2(pad(p.c.id))+' ('+ocDur(Date.now()-p.ini)+')').join(' · ')+(pend.length>12?' …':'')+'</div>';
@@ -765,12 +768,12 @@ function ocCard(o){const c=byId(o.cam),el=document.createElement('div');el.class
   const fimT=o.resolvidoEm||fim;
   let main='';
   if(ed&&!res){main=temOS?'<button class="btn pri" data-a="res">✔ Marcar como resolvida</button>':(fim?'<button class="btn pri" data-a="res">✔ Marcar como resolvida</button>':'<button class="btn pri" data-a="os">Gerar Ordem de Serviço</button>')}
-  else if(res&&temOS)main='<button class="btn pri" data-a="os">PDF da OS concluída</button>';
+  else if(res&&temOS)main='<button class="btn pri" data-a="os">Baixar OS concluída</button>';
   el.innerHTML='<div class="oc-h"><div><b>'+esc2(c?pad(c.id):'Câmera '+o.cam)+'</b> <span class="oc-m">'+esc2(c?cn(c):'(removida)')+'</span></div><span class="oc-t '+tag+'">'+lbl+'</span></div>'
    +'<div class="oc-m">'+esc2(o.numero)+(temOS?' · '+esc2(o.os.num):'')+' · desde '+ocFmt(o.ini)+(fimT?' até '+ocFmt(fimT):'')+' · '+ocDur((fimT||now)-o.ini)+(venc?' · <span style="color:var(--off)">'+venc+'</span>':'')+'</div>'
    +'<div class="oc-row"><label class="oc-m">Nível <select data-f="nivel" '+(ed&&!res?'':'disabled')+'>'+Object.values(OC_LV).map(v=>'<option value="'+v.k+'" '+(v.k===o.nivel?'selected':'')+'>'+v.k+' · '+v.nome+' (resposta '+v.resp+', solução '+v.sol+')</option>').join('')+'</select></label></div>'
    +'<textarea data-f="obs" placeholder="Observações (causa, quem foi acionado…)" '+(ed&&!res?'':'disabled')+'>'+esc2(o.obs||'')+'</textarea>'+'<div class="oc-ph oc-row"></div>'
-   +'<div class="oc-row">'+main+'<button class="btn" data-a="pdf">PDF da ocorrência</button>'+(temOS&&!res?'<button class="btn" data-a="os2">PDF da OS</button>':'')
+   +'<div class="oc-row">'+main+'<button class="btn" data-a="pdf">Baixar ocorrência</button>'+(temOS&&!res?'<button class="btn" data-a="os2">Baixar OS</button>':'')
    +(ed?'<button class="btn" data-a="del" style="margin-left:auto;color:var(--off)">Excluir</button>':'')+'</div>';
   ocPhUI(o,el.querySelector('.oc-ph'));
   el.querySelectorAll('[data-f]').forEach(f=>{f.onchange=async()=>{const k=f.dataset.f;try{await ocMutate(list=>{const x=list.find(z=>z.id===o.id);if(x)x[k]=f.value})}catch(e){toast('Não foi possível salvar: '+e.message)}}});
@@ -782,6 +785,11 @@ function ocCard(o){const c=byId(o.cam),el=document.createElement('div');el.class
     ocMutate((list,data)=>{const k=list.findIndex(z=>z.id===o.id);if(k>=0)list.splice(k,1);if(!o.fim){data.ign=data.ign||{};data.ign[o.cam]=o.ini}}).then(()=>{try{ocPhRef(o.id).delete();delete OCPH[o.id]}catch(e){}toast('Ocorrência excluída.')}).catch(e=>toast('Não foi possível excluir: '+e.message))};
   return el}
 
+/* ---------- formato de saída (PDF ou Word) ---------- */
+function getFmt(){try{return localStorage.getItem('fmt')==='docx'?'docx':'pdf'}catch(e){return 'pdf'}}
+function setFmt(v){try{localStorage.setItem('fmt',v)}catch(e){}document.querySelectorAll('select.fmtsel').forEach(x=>x.value=v)}
+function fmtSelect(){const x=document.createElement('select');x.className='fmtsel';x.title='Formato dos arquivos gerados';x.innerHTML='<option value="pdf">PDF</option><option value="docx">Word</option>';x.value=getFmt();x.onchange=()=>setFmt(x.value);x.style.cssText='background:transparent;color:inherit;border:1px solid rgba(255,255,255,.25);border-radius:8px;padding:5px 8px;font:inherit';return x}
+function dlFile(u8,nome,ext){const mime=ext==='docx'?'application/vnd.openxmlformats-officedocument.wordprocessingml.document':'application/pdf';const u=URL.createObjectURL(new Blob([u8],{type:mime})),a=document.createElement('a');a.href=u;a.download=nome+'.'+ext;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000)}
 /* ---------- fotos da ocorrência ---------- */
 const OCPH={};
 function ocPhRef(id){return db.collection('config').doc('ocf-'+String(id).replace(/[^A-Za-z0-9_-]/g,'_'))}
@@ -805,16 +813,16 @@ function ocOS(o,el){if(el.querySelector('.oc-osf'))return;const w=document.creat
   el.appendChild(w)}
 function ocRes(o,el){if(el.querySelector('.oc-resf'))return;const w=document.createElement('div');w.className='oc-resf';w.style.cssText='display:grid;gap:8px';
   const d=new Date(Date.now()-new Date().getTimezoneOffset()*6e4).toISOString().slice(0,16);
-  w.innerHTML='<label class="oc-m">Resolvida em <input type="datetime-local" data-k="d" value="'+d+'"></label><textarea data-k="t" placeholder="O que foi feito (ex.: religada a energia, trocado o cabo…)"></textarea><div class="oc-row"><button class="btn pri">Confirmar e gerar PDF</button><button class="btn" data-x>Cancelar</button></div>';
+  w.innerHTML='<label class="oc-m">Resolvida em <input type="datetime-local" data-k="d" value="'+d+'"></label><textarea data-k="t" placeholder="O que foi feito (ex.: religada a energia, trocado o cabo…)"></textarea><div class="oc-row"><button class="btn pri">Confirmar e gerar</button><button class="btn" data-x>Cancelar</button></div>';
   w.querySelector('[data-x]').onclick=()=>w.remove();
   w.querySelector('.pri').onclick=async()=>{const v=w.querySelector('[data-k=d]').value,t=w.querySelector('[data-k=t]').value.trim();const ts=v?new Date(v).getTime():Date.now();
     try{const x=await ocMutate(list=>{const z=list.find(q=>q.id===o.id);if(!z)return null;z.resolvidoEm=ts;z.solucao=t;z.status='Encerrada';return z});if(x){Object.assign(o,{resolvidoEm:ts,solucao:t,status:'Encerrada'});toast('Resolvida. Saiu das abertas e ficou no Histórico.');ocPDF(o.os&&o.os.num?'os':'oc',o)}}catch(e){toast('Não foi possível salvar: '+e.message)}};
   el.appendChild(w)}
-async function ocPDF(kind,o){if(typeof gerarDocOcorrencia==='undefined'){alert('Atualize a página (Ctrl+Shift+R) para carregar o gerador.');return}
+async function ocPDF(kind,o){const fm=getFmt();if(typeof gerarDocOcorrencia==='undefined'||(fm==='docx'&&typeof gerarDocOcorrenciaDOCX==='undefined')){alert('Atualize a página (Ctrl+Shift+R) para carregar o gerador.');return}
   const c=byId(o.cam),lv=OC_LV[o.nivel]||OC_LV.N3;
   const dados={numero:o.numero,cod:c?pad(c.id):String(o.cam),nome:c?cn(c):'',tipoTxt:c&&TYPES[c.t]?TYPES[c.t][0]:'',bairro:c?ocBairro(c):'',lat:c?c.lat:null,lon:c?c.lon:null,ini:o.ini,det:o.det,fim:o.fim,status:ocStatusTxt(o),obs:o.obs,os:o.os,resolvidoEm:o.resolvidoEm,solucao:o.solucao,nivel:lv};
-  try{dados.fotos=await ocPhPdf(o);const u8=await gerarDocOcorrencia(kind,dados,{ident:{processo:'6866/2025',contrato:'nº 060/2026',unidade:'Central Operacional SEMMU',contratada:'REAL SEG TECNOLOGIA E SOLUÇÕES LTDA.'}});
-    const u=URL.createObjectURL(new Blob([u8],{type:'application/pdf'})),a=document.createElement('a');a.href=u;a.download=(kind==='os'?(o.os&&o.os.num):o.numero)+'.pdf';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000)}catch(e){toast('Não foi possível gerar o PDF: '+e.message)}}
+  try{dados.fotos=await ocPhPdf(o);const u8=await (fm==='docx'?gerarDocOcorrenciaDOCX:gerarDocOcorrencia)(kind,dados,{ident:{processo:'6866/2025',contrato:'nº 060/2026',unidade:'Central Operacional SEMMU',contratada:'REAL SEG TECNOLOGIA E SOLUÇÕES LTDA.'}});
+    dlFile(u8,(kind==='os'?(o.os&&o.os.num):o.numero),fm)}catch(e){toast('Não foi possível gerar o arquivo: '+e.message)}}
 
 /* Ligar / desligar todas as câmeras de uma vez (editor) */
 (function(){function bind(id,on,rot){const b=$(id);if(!b)return;let t=0;b.onclick=async()=>{
