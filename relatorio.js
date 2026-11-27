@@ -90,10 +90,10 @@ window.gerarRelatorioPDF=async function(cams,TYPES,ATS,usuario,pad,cn,fotos,opt)
   d.h('3. Câmeras fora de operação');
   const offl=cams.filter(c=>!c.on);
   if(!offl.length)d.para('Na data de referência, nenhuma câmera está registrada como fora de operação.');
-  else d.table([{t:'Nº',w:40},{t:'Identificação',w:231},{t:'Tipo',w:70},{t:'Fora de operação desde',w:170}],offl.map(c=>({cells:[pad(c.id),cn(c),TYPES[c.t][0],fmt(ATS[c.id])],styles:{3:{color:'#C62A47',bold:true}}})),{size:8.5});
+  else d.table([{t:'Nº',w:54},{t:'Identificação',w:217},{t:'Tipo',w:70},{t:'Fora de operação desde',w:170}],offl.map(c=>({cells:[pad(c.id),cn(c),TYPES[c.t][0],fmt(ATS[c.id])],styles:{3:{color:'#C62A47',bold:true}}})),{size:8.5});
 
   d.h('4. Relação completa das câmeras');
-  d.table([{t:'Nº',w:34},{t:'Identificação',w:162},{t:'Tipo',w:50},{t:'Situação',w:56},{t:'Última atualização',w:88},{t:'Coordenadas (lat, long)',w:121}],
+  d.table([{t:'Nº',w:52},{t:'Identificação',w:144},{t:'Tipo',w:50},{t:'Situação',w:56},{t:'Última atualização',w:88},{t:'Coordenadas (lat, long)',w:121}],
     cams.map(c=>({cells:[pad(c.id),cn(c),TYPES[c.t][0],c.on?'Online':'Offline',fmt(ATS[c.id]),c.lat.toFixed(6)+', '+c.lon.toFixed(6)],styles:{3:{color:c.on?'#0E8F63':'#C62A47',bold:true}}})),{size:8});
 
   d.need(40);
